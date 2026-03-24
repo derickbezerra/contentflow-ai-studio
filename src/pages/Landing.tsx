@@ -311,10 +311,10 @@ export default function Landing() {
       </div>
 
       {/* ── HOW IT WORKS ── */}
-      <RevealSection className="px-5 py-20 sm:py-28">
+      <RevealSection className="px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Como funciona</p>
-          <h2 className="mb-16 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
+          <h2 className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
             Três passos. Conteúdo na tela.
           </h2>
 
@@ -379,13 +379,13 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── VERTICALS ── */}
-      <RevealSection className="bg-card/40 px-5 py-20 sm:py-28">
+      <RevealSection className="bg-card/40 px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Para quem é</p>
           <h2 className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
             Feito sob medida para a área da saúde
           </h2>
-          <p className="mx-auto mb-14 max-w-lg text-center text-sm text-muted-foreground">
+          <p className="mx-auto mb-10 max-w-lg text-center text-sm text-muted-foreground">
             Mantenha a constância e amplie sua autoridade com conteúdo que atrai pacientes
           </p>
 
@@ -409,7 +409,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── FORMATS ── */}
-      <RevealSection className="px-5 py-20 sm:py-28">
+      <RevealSection className="px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formatos</p>
           <h2 className="mb-14 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
@@ -439,7 +439,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── PRICING ── */}
-      <RevealSection className="bg-card/40 px-5 py-20 sm:py-28" id="pricing">
+      <RevealSection className="bg-card/40 px-5 py-14 sm:py-20" id="pricing">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Planos</p>
           <h2 className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
@@ -500,7 +500,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── FINAL CTA ── */}
-      <RevealSection className="px-5 py-20 sm:py-28">
+      <RevealSection className="px-5 py-14 sm:py-20">
         <div
           className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-8 py-16 text-center sm:px-16"
           style={{ background: 'linear-gradient(135deg, hsl(160,84%,20%), hsl(170,60%,28%))' }}
