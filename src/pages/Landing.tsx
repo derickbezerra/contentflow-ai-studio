@@ -364,6 +364,17 @@ export default function Landing() {
               </div>
             ))}
           </div>
+
+          {/* Edit highlight — right below the 3 steps */}
+          <div className="mt-6 rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Pencil className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground text-sm">O conteúdo é seu: edite como quiser</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Troque cores, gradientes e textos de cada slide direto na tela, antes de baixar.</p>
+            </div>
+          </div>
         </div>
       </RevealSection>
 
@@ -393,19 +404,6 @@ export default function Landing() {
                 <p className="rounded-xl bg-background/60 px-3 py-2.5 text-xs italic text-muted-foreground backdrop-blur-sm">{v.example}</p>
               </Link>
             ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── EDIT HIGHLIGHT ── */}
-      <RevealSection className="px-5 pb-10">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Pencil className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="font-semibold text-foreground text-sm">O conteúdo é seu: edite como quiser</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Troque cores, gradientes e textos de cada slide direto na tela, antes de baixar.</p>
           </div>
         </div>
       </RevealSection>
