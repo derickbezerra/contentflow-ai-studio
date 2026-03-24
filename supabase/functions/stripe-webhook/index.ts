@@ -31,6 +31,15 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Idempotency — Stripe can retry webhooks; ignore already-processed events
+    const { error: dupErr } = await supabase
+      .from('processed_stripe_events')
+      .insert({ id: event.id })
+    if (dupErr?.code === '23505') {
+      // Duplicate key → event already handled
+      return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 })
+    }
+
     // Payment completed → activate correct plan
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.CheckoutSession

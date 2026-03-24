@@ -161,25 +161,25 @@ const Index = () => {
         } : prev);
       }
 
+      // Show result immediately — save to history is fire-and-forget so a DB
+      // error never hides the generated content from the user.
       if (data.batch) {
         setBatchResults(data.outputs);
-        if (user) {
-          await supabase.from("content").insert([
-            { user_id: user.id, type: "carousel", input: idea, output_json: data.outputs.carousel },
-            { user_id: user.id, type: "post",     input: idea, output_json: data.outputs.post },
-            { user_id: user.id, type: "story",    input: idea, output_json: data.outputs.story },
-          ]);
-        }
       } else {
         setResult({ type: contentType, ...data.output });
-        if (user) {
-          await supabase.from("content").insert({
-            user_id: user.id,
-            type: contentType,
-            input: idea,
-            output_json: data.output,
-          });
-        }
+      }
+
+      if (user) {
+        const rows = data.batch
+          ? [
+              { user_id: user.id, type: "carousel", input: idea, output_json: data.outputs.carousel },
+              { user_id: user.id, type: "post",     input: idea, output_json: data.outputs.post },
+              { user_id: user.id, type: "story",    input: idea, output_json: data.outputs.story },
+            ]
+          : [{ user_id: user.id, type: contentType, input: idea, output_json: data.output }];
+        supabase.from("content").insert(rows).then(({ error }) => {
+          if (error) console.error("Failed to save content to history:", error);
+        });
       }
     } catch (err: unknown) {
       toast.error("Erro ao gerar conteúdo. Tente novamente.");
@@ -302,7 +302,8 @@ const Index = () => {
               onChange={(e) => setInstagramHandle(e.target.value)}
               onBlur={async () => {
                 if (!user) return;
-                await supabase.from('users').update({ instagram_handle: instagramHandle }).eq('id', user.id);
+                const { error } = await supabase.from('users').update({ instagram_handle: instagramHandle }).eq('id', user.id);
+                if (error) console.error("Failed to save instagram_handle:", error);
               }}
               placeholder="seu.perfil.instagram"
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"

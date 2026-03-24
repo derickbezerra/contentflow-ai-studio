@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       min_interval_seconds: 30,
     })
-    if (!rateLimitOk) {
+    if (rateLimitOk !== true) {
       return new Response(JSON.stringify({ error: 'Muitas requisições.' }), {
         status: 429,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
