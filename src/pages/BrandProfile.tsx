@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import CancelSurveyModal from '@/components/CancelSurveyModal'
 
 type Tone = 'formal' | 'informal' | 'empatico'
-type PatientIntent = 'estetico' | 'dor_sintoma' | 'preventivo' | 'cronico' | 'premium' | 'geral'
+type PatientIntent = 'estetico' | 'dor' | 'preventivo' | 'cronico' | 'premium'
 
 const TONES: { value: Tone; label: string; description: string }[] = [
   { value: 'formal',    label: 'Formal',    description: 'Linguagem técnica e profissional' },
@@ -18,12 +18,11 @@ const TONES: { value: Tone; label: string; description: string }[] = [
 ]
 
 const PATIENT_INTENTS: { value: PatientIntent; label: string; desc: string }[] = [
-  { value: 'estetico',    label: 'Estético',      desc: 'Aparência e autoestima' },
-  { value: 'dor_sintoma', label: 'Dor / Sintoma',  desc: 'Alívio e tratamento' },
-  { value: 'preventivo',  label: 'Preventivo',     desc: 'Prevenção e check-up' },
-  { value: 'cronico',     label: 'Crônico',        desc: 'Condições contínuas' },
-  { value: 'premium',     label: 'Premium',        desc: 'Alta renda, exclusividade' },
-  { value: 'geral',       label: 'Geral',          desc: 'Público amplo e variado' },
+  { value: 'estetico',   label: 'Paciente estético',   desc: 'Aparência e autoestima' },
+  { value: 'dor',        label: 'Paciente com dor',    desc: 'Alívio e tratamento' },
+  { value: 'preventivo', label: 'Paciente preventivo', desc: 'Prevenção e check-up' },
+  { value: 'cronico',    label: 'Paciente crônico',    desc: 'Condições contínuas' },
+  { value: 'premium',    label: 'Paciente premium',    desc: 'Alta renda, exclusividade' },
 ]
 
 const AGE_RANGES = [

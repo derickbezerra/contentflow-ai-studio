@@ -245,12 +245,11 @@ Deno.serve(async (req) => {
     }
 
     const INTENT_LABELS: Record<string, string> = {
-      estetico:    'estético (aparência e autoestima)',
-      dor_sintoma: 'dor e sintoma (alívio e tratamento)',
-      preventivo:  'preventivo (prevenção e check-up)',
-      cronico:     'crônico (condições contínuas)',
-      premium:     'premium (público de alta renda)',
-      geral:       'geral (público amplo)',
+      estetico:   'estético (aparência e autoestima)',
+      dor:        'com dor (alívio e tratamento)',
+      preventivo: 'preventivo (prevenção e check-up)',
+      cronico:    'crônico (condições contínuas)',
+      premium:    'premium (público de alta renda)',
     }
 
     if (profile?.patient_intent_primary || profile?.age_range) {
