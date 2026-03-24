@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
 
       const { data: profile } = await supabase
         .from('users')
-        .select('id, email, cancel_at_period_end, cancel_email_sent_at')
+        .select('id, email, plan, cancel_at_period_end, cancel_email_sent_at')
         .eq('stripe_customer_id', customerId)
         .single()
 
@@ -99,12 +99,15 @@ Deno.serve(async (req) => {
             current_period_end: null,
           }).eq('id', profile.id)
         } else {
+          const newPlan = isActive ? getPlanFromPriceId(priceId) : isPastDue ? getPlanFromPriceId(priceId) : 'free'
+          const planChanged = newPlan !== profile.plan
           await supabase.from('users').update({
-            plan: isActive ? getPlanFromPriceId(priceId) : isPastDue ? getPlanFromPriceId(priceId) : 'free',
+            plan: newPlan,
             stripe_subscription_id: isActive || isPastDue ? subscription.id : null,
             payment_status: isActive ? 'active' : isPastDue ? 'past_due' : 'canceled',
             cancel_at_period_end: cancelAtPeriodEnd,
             current_period_end: currentPeriodEnd,
+            ...(planChanged ? { generation_count: 0 } : {}),
           }).eq('id', profile.id)
 
           // Send cancel confirmation when cancel_at_period_end just became true
