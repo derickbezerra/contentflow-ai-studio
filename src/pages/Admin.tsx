@@ -1,7 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Component, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+
+// ── Error boundary — catches render crashes (e.g. bad API shape) ──────────
+class AdminErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: string | null }
+> {
+  state = { error: null };
+  static getDerivedStateFromError(err: unknown) {
+    return { error: String(err) };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background p-6">
+          <div className="max-w-md rounded-2xl border border-destructive/30 bg-card p-6 text-center shadow-sm">
+            <p className="mb-1 text-sm font-semibold text-destructive">Erro ao renderizar o painel</p>
+            <p className="mb-4 break-all text-xs text-muted-foreground">{this.state.error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
+            >
+              Recarregar
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import {
   AreaChart,
   Area,
@@ -122,7 +152,7 @@ const tooltipStyle = {
   fontSize: "12px",
 };
 
-export default function Admin() {
+function AdminInner() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<StatsData | null>(null);
@@ -180,18 +210,26 @@ export default function Admin() {
     );
   }
 
-  if (error) {
+  if (error || !stats) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <p className="text-sm text-destructive">Erro: {error}</p>
-          <Button className="mt-4" onClick={() => navigate("/app")}>Voltar</Button>
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+          <p className="mb-1 text-sm font-semibold text-destructive">
+            {error ? "Erro ao carregar métricas" : "Dados não disponíveis"}
+          </p>
+          {error && (
+            <p className="mb-4 break-all text-xs text-muted-foreground">{error}</p>
+          )}
+          <div className="flex justify-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+              Tentar novamente
+            </Button>
+            <Button size="sm" onClick={() => navigate("/app")}>Voltar</Button>
+          </div>
         </div>
       </div>
     );
   }
-
-  if (!stats) return null;
 
   const { financeiro } = stats;
   const isProfit = financeiro.lucro >= 0;
@@ -620,5 +658,13 @@ export default function Admin() {
       )}
 
     </div>
+  );
+}
+
+export default function Admin() {
+  return (
+    <AdminErrorBoundary>
+      <AdminInner />
+    </AdminErrorBoundary>
   );
 }
