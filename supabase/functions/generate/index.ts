@@ -71,6 +71,18 @@ PASSO 6 — Quando o Perfil de marca e/ou Histórico recente forem fornecidos na
 - Bio: use para escolher exemplos clínicos e situações coerentes com a trajetória do profissional.
 - Instagram: inclua "@handle" em CTAs quando soa natural (ex: "me chama no direct", "me segue lá"). Nunca force.
 - Histórico recente: se o tópico atual for parecido com algum do histórico, mude o ângulo, a estrutura ou o gancho. Se for diferente, ignore o histórico. O objetivo é variedade — não repetição de abordagem.
+- Público-alvo [PÚBLICO-ALVO]: se fornecido, adapte ângulo, exemplos e gatilhos do conteúdo:
+  • Intenção primária domina o enquadramento. Intenção secundária reforça com elementos complementares.
+  • Estético: transformação visual, autoconfiança, resultados de aparência, antes/depois
+  • Dor/Sintoma: linguagem de alívio, urgência moderada, "você não precisa viver assim"
+  • Preventivo: "cuide agora para não se arrepender depois", risco como motivação, check-up como hábito
+  • Crônico: empatia profunda, gestão contínua, qualidade de vida no dia a dia
+  • Premium: sofisticação, exclusividade, excelência e personalização do cuidado
+  • Geral: linguagem acessível, exemplos amplos, sem recorte específico
+  • Faixa 18-25: linguagem jovem e direta, referências contemporâneas, tom de descoberta
+  • Faixa 25-35: praticidade, equilíbrio carreira/família, conteúdo rápido e direto
+  • Faixa 35-50: prevenção e qualidade de vida, "invista na sua saúde agora"
+  • Faixa 50+: autonomia, conforto, clareza sem jargão, ênfase em bem-estar e independência
 
 PASSO 7 — Revise: linguagem simples, sem jargão, sem termos muito técnicos.
 REGRA ABSOLUTA: NUNCA use o caractere "—" (travessão) em nenhuma parte do conteúdo. Substitua por ponto, vírgula ou reescreva a frase.
@@ -198,7 +210,7 @@ Deno.serve(async (req) => {
     const [{ data: profile }, { data: recentContent }] = await Promise.all([
       supabaseAdmin
         .from('users')
-        .select('brand_name, brand_tone, brand_bio, onboarding_goal, onboarding_posts_per_week, instagram_handle')
+        .select('brand_name, brand_tone, brand_bio, onboarding_goal, onboarding_posts_per_week, instagram_handle, patient_intent_primary, patient_intent_secondary, age_range')
         .eq('id', user.id)
         .single(),
       supabaseAdmin
@@ -230,6 +242,28 @@ Deno.serve(async (req) => {
 
     if (profile?.onboarding_goal) {
       brandContext += `\n\n[OBJETIVO]\nObjetivo principal: ${GOAL_LABELS[profile.onboarding_goal] ?? profile.onboarding_goal}.`
+    }
+
+    const INTENT_LABELS: Record<string, string> = {
+      estetico:    'estético (aparência e autoestima)',
+      dor_sintoma: 'dor e sintoma (alívio e tratamento)',
+      preventivo:  'preventivo (prevenção e check-up)',
+      cronico:     'crônico (condições contínuas)',
+      premium:     'premium (público de alta renda)',
+      geral:       'geral (público amplo)',
+    }
+
+    if (profile?.patient_intent_primary || profile?.age_range) {
+      brandContext += '\n\n[PÚBLICO-ALVO]'
+      if (profile?.patient_intent_primary) {
+        brandContext += `\n- Intenção primária: ${INTENT_LABELS[profile.patient_intent_primary] ?? profile.patient_intent_primary}`
+        if (profile?.patient_intent_secondary) {
+          brandContext += `\n- Intenção secundária: ${INTENT_LABELS[profile.patient_intent_secondary] ?? profile.patient_intent_secondary}`
+        }
+      }
+      if (profile?.age_range) {
+        brandContext += `\n- Faixa etária do paciente: ${profile.age_range} anos`
+      }
     }
 
     // ── Memória de marca: histórico recente ───────────────
