@@ -76,30 +76,13 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
 
             {/* Plan badge — opens upgrade modal */}
             {planInfo?.plan !== "free" && planInfo?.plan != null ? (
-              <div className="hidden sm:flex items-center gap-1.5">
-                <button
-                  onClick={onUpgrade}
-                  className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 capitalize transition-colors"
-                >
-                  <Zap className="h-3 w-3 fill-primary" /> {planInfo?.plan}
-                </button>
-                {planInfo.plan !== "pro" && (
-                  <button
-                    onClick={onUpgrade}
-                    className="flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-primary/30 hover:text-primary transition-colors"
-                  >
-                    Upgrade
-                  </button>
-                )}
-              </div>
-            ) : (
               <button
                 onClick={onUpgrade}
-                className="hidden items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/30 hover:text-primary sm:flex transition-colors"
+                className="hidden sm:flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 capitalize transition-colors"
               >
-                <Zap className="h-3 w-3" /> Upgrade
+                <Zap className="h-3 w-3 fill-primary" /> {planInfo?.plan}
               </button>
-            )}
+            ) : null}
 
             {user?.email === 'bezerra@belvy.com.br' && (
               <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate('/admin')}>

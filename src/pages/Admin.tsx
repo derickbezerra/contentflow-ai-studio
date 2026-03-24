@@ -129,9 +129,11 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ProtectedRoute guarantees user is set when this component mounts.
+  // Run only once — no dependency on user/navigate to avoid stale redirects.
   useEffect(() => {
-    if (!user) return;
-    if (user.email !== ADMIN_EMAIL) {
+    if (!user) { navigate("/app"); return; }
+    if (user.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
       navigate("/app");
       return;
     }
@@ -139,18 +141,20 @@ export default function Admin() {
     async function fetchStats() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Sessão expirada. Faça login novamente.");
+
         const res = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-stats`,
           {
             headers: {
-              Authorization: `Bearer ${session!.access_token}`,
+              Authorization: `Bearer ${session.access_token}`,
               apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
             },
           }
         );
         if (!res.ok) {
           const text = await res.text();
-          throw new Error(text || res.statusText);
+          throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
         }
         const data = await res.json();
         setStats(data);
@@ -162,7 +166,8 @@ export default function Admin() {
     }
 
     fetchStats();
-  }, [user, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (

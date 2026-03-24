@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Loader2, FileText, LayoutGrid, Mic, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Loader2, FileText, LayoutGrid, Mic, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import CarouselOutput from '@/components/CarouselOutput'
+import PostOutput from '@/components/PostOutput'
+import StoryOutput from '@/components/StoryOutput'
 
 type ContentType = 'carousel' | 'post' | 'story'
 type FilterType = ContentType | 'all'
@@ -48,6 +51,31 @@ function getPreview(item: HistoryItem): string {
   return item.input
 }
 
+function RenderedOutput({ item }: { item: HistoryItem }) {
+  const o = item.output_json
+
+  if (item.type === 'carousel') {
+    const slides = o.slides as { title: string; body: string }[] | undefined
+    const caption = (o.caption as string) ?? ''
+    if (!slides?.length) return <p className="text-xs text-muted-foreground">Dados inválidos.</p>
+    return <CarouselOutput slides={slides} caption={caption} readOnly />
+  }
+
+  if (item.type === 'post') {
+    const hook = (o.hook as string) ?? ''
+    const body = (o.body as string) ?? ''
+    const cta  = (o.cta  as string) ?? ''
+    return <PostOutput hook={hook} body={body} cta={cta} readOnly />
+  }
+
+  if (item.type === 'story') {
+    const script = (o.script as string) ?? ''
+    return <StoryOutput script={script} />
+  }
+
+  return null
+}
+
 export default function History() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -56,6 +84,7 @@ export default function History() {
   const [page, setPage] = useState(0)
   const [filter, setFilter] = useState<FilterType>('all')
   const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const fetchPage = useCallback(async () => {
     if (!user) return
@@ -82,6 +111,10 @@ export default function History() {
   useEffect(() => { setPage(0) }, [filter])
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(prev => prev === id ? null : id)
+  }
 
   return (
     <div className="min-h-screen bg-background px-4 py-10">
@@ -127,22 +160,43 @@ export default function History() {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {items.map(item => (
-              <div key={item.id} className="rounded-2xl border border-border bg-card px-5 py-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{item.input}</p>
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{getPreview(item)}</p>
-                  </div>
-                  <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                    {TYPE_ICONS[item.type]} {TYPE_LABELS[item.type]}
-                  </span>
+            {items.map(item => {
+              const expanded = expandedId === item.id
+              return (
+                <div key={item.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+                  {/* Card header — click to expand/collapse */}
+                  <button
+                    onClick={() => toggleExpand(item.id)}
+                    className="w-full px-5 py-4 text-left transition-colors hover:bg-muted/40"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-foreground">{item.input}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{getPreview(item)}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                          {TYPE_ICONS[item.type]} {TYPE_LABELS[item.type]}
+                        </span>
+                        {expanded
+                          ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground/60">
+                      {new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </button>
+
+                  {/* Expanded output */}
+                  {expanded && (
+                    <div className="border-t border-border px-4 pb-6 pt-5">
+                      <RenderedOutput item={item} />
+                    </div>
+                  )}
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground/60">
-                  {new Date(item.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

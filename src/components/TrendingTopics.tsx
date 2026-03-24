@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ReactNode } from 'react'
 import { Sparkles, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -10,9 +10,10 @@ interface Topic {
 interface Props {
   vertical: string
   onSelect: (topic: string) => void
+  headerRight?: ReactNode
 }
 
-export default function TrendingTopics({ vertical, onSelect }: Props) {
+export default function TrendingTopics({ vertical, onSelect, headerRight }: Props) {
   const [topics, setTopics] = useState<Topic[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -51,10 +52,13 @@ export default function TrendingTopics({ vertical, onSelect }: Props) {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="mb-2.5 flex items-center justify-center gap-1.5">
-        <Sparkles className="h-3.5 w-3.5 text-primary" />
-        <span className="text-xs font-semibold text-foreground">Sugestão de temas para hoje</span>
-        {loading && <RefreshCw className="h-3 w-3 animate-spin text-muted-foreground/40" />}
+      <div className="mb-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-semibold text-foreground">Sugestão de temas para hoje</span>
+          {loading && <RefreshCw className="h-3 w-3 animate-spin text-muted-foreground/40" />}
+        </div>
+        {headerRight}
       </div>
 
       {/* Topics */}

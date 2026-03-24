@@ -259,19 +259,20 @@ const Index = () => {
         {/* Input area */}
         <div className="w-full max-w-xl animate-fade-up space-y-4">
 
-          {/* Trending topics + Templates */}
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <TrendingTopics vertical={vertical} onSelect={(t) => setIdea(t)} />
-            </div>
-            <button
-              onClick={() => setShowTemplates(true)}
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              Templates
-            </button>
-          </div>
+          {/* Trending topics + Templates (button rendered inside header row) */}
+          <TrendingTopics
+            vertical={vertical}
+            onSelect={(t) => setIdea(t)}
+            headerRight={
+              <button
+                onClick={() => setShowTemplates(true)}
+                className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Templates
+              </button>
+            }
+          />
 
           {/* Textarea */}
           <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 focus-within:border-primary/40 focus-within:shadow-md">

@@ -15,26 +15,49 @@ export const FREE_LIMIT = PLAN_LIMITS.free
 
 export interface PlanInfo {
   plan: Plan
-  effectivePlan: Plan       // trial users get starter limits
+  effectivePlan: Plan
   generationCount: number
   planLimit: number
   canGenerate: boolean
   isInTrial: boolean
   trialEndsAt: Date | null
-  isBlocked: boolean        // trial expired or payment failed
+  isBlocked: boolean
   blockReason: 'trial_expired' | 'payment_failed' | null
   cancelAtPeriodEnd: boolean
   currentPeriodEnd: Date | null
 }
 
+// ── Session cache — survives SPA navigation without Supabase round-trip ────
+const CACHE_KEY = 'cf_plan_cache'
+
+function readCache(): PlanInfo | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const p = JSON.parse(raw)
+    return {
+      ...p,
+      trialEndsAt: p.trialEndsAt ? new Date(p.trialEndsAt) : null,
+      currentPeriodEnd: p.currentPeriodEnd ? new Date(p.currentPeriodEnd) : null,
+    }
+  } catch { return null }
+}
+
+function writeCache(info: PlanInfo) {
+  try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(info)) } catch { /* ignore */ }
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────
+
 export function usePlan() {
   const { user } = useAuth()
-  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Initialize from cache → no flash when navigating back
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(readCache)
+  const [loading, setLoading] = useState(!readCache())
 
-  const fetchPlan = useCallback(async () => {
+  const fetchPlan = useCallback(async (silent = false) => {
     if (!user) return
-    setLoading(true)
+    if (!silent) setLoading(true)
 
     const { data } = await supabase
       .from('users')
@@ -45,7 +68,6 @@ export function usePlan() {
     if (data) {
       let count = data.generation_count ?? 0
 
-      // Reset monthly counter if past reset date
       const resetAt = data.generation_reset_at ? new Date(data.generation_reset_at) : null
       if (resetAt && new Date() > resetAt) {
         const nextMonth = new Date()
@@ -72,15 +94,12 @@ export function usePlan() {
 
       const blockReason: PlanInfo['blockReason'] = isPaymentFailed
         ? 'payment_failed'
-        : isTrialExpired
-          ? 'trial_expired'
-          : null
+        : isTrialExpired ? 'trial_expired' : null
 
-      // During trial, user gets 5 generations (trial limit)
       const effectivePlan: Plan = isInTrial ? 'free' : plan
       const planLimit = PLAN_LIMITS[effectivePlan]
 
-      setPlanInfo({
+      const info: PlanInfo = {
         plan,
         effectivePlan,
         generationCount: count,
@@ -92,23 +111,27 @@ export function usePlan() {
         blockReason,
         cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
         currentPeriodEnd: data.current_period_end ? new Date(data.current_period_end) : null,
-      })
+      }
+
+      setPlanInfo(info)
+      writeCache(info)
     }
 
     setLoading(false)
   }, [user])
 
-  useEffect(() => {
-    fetchPlan()
-  }, [fetchPlan])
+  useEffect(() => { fetchPlan() }, [fetchPlan])
 
   async function incrementGeneration() {
     if (!user || !planInfo || planInfo.isBlocked) return
     const { data } = await supabase.rpc('increment_generation_count', { user_id: user.id })
     const newCount = typeof data === 'number' ? data : planInfo.generationCount + 1
-    setPlanInfo(prev =>
-      prev ? { ...prev, generationCount: newCount, canGenerate: newCount < prev.planLimit } : prev
-    )
+    setPlanInfo(prev => {
+      if (!prev) return prev
+      const updated = { ...prev, generationCount: newCount, canGenerate: newCount < prev.planLimit }
+      writeCache(updated)
+      return updated
+    })
   }
 
   return { planInfo, setPlanInfo, loading, refetch: fetchPlan }
