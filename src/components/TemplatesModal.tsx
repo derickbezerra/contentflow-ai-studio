@@ -60,7 +60,7 @@ const TEMPLATES: Record<Vertical, Template[]> = {
     { name: 'Implante dental',          topic: 'implante dental: quando vale e o que esperar do tratamento',     contentType: 'carousel', description: 'Explica o processo para quem tem medo ou dúvida' },
     { name: 'Halitose',                 topic: 'mau hálito: causas reais e como resolver de vez',                contentType: 'post',     description: 'Assunto íntimo com alto volume de busca' },
     { name: 'Criança no dentista',      topic: 'quando e como levar seu filho ao dentista pela primeira vez',    contentType: 'carousel', description: 'Conteúdo que atinge pais e responsáveis' },
-    { name: 'Fio dental vs jato',       topic: 'fio dental ou fio d'água: qual realmente limpa melhor',          contentType: 'post',     description: 'Comparativo prático de alta curiosidade' },
+    { name: 'Fio dental vs jato',       topic: 'fio dental ou irrigador oral: qual realmente limpa melhor',          contentType: 'post',     description: 'Comparativo prático de alta curiosidade' },
     { name: 'Alinhadores invisíveis',   topic: 'alinhadores transparentes: como funciona e para quem é indicado', contentType: 'carousel', description: 'Alternativa moderna ao aparelho tradicional' },
     { name: 'Check-up bucal',           topic: 'com que frequência ir ao dentista mesmo sem dor',                contentType: 'story',    description: 'Desmistifica a consulta preventiva' },
   ],
