@@ -64,21 +64,21 @@ const VERTICALS = [
 const FORMATS = [
   {
     icon: Image,
-    label: 'Carrossel',
-    desc: 'Slides que as pessoas salvam constroem autoridade melhor do que qualquer anúncio, e a IA gera o carrossel completo do hook ao CTA',
-    preview: ['Hook que para o scroll', 'Conteúdo que educa e engaja', 'CTA que converte'],
+    label: 'Por tipo de paciente',
+    desc: 'Posts para estético, dor, preventivo, crônico ou premium. Cada conteúdo é calibrado para atrair exatamente quem você quer na agenda.',
+    preview: ['Paciente estético: foco em transformação', 'Paciente preventivo: foco em risco futuro', 'Paciente crônico: foco em qualidade de vida'],
   },
   {
     icon: FileText,
-    label: 'Post',
-    desc: 'Uma abertura que prende, um desenvolvimento que educa e uma chamada para agir, tudo pronto para copiar e colar',
-    preview: ['Abertura que cria identificação', 'Texto claro e direto', 'Convite para agir'],
+    label: 'Linguagem da sua especialidade',
+    desc: 'Medicina, Nutrição, Odonto, Psico: temas, exemplos e linguagem específicos para a sua área. Nada de conteúdo genérico de saúde.',
+    preview: ['Terminologia correta para cada área', 'Exemplos clínicos reais', 'Tom certo para cada especialidade'],
   },
   {
     icon: Smartphone,
-    label: 'Story',
-    desc: 'Um roteiro de teleprompter para você gravar com confiança e naturalidade sem travar na frente da câmera',
-    preview: ['Primeira frase cria conexão', 'Explicação simples e fluida', 'CTA com urgência real'],
+    label: 'Foco em agenda, não em curtidas',
+    desc: 'Posts pensados para gerar consultas, não para viralizar. O engajamento é consequência. O agendamento é o objetivo.',
+    preview: ['CTA que convida ao agendamento', 'Conteúdo que gera confiança', 'Posts que atraem, não só informam'],
   },
 ]
 
@@ -263,24 +263,24 @@ export default function Landing() {
             <div className="animate-fade-up text-center lg:text-left">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
-                IA especializada para profissionais de saúde
+                Para profissionais de saúde
               </div>
 
               <h1 className="mb-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl" style={{ textWrap: 'balance' }}>
-                Conteúdo que constrói{' '}
+                Posts que atraem{' '}
                 <span style={{ background: 'linear-gradient(135deg, hsl(160,84%,28%), hsl(170,70%,38%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  autoridade
+                  pacientes certos
                 </span>{' '}
-                e atrai pacientes
+                para sua agenda
               </h1>
 
               <p className="mx-auto mb-8 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 sm:text-lg" style={{ textWrap: 'pretty' }}>
-                Digite um tema e em menos de 30 segundos você tem carrossel, post e story prontos para publicar, com linguagem certa para o seu público e para o algoritmo
+                Conteúdo pronto, personalizado para sua especialidade e tipo de paciente. Gere em minutos, sem precisar pensar no que postar.
               </p>
 
               <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
                 <Button size="xl" variant="cta" onClick={() => navigate('/login')} className="group shadow-lg shadow-primary/20">
-                  Começar grátis por 7 dias
+                  Gerar meus primeiros posts
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
                 <p className="text-xs text-muted-foreground">Sem cartão de crédito</p>
@@ -310,12 +310,51 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* ── PROBLEM ── */}
+      <RevealSection className="px-5 py-14 sm:py-20">
+        <div className="mx-auto max-w-4xl">
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Reconhece isso?</p>
+          <h2 className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
+            Por que você ainda não tem pacientes vindo do Instagram
+          </h2>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {[
+              {
+                title: 'Sabe que precisa postar, mas não sabe o quê',
+                desc: 'A maioria dos profissionais de saúde trava exatamente aqui. O que postar? Para quem? Com que linguagem?',
+              },
+              {
+                title: 'Perde pacientes para quem aparece no digital',
+                desc: 'O paciente pesquisa antes de marcar. Quem tem presença constante captura essa demanda. Quem não tem, fica dependendo de indicação.',
+              },
+              {
+                title: 'Posta, mas não vê resultado em agendamentos',
+                desc: 'Conteúdo genérico gera curtidas. Conteúdo direcionado gera consultas. A diferença está em saber exatamente para quem você está falando.',
+              },
+              {
+                title: 'Não tem tempo nem energia para criar do zero toda semana',
+                desc: 'E aí fica para a próxima semana, que também não acontece. Até que você para de postar por meses.',
+              },
+            ].map((item, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-6">
+                <div className="mb-3 text-2xl font-extrabold text-primary/10 select-none">{String(i + 1).padStart(2, '0')}</div>
+                <h3 className="mb-2 text-base font-semibold text-foreground">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-sm font-medium text-muted-foreground">
+            O ContentFlow resolve os quatro: entende sua especialidade, sabe o tipo de paciente que você quer atrair e entrega posts prontos para publicar.
+          </p>
+        </div>
+      </RevealSection>
+
       {/* ── HOW IT WORKS ── */}
       <RevealSection className="px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Como funciona</p>
           <h2 className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Em três passos, seu conteúdo está pronto para publicar
+            Simples do começo ao fim
           </h2>
 
           <div className="grid gap-6 sm:grid-cols-3">
@@ -323,24 +362,24 @@ export default function Landing() {
               {
                 icon: Pencil,
                 step: '01',
-                title: 'Escreva uma ideia',
-                desc: 'Uma ideia simples já basta: "hipertensão silenciosa", "como se alimentar melhor" ou "quando buscar terapia" são suficientes para a IA criar algo completo',
+                title: 'Escolha sua especialidade',
+                desc: 'Medicina, Nutrição, Odonto ou Psico. A linguagem e os temas já são adaptados para a sua área de forma automática.',
                 gradient: 'from-emerald-500/15 to-teal-500/10',
                 iconBg: 'bg-emerald-500/10 text-emerald-600',
               },
               {
                 icon: LayoutTemplate,
                 step: '02',
-                title: 'Escolha o formato',
-                desc: 'A IA entende a sua especialidade e cria a estrutura, o gancho e a linguagem certa para o formato que você escolheu',
+                title: 'Defina o tipo de paciente',
+                desc: 'Estético, preventivo, dor, crônico ou premium. Quanto mais específico, mais certeiro o conteúdo para atrair quem você quer na agenda.',
                 gradient: 'from-teal-500/15 to-cyan-500/10',
                 iconBg: 'bg-teal-500/10 text-teal-600',
               },
               {
                 icon: Download,
                 step: '03',
-                title: 'Edite e publique',
-                desc: 'Tudo editável direto na tela antes de baixar: cores, textos e gradientes de cada slide sem precisar de Canva ou designer',
+                title: 'Receba posts prontos para publicar',
+                desc: 'Carrossel, post ou story prontos em minutos. Revise, ajuste o que quiser e publique quando quiser.',
                 gradient: 'from-cyan-500/15 to-sky-500/10',
                 iconBg: 'bg-cyan-500/10 text-cyan-600',
               },
@@ -371,8 +410,8 @@ export default function Landing() {
               <Pencil className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold text-foreground text-sm">O conteúdo é seu: edite como quiser</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Troque cores, gradientes e textos de cada slide direto na tela, antes de baixar.</p>
+              <p className="font-semibold text-foreground text-sm">Sem configuração técnica. Sem prompt. Sem precisar entender de IA.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">É você escolhendo a especialidade e o tipo de paciente. O resto acontece automaticamente.</p>
             </div>
           </div>
         </div>
@@ -381,12 +420,12 @@ export default function Landing() {
       {/* ── VERTICALS ── */}
       <RevealSection className="bg-card/40 px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Para quem é</p>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Especialidades</p>
           <h2 className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Especializado para quem cuida de pessoas
+            Feito para a sua realidade clínica
           </h2>
           <p className="mx-auto mb-10 max-w-lg text-center text-sm text-muted-foreground">
-            O ContentFlow fala a linguagem da sua especialidade e conhece o paciente que você quer atrair
+            Cada área tem suas dores, sua linguagem e seu paciente ideal. Clique na sua especialidade.
           </p>
 
           <div className="grid gap-5 grid-cols-2 max-w-2xl mx-auto">
@@ -411,9 +450,9 @@ export default function Landing() {
       {/* ── FORMATS ── */}
       <RevealSection className="px-5 py-14 sm:py-20">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formatos</p>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Por que funciona</p>
           <h2 className="mb-14 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Três formatos que dominam o feed e constroem autoridade
+            Conteúdo direcionado para o paciente certo
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -446,7 +485,7 @@ export default function Landing() {
             Menos de R$1,60 por conteúdo
           </h2>
           <p className="mx-auto mb-14 max-w-md text-center text-sm text-muted-foreground">
-            Comece grátis e decida depois se faz sentido para você, sem compromisso e sem cartão de crédito
+            7 dias grátis para testar. Sem cartão de crédito. Cancele quando quiser.
           </p>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -514,18 +553,18 @@ export default function Landing() {
               Sem cartão de crédito
             </div>
             <h2 className="mb-4 text-3xl font-extrabold text-white sm:text-4xl" style={{ textWrap: 'balance' }}>
-              Chega de tela em branco toda semana.
+              Comece a atrair pacientes com conteúdo certo hoje
             </h2>
             <div className="mx-auto mb-8 space-y-2 text-sm leading-relaxed text-white/70">
-              <p className="whitespace-nowrap">Profissionais de saúde que postam com consistência ganham mais pacientes.</p>
-              <p className="whitespace-nowrap">O ContentFlow tira do caminho a parte mais difícil: criar o conteúdo.</p>
+              <p className="whitespace-nowrap">Sua primeira semana de posts pode estar pronta em menos de 10 minutos.</p>
+              <p className="whitespace-nowrap">Sem precisar pensar no que escrever. Sem tela em branco. Sem desculpa.</p>
             </div>
             <Button
               size="xl"
               onClick={() => navigate('/login')}
               className="group bg-white text-primary hover:bg-white/90 shadow-xl"
             >
-              Testar grátis por 7 dias
+              Gerar meus primeiros posts
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>

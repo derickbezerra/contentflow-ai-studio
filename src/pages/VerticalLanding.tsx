@@ -30,38 +30,38 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   medicos: {
     specialty: 'Medicina',
     icon: Stethoscope,
-    pageTitle: 'ContentFlow para Médicos | Conteúdo médico para Instagram em segundos',
+    pageTitle: 'ContentFlow para Médicos | Posts que atraem pacientes para sua agenda',
     metaDescription:
-      'Crie posts, carrosséis e stories de medicina para o Instagram em segundos. Ideal para médicos que querem construir autoridade e atrair mais pacientes.',
+      'Conteúdo pronto para médicos que querem atrair mais pacientes. Posts, carrosséis e stories de medicina, direcionados para o tipo de paciente que você atende.',
     hero: {
       badge: 'Para médicos',
-      headline: 'Você está salvando vidas no plantão e perdendo pacientes no Instagram',
-      sub: 'O ContentFlow gera conteúdo médico em menos de 30 segundos para você aparecer com consistência sem abrir mão de mais um minuto de descanso',
+      headline: 'Posts prontos para médicos que querem atrair mais pacientes',
+      sub: 'Conteúdo profissional, ético e direcionado para o tipo de paciente que você atende. Gere em minutos, publique quando quiser.',
     },
-    painHeadline: 'Por que médicos com tudo para compartilhar somem do Instagram',
+    painHeadline: 'Por que médicos perdem pacientes para quem aparece no digital',
     pains: [
       {
-        title: 'Plantão não combina com feed',
-        desc: 'Você sai do hospital exausto e criar conteúdo é a última coisa que quer fazer. O ContentFlow transforma qualquer tema médico em post, carrossel ou story em segundos, mesmo quando você não tem energia para pensar nisso',
+        title: 'Agenda vazia em alguns períodos',
+        desc: 'Você sabe atender bem, mas o paciente não te encontra. Presença digital consistente resolve isso antes que a agenda fique no negativo.',
       },
       {
-        title: 'Errar na informação não é uma opção',
-        desc: 'A IA cria conteúdo médico tecnicamente correto, em linguagem acessível ao paciente, sem sensacionalismo. Você revisa em segundos antes de publicar, com total controle sobre o que sai com o seu nome',
+        title: 'Falta de autoridade digital',
+        desc: 'Médico com conteúdo de qualidade no Instagram é percebido como referência antes mesmo da primeira consulta. Autoridade digital é agenda cheia.',
       },
       {
-        title: 'Médico invisível perde para médico presente',
-        desc: 'O paciente pesquisa no Instagram antes de marcar consulta. Quem aparece com conteúdo de qualidade é quem fica na memória e na agenda, não necessariamente quem tem mais anos de experiência',
+        title: 'Insegurança com conteúdo médico',
+        desc: 'Medo de errar na informação paralisa. O ContentFlow cria conteúdo tecnicamente correto que você revisa em segundos antes de publicar.',
       },
     ],
     examples: [
-      '"Colesterol alto: 5 sinais que o seu corpo já está dando"',
-      '"Hipertensão em jovens: por que está aumentando e o que fazer"',
+      '"Colesterol alto: 5 sinais que seu corpo já está dando"',
+      '"Hipertensão silenciosa: o que você precisa saber antes que vire problema"',
       '"Diabetes tipo 2: o que a alimentação tem a ver com isso"',
       '"Quando a dor de cabeça merece atenção imediata"',
     ],
     cta: {
-      headline: 'Seu próximo paciente está te procurando no Instagram agora',
-      sub: 'Comece a aparecer com consistência hoje sem sacrificar mais uma hora de descanso, com 7 dias grátis e sem cartão de crédito',
+      headline: 'Gere conteúdo que posiciona você como referência e atrai pacientes certos',
+      sub: '7 dias grátis. Sem cartão de crédito. Cancele quando quiser.',
     },
     color: 'text-emerald-600',
     bgGradient: 'from-emerald-500/10 to-teal-500/5',
@@ -70,38 +70,38 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   nutricionistas: {
     specialty: 'Nutrição',
     icon: Salad,
-    pageTitle: 'ContentFlow para Nutricionistas | Posts de nutrição para Instagram',
+    pageTitle: 'ContentFlow para Nutricionistas | Posts que atraem pacientes',
     metaDescription:
-      'Crie conteúdo de nutrição para o Instagram em segundos. Posts, carrosséis e stories sobre alimentação, dietas e saúde.',
+      'Conteúdo pronto para nutricionistas que querem crescer no Instagram sem perder tempo. Posts sobre emagrecimento, estética e saúde.',
     hero: {
       badge: 'Para nutricionistas',
-      headline: 'Você educa pacientes o dia todo e não sobra energia para educar o Instagram',
-      sub: 'O ContentFlow transforma qualquer tema de nutrição em post, carrossel ou story em menos de 30 segundos para você manter presença digital sem virar escravo do feed',
+      headline: 'Posts que atraem pacientes para emagrecimento, estética e saúde',
+      sub: 'Conteúdo pronto para nutricionistas que querem crescer no Instagram sem perder tempo criando do zero toda semana.',
     },
-    painHeadline: 'Por que nutricionistas que amam o que fazem têm dificuldade de aparecer',
+    painHeadline: 'Por que nutricionistas com bom conteúdo não convertem em consultas',
     pains: [
       {
-        title: 'Criar do zero toda semana esgota até quem ama o que faz',
-        desc: 'Mesmo apaixonada por nutrição, sentar na frente de uma tela em branco toda semana drena energia que você precisaria para os seus pacientes. A IA carrega esse peso e você entra só para revisar e publicar',
+        title: 'Dificuldade em gerar engajamento real',
+        desc: 'Curtidas não pagam o aluguel. O problema é conteúdo que não fala diretamente com o paciente que você quer atrair. Engajamento sem direção não converte.',
       },
       {
-        title: 'Nutricionista que educa atrai, quem só posta receita entretém',
-        desc: 'O ContentFlow cria conteúdo que posiciona você como referência clínica, não como um perfil de culinária. Posts que constroem autoridade real e fazem pacientes te procurar com intenção de mudança',
+        title: 'Concorrência alta no digital',
+        desc: 'Todo nutricionista está no Instagram. A diferença está em quem tem conteúdo direcionado para o paciente certo, não em quem posta mais ou tem mais seguidores.',
       },
       {
-        title: 'Algoritmo não perdoa quem some por semanas',
-        desc: 'Postar de vez em quando não funciona mais. Com o ContentFlow você tem conteúdo para a semana inteira em menos tempo do que uma consulta de retorno leva',
+        title: 'Conteúdo genérico não converte em consultas',
+        desc: 'Receita e dica de alimentação entretêm. Conteúdo que fala direto com a dor do paciente converte. A diferença está na direção, não no volume.',
       },
     ],
     examples: [
       '"3 alimentos que sabotam a sua dieta sem você perceber"',
       '"Como montar um prato realmente equilibrado no dia a dia"',
-      '"Mitos sobre proteína que a maioria ainda acredita"',
+      '"Por que você não perde peso mesmo comendo bem"',
       '"Açúcar oculto: como identificar no rótulo antes de comprar"',
     ],
     cta: {
-      headline: 'Seu próximo paciente vai te encontrar porque você continua aqui',
-      sub: 'Teste grátis por 7 dias e veja quanto tempo você recupera sem abrir mão da presença digital que traz pacientes toda semana',
+      headline: 'Posts direcionados para o tipo de paciente que você quer atender',
+      sub: '7 dias grátis para testar. Sem cartão. Sem compromisso.',
     },
     color: 'text-green-600',
     bgGradient: 'from-green-500/10 to-lime-500/5',
@@ -110,38 +110,38 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   dentistas: {
     specialty: 'Odontologia',
     icon: Smile,
-    pageTitle: 'ContentFlow para Dentistas | Conteúdo odontológico para Instagram',
+    pageTitle: 'ContentFlow para Dentistas | Conteúdo que atrai pacientes para procedimentos',
     metaDescription:
-      'Crie posts e carrosséis de odontologia para o Instagram em segundos. Conteúdo sobre saúde bucal, clareamento e procedimentos dentais.',
+      'Conteúdo que atrai pacientes para procedimentos odontológicos. De clareamento a implantes, gere posts que convertem em consultas agendadas.',
     hero: {
       badge: 'Para dentistas',
-      headline: 'O paciente decide onde vai cuidar do sorriso antes de sentir dor, e escolhe quem aparece',
-      sub: 'O ContentFlow gera conteúdo de odontologia em segundos para você estar presente quando o paciente estiver pesquisando, muito antes de precisar marcar consulta',
+      headline: 'Conteúdo que atrai pacientes para procedimentos odontológicos',
+      sub: 'De clareamento a implantes, gere posts que educam, geram valor e convertem em consultas agendadas.',
     },
-    painHeadline: 'Por que dentistas com agenda cheia continuam invisíveis no digital',
+    painHeadline: 'Por que pacientes não marcam mesmo sabendo que precisam',
     pains: [
       {
-        title: 'Clareamento, canal, implante. Sempre os mesmos temas',
-        desc: 'Você quer ir além do óbvio mas não sabe por onde começar. A IA sugere ângulos que o paciente realmente quer ler e que provavelmente nenhum concorrente da sua cidade está postando ainda',
+        title: 'Pacientes não entendem o valor dos procedimentos',
+        desc: 'Implante parece caro até você explicar bem. Conteúdo educativo que mostra o valor converte pacientes que antes nem consideravam o procedimento.',
       },
       {
-        title: 'Agenda cheia por dentro, invisível por fora',
-        desc: 'Você atende o dia todo, cuida da clínica e ainda deveria criar conteúdo? O ContentFlow entrega em 30 segundos o que levaria horas, para você aparecer no digital sem parar de atender',
+        title: 'Dependência total de indicação',
+        desc: 'Indicação é ótima, mas não escala. Presença digital atrai paciente novo que nunca te conheceu e chega pronto para marcar consulta.',
       },
       {
-        title: 'Quem não é visto não é lembrado na hora de indicar',
-        desc: 'A consulta é marcada por quem vem à cabeça primeiro. Conteúdo consistente te coloca nesse lugar antes de qualquer busca no Google ou pergunta em grupo de WhatsApp',
+        title: 'Dificuldade em explicar procedimentos sem parecer vendedor',
+        desc: 'Conteúdo que educa sobre o procedimento com clareza gera interesse natural antes de qualquer proposta de orçamento ou abordagem comercial.',
       },
     ],
     examples: [
       '"Clareamento dental: o que ninguém te conta antes de fazer"',
       '"Bruxismo: por que você range os dentes à noite sem perceber"',
-      '"Fio dental ou enxaguante: o que realmente faz diferença"',
-      '"Implante dental: quando vale a pena e quando não vale"',
+      '"Implante ou prótese: qual a diferença e quando cada um vale"',
+      '"Saúde bucal e saúde do coração: a conexão que poucos conhecem"',
     ],
     cta: {
-      headline: 'Seja o dentista que o paciente já conhece antes de entrar no consultório',
-      sub: '7 dias grátis para criar conteúdo de odontologia que educa, aproxima e convence sem precisar sentar na frente de uma tela em branco',
+      headline: 'Conteúdo que educa e gera demanda para seus procedimentos',
+      sub: '7 dias grátis. Comece hoje e veja a diferença na sua agenda.',
     },
     color: 'text-cyan-600',
     bgGradient: 'from-cyan-500/10 to-sky-500/5',
@@ -150,27 +150,27 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   psicologos: {
     specialty: 'Psicologia',
     icon: Brain,
-    pageTitle: 'ContentFlow para Psicólogos | Conteúdo de psicologia para Instagram',
+    pageTitle: 'ContentFlow para Psicólogos | Posts que conectam com pacientes certos',
     metaDescription:
-      'Crie posts e carrosséis de psicologia para o Instagram em segundos. Conteúdo sobre saúde mental, ansiedade e bem-estar emocional.',
+      'Conteúdo sensível, ético e direcionado para quem precisa de terapia. Posts de psicologia que geram identificação e constroem confiança.',
     hero: {
       badge: 'Para psicólogos',
-      headline: 'Você ajuda pessoas a se encontrarem e não sabe como aparecer no Instagram sem parecer raso',
-      sub: 'O ContentFlow cria conteúdo empático sobre saúde mental em segundos para você alcançar quem precisa de ajuda antes mesmo que saibam que precisam de você',
+      headline: 'Posts que conectam com pacientes certos para terapia',
+      sub: 'Conteúdo sensível, ético e direcionado para quem precisa do seu atendimento. Sem banalizar. Sem expor demais.',
     },
-    painHeadline: 'Por que psicólogos que mais têm a dizer são os que menos aparecem',
+    painHeadline: 'Por que é difícil atrair pacientes certos pelo Instagram',
     pains: [
       {
-        title: 'Saúde mental no Instagram exige sensibilidade que a maioria erra',
-        desc: 'Nem todo conteúdo sobre psicologia é conteúdo de psicólogo. A IA cria posts empáticos, tecnicamente corretos e acolhedores, sem sensacionalismo e sem simplificar o que merece profundidade',
+        title: 'Dificuldade em se expor sem parecer invasivo',
+        desc: 'Psicólogo que aparece com conteúdo sensível e ético vira referência. O ContentFlow sabe a linha entre educar e expor, entre acolher e banalizar.',
       },
       {
-        title: 'Sessão, supervisão, estudo e ainda o Instagram',
-        desc: 'A vida do psicólogo já é cheia por dentro. Criar conteúdo do zero fica sempre para o final de semana que nunca chega. O ContentFlow entrega em segundos o que ficaria se acumulando por dias',
+        title: 'Medo de banalizar o conteúdo de saúde mental',
+        desc: 'O equilíbrio entre acessível e profundo é difícil de acertar sozinho. O ContentFlow cria conteúdo que educa sem simplificar demais e sem afastar quem precisa.',
       },
       {
-        title: 'Quem te lê antes da crise é quem te chama quando precisa',
-        desc: 'Conteúdo sobre ansiedade, limites e saúde mental constrói confiança com quem ainda não está pronto para marcar sessão, mas vai estar. E quando estiver, vai lembrar de você',
+        title: 'Dificuldade de criar conexão emocional pelo texto',
+        desc: 'Saúde mental exige empatia antes de técnica. O conteúdo é feito para gerar identificação primeiro, confiança depois, e interesse em marcar sessão por consequência.',
       },
     ],
     examples: [
@@ -180,8 +180,8 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
       '"Como saber se é hora de buscar terapia de verdade"',
     ],
     cta: {
-      headline: 'Alcance quem precisa de você antes que saibam que precisam',
-      sub: '7 dias grátis para criar conteúdo de psicologia que reduz o estigma, aproxima pacientes resistentes e faz sua presença digital trabalhar enquanto você cuida de quem já está com você',
+      headline: 'Conteúdo que gera identificação e traz pacientes que precisam de você',
+      sub: '7 dias grátis. Sem cartão de crédito. Cancele quando quiser.',
     },
     color: 'text-violet-600',
     bgGradient: 'from-violet-500/10 to-purple-500/5',
@@ -205,15 +205,15 @@ const PLANS = [
 ]
 
 const HOW_IT_WORKS = [
-  { icon: Pencil,         step: '01', title: 'Escreva uma ideia',   desc: 'Uma palavra ou frase simples já é suficiente: "colesterol alto", "clareamento dental" ou "como lidar com ansiedade" são suficientes para a IA criar algo completo' },
-  { icon: LayoutTemplate, step: '02', title: 'Escolha o formato',   desc: 'A IA entende a sua especialidade e cria a estrutura, o gancho e a linguagem certa para carrossel, post ou story' },
-  { icon: Download,       step: '03', title: 'Edite e publique',    desc: 'Tudo editável direto na tela antes de baixar: cores, textos e gradientes de cada slide sem precisar de Canva ou designer' },
+  { icon: Pencil,         step: '01', title: 'Escolha sua especialidade',         desc: 'Medicina, Nutrição, Odonto ou Psico. A linguagem e os temas já são adaptados para a sua área de forma automática.' },
+  { icon: LayoutTemplate, step: '02', title: 'Defina o tipo de paciente',         desc: 'Estético, preventivo, dor, crônico ou premium. Quanto mais específico, mais certeiro o conteúdo para atrair quem você quer.' },
+  { icon: Download,       step: '03', title: 'Receba posts prontos para publicar', desc: 'Carrossel, post ou story prontos em minutos. Revise, ajuste o que quiser e publique quando quiser.' },
 ]
 
 const FORMATS = [
-  { key: 'carousel' as const, icon: Image,       label: 'Carrossel', desc: 'Slides que as pessoas salvam e compartilham, gerados com hook, conteúdo e CTA já incluídos' },
-  { key: 'post'     as const, icon: FileText,    label: 'Post',      desc: 'Uma abertura que para o scroll, um texto que educa e uma chamada para agir, tudo pronto para copiar e colar' },
-  { key: 'story'    as const, icon: Smartphone,  label: 'Story',     desc: 'Um roteiro de teleprompter para você falar com confiança na câmera sem travar nem decorar' },
+  { key: 'carousel' as const, icon: Image,      label: 'Por tipo de paciente',          desc: 'Posts para estético, dor, preventivo, crônico ou premium. Cada conteúdo calibrado para atrair quem você quer na agenda.' },
+  { key: 'post'     as const, icon: FileText,   label: 'Linguagem da sua especialidade', desc: 'Medicina, Nutrição, Odonto, Psico: temas e linguagem específicos para a sua área. Nada de conteúdo genérico.' },
+  { key: 'story'    as const, icon: Smartphone, label: 'Foco em agenda, não em curtidas', desc: 'Posts pensados para gerar consultas. O engajamento é consequência. O agendamento é o objetivo.' },
 ]
 
 // ── component ─────────────────────────────────────────────
@@ -312,7 +312,7 @@ export default function VerticalLanding() {
       {/* ── PAIN POINTS ── */}
       <section className="px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">O problema</p>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Reconhece isso?</p>
           <h2 className="mb-12 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
             {data.painHeadline}
           </h2>
@@ -337,12 +337,12 @@ export default function VerticalLanding() {
       {/* ── EXAMPLES ── */}
       <section className="bg-card/40 px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-3xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Exemplos</p>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Posts reais</p>
           <h2 className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Veja o que a IA cria para {data.specialty.toLowerCase()} em segundos
+            Exemplos de posts para {data.specialty.toLowerCase()}
           </h2>
           <p className="mb-10 text-center text-sm text-muted-foreground">
-            Digite qualquer tema e em 30 segundos você tem carrossel, post e story prontos para publicar com a sua identidade
+            Posts reais gerados pelo ContentFlow. Clique em qualquer um para ter uma ideia do que você vai receber.
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -364,9 +364,9 @@ export default function VerticalLanding() {
       {/* ── FORMATS ── */}
       <section className="px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formatos</p>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Por que funciona</p>
           <h2 className="mb-12 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Três formatos que dominam o feed e constroem autoridade
+            Conteúdo direcionado para o paciente certo
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -419,10 +419,10 @@ export default function VerticalLanding() {
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Planos</p>
           <h2 className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
-            Invista no seu conteúdo
+            Comece a atrair pacientes hoje
           </h2>
           <p className="mx-auto mb-12 max-w-md text-center text-sm text-muted-foreground">
-            Comece com 7 dias grátis. Cancele quando quiser.
+            7 dias grátis. Sem cartão de crédito. Cancele quando quiser.
           </p>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -462,7 +462,7 @@ export default function VerticalLanding() {
                   onClick={() => navigate('/login')}
                 >
                   {plan.highlight && <Zap className="h-4 w-4" />}
-                  Começar agora
+                  Começar grátis por 7 dias
                 </Button>
               </div>
             ))}
