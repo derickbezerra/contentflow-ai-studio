@@ -51,7 +51,10 @@ const App = () => (
             <Route path="/contato" element={<Contact />} />
             <Route path="/perfil" element={<ProtectedRoute><BrandProfile /></ProtectedRoute>} />
             <Route path="/calendario" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-            <Route path="/para-:slug" element={<VerticalLanding />} />
+            <Route path="/para-medicos" element={<VerticalLanding />} />
+            <Route path="/para-nutricionistas" element={<VerticalLanding />} />
+            <Route path="/para-dentistas" element={<VerticalLanding />} />
+            <Route path="/para-psicologos" element={<VerticalLanding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
