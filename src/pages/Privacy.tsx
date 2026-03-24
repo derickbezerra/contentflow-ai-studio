@@ -20,7 +20,7 @@ export default function Privacy() {
           <section>
             <h2 className="mb-3 text-base font-semibold">1. Quem somos</h2>
             <p className="text-muted-foreground">
-              O ContentFlow é uma plataforma de geração de conteúdo para profissionais de saúde. Esta Política de Privacidade explica como coletamos, usamos e protegemos seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).
+              O ContentFlow é uma plataforma de geração de conteúdo para profissionais de saúde. Esta Política de Privacidade explica como coletamos, usamos e protegemos seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018).
             </p>
           </section>
 
@@ -30,7 +30,7 @@ export default function Privacy() {
             <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
               <li><strong className="text-foreground">Dados de cadastro:</strong> nome, e-mail e senha (ou dados fornecidos via login com Google)</li>
               <li><strong className="text-foreground">Dados de uso:</strong> especialidade selecionada, tópicos gerados, contagem de gerações e data de reset</li>
-              <li><strong className="text-foreground">Dados de pagamento:</strong> processados pela Stripe — o ContentFlow não armazena dados de cartão</li>
+              <li><strong className="text-foreground">Dados de pagamento:</strong> processados pela Stripe. O ContentFlow não armazena dados de cartão</li>
               <li><strong className="text-foreground">Dados técnicos:</strong> endereço IP e logs de acesso, para segurança e prevenção de fraudes</li>
             </ul>
           </section>

@@ -265,7 +265,7 @@ function WeekView({ days, today, getEntries, onAddPlan, onDeletePlan, onTogglePu
                     />
                   ))}
                   {planned.length === 0 && content.length === 0 && (
-                    <p className="py-2 text-center text-[10px] text-muted-foreground/30">—</p>
+                    <p className="py-2 text-center text-[10px] text-muted-foreground/30">·</p>
                   )}
                 </div>
               </div>

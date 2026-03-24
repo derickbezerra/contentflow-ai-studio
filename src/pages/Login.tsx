@@ -150,7 +150,7 @@ export default function Login() {
           <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || !termsAccepted}>
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
-            ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis — 7 dias free'}
+            ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis · 7 dias free'}
           </Button>
         </form>
 

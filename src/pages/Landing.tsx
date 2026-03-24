@@ -275,7 +275,7 @@ export default function Landing() {
               </h1>
 
               <p className="mx-auto mb-8 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 sm:text-lg" style={{ textWrap: 'pretty' }}>
-                Digite uma ideia — o ContentFlow gera carrossel, post e story prontos para postar. Em menos de 30 segundos.
+                Digite uma ideia e o ContentFlow gera carrossel, post e story prontos para postar. Em menos de 30 segundos.
               </p>
 
               <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
@@ -404,7 +404,7 @@ export default function Landing() {
             <Pencil className="h-5 w-5" />
           </div>
           <div>
-            <p className="font-semibold text-foreground text-sm">O conteúdo é seu — edite como quiser</p>
+            <p className="font-semibold text-foreground text-sm">O conteúdo é seu: edite como quiser</p>
             <p className="text-xs text-muted-foreground mt-0.5">Troque cores, gradientes e textos de cada slide direto na tela, antes de baixar.</p>
           </div>
         </div>

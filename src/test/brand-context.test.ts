@@ -50,7 +50,7 @@ function buildBrandContext(profile: Profile | null): string {
 
 function buildMemoryContext(recentContent: ContentRow[]): string {
   if (!recentContent.length) return ''
-  let ctx = '\n\n[HISTÓRICO RECENTE — evite repetir temas; se parecido, mude o ângulo ou o gancho]\n'
+  let ctx = '\n\n[HISTÓRICO RECENTE: evite repetir temas; se parecido, mude o ângulo ou o gancho]\n'
   ctx += recentContent
     .map(c => `- ${TYPE_PT[c.type] ?? c.type}: "${c.input}" (${daysAgo(c.created_at)})`)
     .join('\n')

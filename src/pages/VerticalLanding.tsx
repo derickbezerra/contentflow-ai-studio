@@ -29,7 +29,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   medicos: {
     specialty: 'Medicina',
     icon: Stethoscope,
-    pageTitle: 'ContentFlow para Médicos — Conteúdo médico para Instagram em segundos',
+    pageTitle: 'ContentFlow para Médicos | Conteúdo médico para Instagram em segundos',
     metaDescription:
       'Crie posts, carrosséis e stories de medicina para o Instagram em segundos. Ideal para médicos que querem construir autoridade e atrair mais pacientes.',
     hero: {
@@ -40,7 +40,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
     pains: [
       {
         title: 'Sem tempo entre plantões',
-        desc: 'Você passa o dia atendendo. Criar conteúdo para o Instagram fica sempre para amanhã — que nunca chega.',
+        desc: 'Você passa o dia atendendo. Criar conteúdo para o Instagram fica sempre para amanhã, que nunca chega.',
       },
       {
         title: 'Medo de errar na informação',
@@ -68,7 +68,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   nutricionistas: {
     specialty: 'Nutrição',
     icon: Salad,
-    pageTitle: 'ContentFlow para Nutricionistas — Posts de nutrição para Instagram',
+    pageTitle: 'ContentFlow para Nutricionistas | Posts de nutrição para Instagram',
     metaDescription:
       'Crie conteúdo de nutrição para o Instagram em segundos. Posts, carrosséis e stories sobre alimentação, dietas e saúde.',
     hero: {
@@ -83,7 +83,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
       },
       {
         title: 'Público confunde nutricionista com influencer',
-        desc: 'O ContentFlow cria conteúdo que educa — não só receitas. Posts que posicionam você como referência clínica.',
+        desc: 'O ContentFlow cria conteúdo que educa, não só receitas. Posts que posicionam você como referência clínica.',
       },
       {
         title: 'Algoritmo pede constância',
@@ -107,7 +107,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   dentistas: {
     specialty: 'Odontologia',
     icon: Smile,
-    pageTitle: 'ContentFlow para Dentistas — Conteúdo odontológico para Instagram',
+    pageTitle: 'ContentFlow para Dentistas | Conteúdo odontológico para Instagram',
     metaDescription:
       'Crie posts e carrosséis de odontologia para o Instagram em segundos. Conteúdo sobre saúde bucal, clareamento e procedimentos dentais.',
     hero: {
@@ -118,7 +118,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
     pains: [
       {
         title: 'Conteúdo odontológico parece sempre igual',
-        desc: 'Clareamento, canal, implante — você quer ir além do óbvio. A IA sugere temas que o paciente realmente quer ler.',
+        desc: 'Clareamento, canal, implante: você quer ir além do óbvio. A IA sugere temas que o paciente realmente quer ler.',
       },
       {
         title: 'Clínica cheia, agenda criativa vazia',
@@ -146,7 +146,7 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   psicologos: {
     specialty: 'Psicologia',
     icon: Brain,
-    pageTitle: 'ContentFlow para Psicólogos — Conteúdo de psicologia para Instagram',
+    pageTitle: 'ContentFlow para Psicólogos | Conteúdo de psicologia para Instagram',
     metaDescription:
       'Crie posts e carrosséis de psicologia para o Instagram em segundos. Conteúdo sobre saúde mental, ansiedade e bem-estar emocional.',
     hero: {

@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
         const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
         return d === 0 ? 'hoje' : d === 1 ? 'ontem' : `${d}d atrás`
       }
-      memoryContext = '\n\n[HISTÓRICO RECENTE — evite repetir temas; se parecido, mude o ângulo ou o gancho]\n'
+      memoryContext = '\n\n[HISTÓRICO RECENTE: evite repetir temas; se parecido, mude o ângulo ou o gancho]\n'
       memoryContext += recentContent
         .map(c => `- ${TYPE_PT[c.type] ?? c.type}: "${c.input}" (${daysAgo(c.created_at)})`)
         .join('\n')

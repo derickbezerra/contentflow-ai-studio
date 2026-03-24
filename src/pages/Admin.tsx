@@ -517,7 +517,7 @@ function AdminInner() {
                   {u.email.length > 24 ? u.email.slice(0, 22) + "…" : u.email}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {u.vertical ? (VERTICAL_LABELS[u.vertical] ?? u.vertical) : "—"}
+                  {u.vertical ? (VERTICAL_LABELS[u.vertical] ?? u.vertical) : "·"}
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
@@ -554,7 +554,7 @@ function AdminInner() {
           <p className="mt-2 text-3xl font-bold text-foreground">
             {activation.avgDaysToFirstGeneration != null
               ? `${activation.avgDaysToFirstGeneration}d`
-              : "—"}
+              : "s/d"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">média de dias após cadastro</p>
         </div>

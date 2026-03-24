@@ -118,7 +118,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
             <>
               <h1 className="text-2xl font-semibold text-foreground">Seus 7 dias gratuitos acabaram</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Escolha um plano e continue gerando conteúdo — menos de R$1,60 por post
+                Escolha um plano e continue gerando conteúdo por menos de R$1,60 por post
               </p>
             </>
           ) : (
