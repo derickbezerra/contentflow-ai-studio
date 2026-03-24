@@ -99,15 +99,16 @@ Deno.serve(async (req) => {
             current_period_end: null,
           }).eq('id', profile.id)
         } else {
+          const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, growth: 2, pro: 3 }
           const newPlan = isActive ? getPlanFromPriceId(priceId) : isPastDue ? getPlanFromPriceId(priceId) : 'free'
-          const planChanged = newPlan !== profile.plan
+          const isUpgrade = (PLAN_RANK[newPlan] ?? 0) > (PLAN_RANK[profile.plan] ?? 0)
           await supabase.from('users').update({
             plan: newPlan,
             stripe_subscription_id: isActive || isPastDue ? subscription.id : null,
             payment_status: isActive ? 'active' : isPastDue ? 'past_due' : 'canceled',
             cancel_at_period_end: cancelAtPeriodEnd,
             current_period_end: currentPeriodEnd,
-            ...(planChanged ? { generation_count: 0 } : {}),
+            ...(isUpgrade ? { generation_count: 0 } : {}),
           }).eq('id', profile.id)
 
           // Send cancel confirmation when cancel_at_period_end just became true
