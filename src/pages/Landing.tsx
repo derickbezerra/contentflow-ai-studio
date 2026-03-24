@@ -93,24 +93,24 @@ const PLANS = [
   {
     name: 'Growth',
     price: 47,
-    limit: '20 conteúdos/mês',
+    limit: '30 conteúdos/mês',
     highlight: true,
-    features: ['20 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Histórico de conteúdo'],
+    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
   },
   {
     name: 'Pro',
     price: 97,
-    limit: '50 conteúdos/mês',
+    limit: '100 conteúdos/mês',
     highlight: false,
-    features: ['50 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Histórico de conteúdo'],
+    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Perfil de marca personalizado', 'Histórico de conteúdo', 'Suporte prioritário'],
   },
 ]
 
 const STATS = [
-  { icon: Clock, value: '< 30s', label: 'por conteúdo' },
-  { icon: TrendingUp, value: '3 tipos', label: 'de formato' },
-  { icon: Shield, value: '7 dias', label: 'grátis para testar' },
-  { icon: Sparkles, value: 'IA', label: 'especializada em saúde' },
+  { icon: Clock, value: '< 30s', label: 'por conteúdo gerado' },
+  { icon: TrendingUp, value: '3 formatos', label: 'Carrossel, Post e Story' },
+  { icon: Shield, value: '7 dias', label: 'grátis, sem cartão' },
+  { icon: Sparkles, value: '4 áreas', label: 'Medicina, Nutrição, Odonto, Psico' },
 ]
 
 const CAROUSEL_SLIDES = [
@@ -275,7 +275,7 @@ export default function Landing() {
               </h1>
 
               <p className="mx-auto mb-8 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 sm:text-lg" style={{ textWrap: 'pretty' }}>
-                Crie conteúdo profissional para o Instagram em segundos. Sem bloquear, sem perder tempo.
+                Digite uma ideia — o ContentFlow gera carrossel, post e story prontos para postar. Em menos de 30 segundos.
               </p>
 
               <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
@@ -445,10 +445,10 @@ export default function Landing() {
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Planos</p>
           <h2 className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Invista no seu conteúdo
+            Menos de R$1,60 por conteúdo
           </h2>
           <p className="mx-auto mb-14 max-w-md text-center text-sm text-muted-foreground">
-            Comece com 7 dias grátis. Cancele quando quiser.
+            7 dias grátis para testar. Sem cartão de crédito. Cancele quando quiser.
           </p>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -493,7 +493,7 @@ export default function Landing() {
                   onClick={() => navigate('/login')}
                 >
                   {plan.highlight && <Zap className="h-4 w-4" />}
-                  Começar agora
+                  Testar grátis por 7 dias
                 </Button>
               </div>
             ))}
@@ -516,10 +516,10 @@ export default function Landing() {
               Sem cartão de crédito
             </div>
             <h2 className="mb-4 text-3xl font-extrabold text-white sm:text-4xl" style={{ textWrap: 'balance' }}>
-              Construa autoridade. Atraia mais pacientes.
+              Chega de tela em branco toda semana.
             </h2>
             <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/70">
-              A sua autoridade online é o que traz novos pacientes. O ContentFlow garante que você nunca fique sem conteúdo para postar.
+              Profissionais de saúde que postam com consistência ganham mais pacientes. O ContentFlow tira do caminho a parte mais difícil: criar o conteúdo.
             </p>
             <Button
               size="xl"

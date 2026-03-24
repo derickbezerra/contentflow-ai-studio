@@ -12,26 +12,26 @@ const PLANS = [
   {
     name: 'Starter',
     price: 'R$27',
-    limit: '10 gerações/mês',
+    limit: '10 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
     highlight: false,
-    features: ['10 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais'],
+    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico'],
   },
   {
     name: 'Growth',
     price: 'R$47',
-    limit: '30 gerações/mês',
+    limit: '30 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
     highlight: true,
-    features: ['30 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais', 'Histórico de conteúdo'],
+    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
   },
   {
     name: 'Pro',
     price: 'R$97',
-    limit: '100 gerações/mês',
+    limit: '100 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
-    features: ['100 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais', 'Histórico de conteúdo', 'Suporte prioritário'],
+    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo', 'Suporte prioritário'],
   },
 ]
 
@@ -89,8 +89,8 @@ export default function PricingModal({ onClose }: PricingModalProps) {
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Zap className="h-3.5 w-3.5" /> Escolha seu plano
           </div>
-          <h2 className="text-2xl font-semibold text-foreground">Crie mais, cresça mais rápido</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Cancele quando quiser · Pagamento seguro via Stripe</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quanto vale 1 paciente novo por mês?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">7 dias grátis incluídos · Cancele quando quiser · Pagamento seguro</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

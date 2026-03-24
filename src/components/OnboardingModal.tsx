@@ -138,7 +138,7 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
                     }`}
                   >
                     <span className="block text-2xl font-bold text-foreground">{v}</span>
-                    <span className="text-xs text-muted-foreground">{v === 1 ? 'por semana' : 'por semana'}</span>
+                    <span className="text-xs text-muted-foreground">{v === 1 ? 'post/semana' : 'posts/semana'}</span>
                   </button>
                 ))}
               </div>
@@ -149,7 +149,7 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
                   disabled={!postsPerWeek || saving}
                   onClick={handleFinish}
                 >
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Começar'}
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar meu primeiro conteúdo'}
                 </Button>
               </div>
             </>

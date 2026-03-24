@@ -8,26 +8,26 @@ const PLANS = [
   {
     name: 'Starter',
     price: 'R$27',
-    limit: '10 gerações/mês',
+    limit: '10 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
     highlight: false,
-    features: ['10 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais'],
+    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico'],
   },
   {
     name: 'Growth',
     price: 'R$47',
-    limit: '30 gerações/mês',
+    limit: '30 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
     highlight: true,
-    features: ['30 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais', 'Histórico de conteúdo'],
+    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
   },
   {
     name: 'Pro',
     price: 'R$97',
-    limit: '100 gerações/mês',
+    limit: '100 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
-    features: ['100 gerações por mês', 'Carrossel, Post e Story', 'Todas as verticais', 'Histórico de conteúdo', 'Suporte prioritário'],
+    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo', 'Suporte prioritário'],
   },
 ]
 
@@ -116,16 +116,16 @@ export default function BillingWall({ reason }: BillingWallProps) {
           </div>
           {reason === 'trial_expired' ? (
             <>
-              <h1 className="text-2xl font-semibold text-foreground">Seu período de teste encerrou</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Seus 7 dias gratuitos acabaram</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Escolha um plano para continuar criando conteúdo com IA
+                Escolha um plano e continue gerando conteúdo — menos de R$1,60 por post
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold text-foreground">Pagamento não identificado</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Problema com seu pagamento</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Regularize seu plano para voltar a usar o ContentFlow
+                Atualize sua forma de pagamento para continuar usando o ContentFlow
               </p>
             </>
           )}

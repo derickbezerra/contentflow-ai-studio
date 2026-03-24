@@ -80,7 +80,9 @@ export default function Login() {
               <tspan fill="#1a2e23">Content</tspan><tspan fill="#6b9e7e">Flow</tspan>
             </text>
           </svg>
-          <p className="text-sm text-muted-foreground">IA especializada para profissionais de saúde</p>
+          <p className="text-sm text-muted-foreground">
+            {mode === 'signup' ? 'Crie seu primeiro conteúdo em menos de 30 segundos' : 'IA especializada para profissionais de saúde'}
+          </p>
         </div>
 
         {/* Terms acceptance */}
@@ -148,7 +150,7 @@ export default function Login() {
           <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || !termsAccepted}>
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
-            ) : mode === 'login' ? 'Entrar' : 'Criar conta'}
+            ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis — 7 dias free'}
           </Button>
         </form>
 
@@ -158,7 +160,7 @@ export default function Login() {
             onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError('') }}
             className="font-medium text-primary hover:underline"
           >
-            {mode === 'login' ? 'Criar conta' : 'Entrar'}
+            {mode === 'login' ? 'Criar conta grátis' : 'Entrar'}
           </button>
         </p>
       </div>
