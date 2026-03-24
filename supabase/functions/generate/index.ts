@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { topic, context, content_type, vertical, gender, batch } = await req.json()
+    const { topic, context, content_type, vertical, gender, batch, patient_intent, age_ranges } = await req.json()
 
     const VALID_CONTENT_TYPES = ['carousel', 'post', 'story']
     const VALID_VERTICALS = ['doctor', 'nutritionist', 'dentist', 'psychologist']
@@ -252,16 +252,19 @@ Deno.serve(async (req) => {
       premium:    'premium (público de alta renda)',
     }
 
-    if (profile?.patient_intent_primary || profile?.age_range) {
+    const resolvedIntent = patient_intent || profile?.patient_intent_primary
+    const resolvedAgeRanges = (age_ranges?.length ? age_ranges : profile?.age_range) as string[] | undefined
+
+    if (resolvedIntent || resolvedAgeRanges?.length) {
       brandContext += '\n\n[PÚBLICO-ALVO]'
-      if (profile?.patient_intent_primary) {
-        brandContext += `\n- Intenção primária: ${INTENT_LABELS[profile.patient_intent_primary] ?? profile.patient_intent_primary}`
-        if (profile?.patient_intent_secondary) {
+      if (resolvedIntent) {
+        brandContext += `\n- Intenção do paciente: ${INTENT_LABELS[resolvedIntent] ?? resolvedIntent}`
+        if (!patient_intent && profile?.patient_intent_secondary) {
           brandContext += `\n- Intenção secundária: ${INTENT_LABELS[profile.patient_intent_secondary] ?? profile.patient_intent_secondary}`
         }
       }
-      if (profile?.age_range && profile.age_range.length > 0) {
-        brandContext += `\n- Faixa etária do paciente: ${(profile.age_range as string[]).join(', ')} anos`
+      if (resolvedAgeRanges && resolvedAgeRanges.length > 0) {
+        brandContext += `\n- Faixa etária do paciente: ${resolvedAgeRanges.join(', ')} anos`
       }
     }
 

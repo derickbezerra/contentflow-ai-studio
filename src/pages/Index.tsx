@@ -20,6 +20,7 @@ import { useLocation } from "react-router-dom";
 type ContentType = "carousel" | "post" | "story";
 type Vertical = "doctor" | "nutritionist" | "dentist" | "psychologist";
 type Gender = "male" | "female" | "both";
+type PatientIntent = "estetico" | "dor" | "preventivo" | "cronico" | "premium" | "";
 
 const CONTENT_TYPES: { value: ContentType; label: string }[] = [
   { value: "carousel", label: "Carrossel" },
@@ -40,6 +41,16 @@ const GENDERS: { value: Gender; label: string }[] = [
   { value: "both", label: "Ambos" },
 ];
 
+const PATIENT_INTENTS: { value: PatientIntent; label: string }[] = [
+  { value: "estetico",   label: "Estético" },
+  { value: "dor",        label: "Com dor" },
+  { value: "preventivo", label: "Preventivo" },
+  { value: "cronico",    label: "Crônico" },
+  { value: "premium",    label: "Premium" },
+];
+
+const AGE_RANGES = ["18-25", "25-35", "35-50", "50+"];
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GeneratedResult = { type: ContentType } & Record<string, any>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,6 +64,8 @@ const Index = () => {
   const [vertical, setVertical] = useState<Vertical>("doctor");
   const [gender, setGender] = useState<Gender>("both");
   const [instagramHandle, setInstagramHandle] = useState("");
+  const [patientIntent, setPatientIntent] = useState<PatientIntent>("");
+  const [ageRanges, setAgeRanges] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<GeneratedResult | null>(null);
   const [showPricing, setShowPricing] = useState(false);
@@ -67,7 +80,7 @@ const Index = () => {
     if (!user) return;
     supabase
       .from('users')
-      .select('vertical, instagram_handle, onboarding_goal')
+      .select('vertical, instagram_handle, onboarding_goal, patient_intent_primary, age_range')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
@@ -78,6 +91,12 @@ const Index = () => {
         }
         if (data?.instagram_handle) {
           setInstagramHandle(data.instagram_handle);
+        }
+        if (data?.patient_intent_primary) {
+          setPatientIntent(data.patient_intent_primary as PatientIntent);
+        }
+        if (data?.age_range?.length) {
+          setAgeRanges(data.age_range);
         }
       });
   }, [user]);
@@ -124,8 +143,8 @@ const Index = () => {
       }
 
       const body = batchMode
-        ? { topic: idea, vertical, gender, batch: true }
-        : { topic: idea, content_type: contentType, vertical, gender };
+        ? { topic: idea, vertical, gender, patient_intent: patientIntent || undefined, age_ranges: ageRanges.length ? ageRanges : undefined, batch: true }
+        : { topic: idea, content_type: contentType, vertical, gender, patient_intent: patientIntent || undefined, age_ranges: ageRanges.length ? ageRanges : undefined };
 
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`,
@@ -326,6 +345,31 @@ const Index = () => {
             {GENDERS.map((g) => (
               <Button key={g.value} variant={gender === g.value ? "pill-active" : "pill"} size="sm" onClick={() => setGender(g.value)}>
                 {g.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Paciente */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Paciente:</span>
+            {PATIENT_INTENTS.map((p) => (
+              <Button key={p.value} variant={patientIntent === p.value ? "pill-active" : "pill"} size="sm" onClick={() => setPatientIntent(prev => prev === p.value ? "" : p.value)}>
+                {p.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Faixa etária */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Idade:</span>
+            {AGE_RANGES.map((r) => (
+              <Button
+                key={r}
+                variant={ageRanges.includes(r) ? "pill-active" : "pill"}
+                size="sm"
+                onClick={() => setAgeRanges(prev => prev.includes(r) ? prev.filter(v => v !== r) : [...prev, r])}
+              >
+                {r}
               </Button>
             ))}
           </div>
