@@ -141,6 +141,8 @@ interface StatsData {
     byReason: Record<string, number>;
     reasonLabels: Record<string, string>;
     recent: { reason: string; comment: string | null; createdAt: string }[];
+    withoutSurvey?: number;
+    totalConfirmed?: number;
   };
   mrr: number;
 }
@@ -610,7 +612,7 @@ function AdminInner() {
       )}
 
       {/* Cancel surveys */}
-      {(cancelSurveys.recent.length > 0 || Object.values(cancelSurveys.byReason).some(v => v > 0)) && (
+      {(cancelSurveys.recent.length > 0 || Object.values(cancelSurveys.byReason).some(v => v > 0) || (cancelSurveys.withoutSurvey ?? 0) > 0) && (
         <>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Motivos de cancelamento</p>
           <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -637,6 +639,11 @@ function AdminInner() {
                       </div>
                     )
                   })}
+                {(cancelSurveys.withoutSurvey ?? 0) > 0 && (
+                  <p className="mt-3 border-t border-border/50 pt-2.5 text-[11px] text-muted-foreground">
+                    +{cancelSurveys.withoutSurvey} cancelamento{cancelSurveys.withoutSurvey === 1 ? "" : "s"} via Stripe sem resposta
+                  </p>
+                )}
               </div>
             </div>
 

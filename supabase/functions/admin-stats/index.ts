@@ -168,19 +168,34 @@ Deno.serve(async (req) => {
         retentionRate: data.total > 0 ? Math.round((data.paying / data.total) * 100) : 0,
       }))
 
-    // ── Cancel surveys ─────────────────────────────────────
+    // ── Cancel surveys — cross-referenced with actual Stripe cancellations ────────
+    // Only count surveys where Stripe webhook confirmed the cancellation
+    const actualCanceledIds = new Set(
+      (users || [])
+        .filter((u: { cancel_at_period_end: boolean; payment_status: string }) => u.cancel_at_period_end || u.payment_status === 'canceled')
+        .map((u: { id: string }) => u.id)
+    )
+    const confirmedSurveys = (cancelSurveysRaw || []).filter((s: { user_id: string }) => actualCanceledIds.has(s.user_id))
+
     const byReason: Record<string, number> = { preco: 0, nao_uso: 0, falta_feature: 0, outro: 0 }
-    for (const s of cancelSurveysRaw || []) {
-      byReason[s.reason] = (byReason[s.reason] || 0) + 1
+    for (const s of confirmedSurveys) {
+      byReason[(s as { reason: string }).reason] = (byReason[(s as { reason: string }).reason] || 0) + 1
     }
+
+    // Users who canceled via Stripe directly without filling the survey
+    const surveyUserIds = new Set(confirmedSurveys.map((s: { user_id: string }) => s.user_id))
+    const withoutSurvey = [...actualCanceledIds].filter(id => !surveyUserIds.has(id)).length
+
     const cancelSurveys = {
       byReason,
       reasonLabels: REASON_LABELS,
-      recent: (cancelSurveysRaw || []).slice(0, 10).map(s => ({
+      recent: confirmedSurveys.slice(0, 10).map(s => ({
         reason: s.reason,
         comment: s.comment,
         createdAt: s.created_at,
       })),
+      withoutSurvey,
+      totalConfirmed: confirmedSurveys.length,
     }
 
     return new Response(JSON.stringify({
