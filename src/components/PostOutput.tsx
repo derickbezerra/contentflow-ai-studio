@@ -105,51 +105,18 @@ function renderPostToCanvas(
 
   ctx.textAlign = "center";
 
-  // Measure all text blocks
+  // Only the hook — mirrors exactly what's visible in the card image area
   ctx.font = `800 74px ${FONT}`;
   const hookLines = wrapTextCenter(ctx, hook, W - PAD * 2);
   const hookLineH = 92;
+  const totalH = hookLines.length * hookLineH;
+  const startY = (H - totalH) / 2;
 
-  ctx.font = `400 38px ${FONT}`;
-  const bodyLines = wrapTextCenter(ctx, body, W - PAD * 2);
-  const bodyLineH = 56;
-
-  ctx.font = `600 38px ${FONT}`;
-  const ctaLines = wrapTextCenter(ctx, cta, W - PAD * 2);
-  const ctaLineH = 56;
-
-  const SEP_GAP = 54;
-  const totalH =
-    hookLines.length * hookLineH +
-    SEP_GAP + 3 + SEP_GAP +
-    bodyLines.length * bodyLineH +
-    32 +
-    ctaLines.length * ctaLineH;
-
-  let y = (H - totalH) / 2;
-
-  // Hook
-  ctx.font = `800 74px ${FONT}`;
   ctx.fillStyle = "#ffffff";
   ctx.textBaseline = "top";
-  hookLines.forEach((line, i) => ctx.fillText(line, W / 2, y + i * hookLineH));
-  y += hookLines.length * hookLineH + SEP_GAP;
-
-  // Separator
-  ctx.fillStyle = "rgba(255,255,255,0.22)";
-  ctx.fillRect(W / 2 - 55, y, 110, 3);
-  y += 3 + SEP_GAP;
-
-  // Body
-  ctx.font = `400 38px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.82)";
-  bodyLines.forEach((line, i) => ctx.fillText(line, W / 2, y + i * bodyLineH));
-  y += bodyLines.length * bodyLineH + 32;
-
-  // CTA
-  ctx.font = `600 38px ${FONT}`;
-  ctx.fillStyle = "rgba(255,255,255,0.95)";
-  ctaLines.forEach((line, i) => ctx.fillText(line, W / 2, y + i * ctaLineH));
+  hookLines.forEach((line, i) =>
+    ctx.fillText(line, W / 2, startY + i * hookLineH)
+  );
 
   // Handle watermark
   if (handle) {
