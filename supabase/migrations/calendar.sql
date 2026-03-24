@@ -26,6 +26,7 @@ create table if not exists public.planned_posts (
 
 alter table public.planned_posts enable row level security;
 
+drop policy if exists "Users can manage own planned posts" on public.planned_posts;
 create policy "Users can manage own planned posts"
   on public.planned_posts for all
   using (auth.uid() = user_id)

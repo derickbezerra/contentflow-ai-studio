@@ -11,6 +11,7 @@ create table if not exists public.cancel_surveys (
 
 alter table public.cancel_surveys enable row level security;
 
+drop policy if exists "Users can insert own cancel survey" on public.cancel_surveys;
 create policy "Users can insert own cancel survey"
   on public.cancel_surveys for insert
   with check (auth.uid() = user_id);
