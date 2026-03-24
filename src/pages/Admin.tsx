@@ -231,10 +231,15 @@ function AdminInner() {
     );
   }
 
-  const { financeiro } = stats;
+  // Normalize — older Edge Function versions may omit some fields
+  const financeiro = stats.financeiro ?? { mrr: 0, arpu: 0, custos: { anthropic: 0, stripe: 0, infraestrutura: 0, total: 0 }, lucro: 0, margem: 0 };
+  const activation = stats.activation ?? { activationRate: 0, avgDaysToFirstGeneration: null, generationsPerActiveUser: 0, activeUsers: 0 };
+  const cohorts    = stats.cohorts ?? [];
+  const cancelSurveys = stats.cancelSurveys ?? { byReason: {}, reasonLabels: {}, recent: [] };
+
   const isProfit = financeiro.lucro >= 0;
 
-  const pieData = Object.entries(stats.users.byPlan)
+  const pieData = Object.entries(stats.users?.byPlan ?? {})
     .filter(([, v]) => v > 0)
     .map(([name, value]) => ({ name, value }));
 
@@ -532,21 +537,21 @@ function AdminInner() {
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Taxa de ativação</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{stats.activation.activationRate}%</p>
+          <p className="mt-2 text-3xl font-bold text-foreground">{activation.activationRate}%</p>
           <p className="mt-1 text-xs text-muted-foreground">usuários com ≥1 geração</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Usuários ativos</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{stats.activation.activeUsers}</p>
+          <p className="mt-2 text-3xl font-bold text-foreground">{activation.activeUsers}</p>
           <p className="mt-1 text-xs text-muted-foreground">geraram ao menos 1 conteúdo</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tempo até 1ª geração</p>
           <p className="mt-2 text-3xl font-bold text-foreground">
-            {stats.activation.avgDaysToFirstGeneration != null
-              ? `${stats.activation.avgDaysToFirstGeneration}d`
+            {activation.avgDaysToFirstGeneration != null
+              ? `${activation.avgDaysToFirstGeneration}d`
               : "—"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">média de dias após cadastro</p>
@@ -554,13 +559,13 @@ function AdminInner() {
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Gerações / usuário ativo</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{stats.activation.generationsPerActiveUser}</p>
+          <p className="mt-2 text-3xl font-bold text-foreground">{activation.generationsPerActiveUser}</p>
           <p className="mt-1 text-xs text-muted-foreground">média acumulada</p>
         </div>
       </div>
 
       {/* Cohort dashboard */}
-      {stats.cohorts.length > 0 && (
+      {cohorts.length > 0 && (
         <>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cohort por mês de cadastro</p>
           <div className="mb-6 overflow-x-auto rounded-2xl border border-border bg-card shadow-sm">
@@ -576,7 +581,7 @@ function AdminInner() {
                 </tr>
               </thead>
               <tbody>
-                {[...stats.cohorts].reverse().map((c) => (
+                {[...cohorts].reverse().map((c) => (
                   <tr key={c.month} className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-2.5 font-medium text-foreground">{c.label}</td>
                     <td className="px-4 py-2.5 text-right text-foreground">{c.total}</td>
@@ -605,24 +610,24 @@ function AdminInner() {
       )}
 
       {/* Cancel surveys */}
-      {(stats.cancelSurveys.recent.length > 0 || Object.values(stats.cancelSurveys.byReason).some(v => v > 0)) && (
+      {(cancelSurveys.recent.length > 0 || Object.values(cancelSurveys.byReason).some(v => v > 0)) && (
         <>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Motivos de cancelamento</p>
           <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <p className="mb-3 text-xs font-semibold text-muted-foreground">Por motivo</p>
               <div className="space-y-2">
-                {Object.entries(stats.cancelSurveys.byReason)
+                {Object.entries(cancelSurveys.byReason)
                   .filter(([, v]) => v > 0)
                   .sort(([, a], [, b]) => b - a)
                   .map(([reason, count]) => {
-                    const total = Object.values(stats.cancelSurveys.byReason).reduce((s, v) => s + v, 0)
+                    const total = Object.values(cancelSurveys.byReason).reduce((s, v) => s + v, 0)
                     const pct = total > 0 ? Math.round((count / total) * 100) : 0
                     return (
                       <div key={reason}>
                         <div className="mb-1 flex items-center justify-between text-xs">
                           <span className="font-medium text-foreground">
-                            {stats.cancelSurveys.reasonLabels[reason] ?? reason}
+                            {cancelSurveys.reasonLabels[reason] ?? reason}
                           </span>
                           <span className="text-muted-foreground">{count} ({pct}%)</span>
                         </div>
@@ -638,11 +643,11 @@ function AdminInner() {
             <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
               <p className="mb-3 text-xs font-semibold text-muted-foreground">Respostas recentes</p>
               <div className="space-y-3">
-                {stats.cancelSurveys.recent.map((s, i) => (
+                {cancelSurveys.recent.map((s, i) => (
                   <div key={i} className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">
-                        {stats.cancelSurveys.reasonLabels[s.reason] ?? s.reason}
+                        {cancelSurveys.reasonLabels[s.reason] ?? s.reason}
                       </span>
                       <span className="text-[10px] text-muted-foreground">{relativeDate(s.createdAt)}</span>
                     </div>
