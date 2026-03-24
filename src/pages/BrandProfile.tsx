@@ -43,7 +43,7 @@ export default function BrandProfile() {
     brand_bio: '',
     patient_intent_primary: '' as PatientIntent | '',
     patient_intent_secondary: '' as PatientIntent | '',
-    age_range: '',
+    age_range: [] as string[],
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -65,7 +65,7 @@ export default function BrandProfile() {
             brand_bio: data.brand_bio ?? '',
             patient_intent_primary: (data.patient_intent_primary as PatientIntent) ?? '',
             patient_intent_secondary: (data.patient_intent_secondary as PatientIntent) ?? '',
-            age_range: data.age_range ?? '',
+            age_range: data.age_range ?? [],
           })
         }
         setLoading(false)
@@ -86,7 +86,7 @@ export default function BrandProfile() {
         brand_bio: form.brand_bio.trim() || null,
         patient_intent_primary: form.patient_intent_primary || null,
         patient_intent_secondary: form.patient_intent_secondary || null,
-        age_range: form.age_range || null,
+        age_range: form.age_range.length > 0 ? form.age_range : null,
       })
       .eq('id', user.id)
 
@@ -256,20 +256,28 @@ export default function BrandProfile() {
               Faixa etária do paciente
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {AGE_RANGES.map(r => (
-                <button
-                  key={r.value}
-                  type="button"
-                  onClick={() => setForm(p => ({ ...p, age_range: p.age_range === r.value ? '' : r.value }))}
-                  className={`rounded-xl border py-3 text-center text-sm font-semibold transition-all ${
-                    form.age_range === r.value
-                      ? 'border-primary bg-primary/5 ring-1 ring-primary/30 text-primary'
-                      : 'border-border bg-card hover:border-primary/30 text-foreground'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
+              {AGE_RANGES.map(r => {
+                const selected = form.age_range.includes(r.value)
+                return (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setForm(p => ({
+                      ...p,
+                      age_range: selected
+                        ? p.age_range.filter(v => v !== r.value)
+                        : [...p.age_range, r.value],
+                    }))}
+                    className={`rounded-xl border py-3 text-center text-sm font-semibold transition-all ${
+                      selected
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/30 text-primary'
+                        : 'border-border bg-card hover:border-primary/30 text-foreground'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 

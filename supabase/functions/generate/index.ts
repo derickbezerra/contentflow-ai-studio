@@ -261,8 +261,8 @@ Deno.serve(async (req) => {
           brandContext += `\n- Intenção secundária: ${INTENT_LABELS[profile.patient_intent_secondary] ?? profile.patient_intent_secondary}`
         }
       }
-      if (profile?.age_range) {
-        brandContext += `\n- Faixa etária do paciente: ${profile.age_range} anos`
+      if (profile?.age_range && profile.age_range.length > 0) {
+        brandContext += `\n- Faixa etária do paciente: ${(profile.age_range as string[]).join(', ')} anos`
       }
     }
 
