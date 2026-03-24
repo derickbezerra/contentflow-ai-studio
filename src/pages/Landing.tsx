@@ -26,7 +26,7 @@ const VERTICALS = [
   {
     icon: Stethoscope,
     label: 'Medicina',
-    desc: 'Mostre o seu conhecimento de forma simples e conquiste a confiança de novos pacientes.',
+    desc: 'Paciente que te conhece no Instagram chega ao consultório já confiando em você. O ContentFlow faz esse trabalho acontecer toda semana',
     example: '"Colesterol alto: 5 sinais que você ignora"',
     color: 'from-emerald-500/10 to-teal-500/10',
     border: 'hover:border-emerald-400/40',
@@ -35,7 +35,7 @@ const VERTICALS = [
   {
     icon: Salad,
     label: 'Nutrição',
-    desc: 'Compartilhe dicas sobre alimentação que as pessoas adoram ler e salvar.',
+    desc: 'Você cuida da alimentação das pessoas o dia todo e não sobra tempo para alimentar o feed. Delegue isso para a IA',
     example: '"3 alimentos que sabotam sua dieta sem você saber"',
     color: 'from-green-500/10 to-lime-500/10',
     border: 'hover:border-green-400/40',
@@ -44,7 +44,7 @@ const VERTICALS = [
   {
     icon: Smile,
     label: 'Odontologia',
-    desc: 'Atraia quem quer sorrir melhor com conteúdo que educa e gera interesse.',
+    desc: 'O paciente decide onde vai cuidar do sorriso antes de sentir dor. Conteúdo consistente garante que você seja a primeira lembrança',
     example: '"Clareamento dental: o que ninguém te conta"',
     color: 'from-cyan-500/10 to-sky-500/10',
     border: 'hover:border-cyan-400/40',
@@ -53,7 +53,7 @@ const VERTICALS = [
   {
     icon: Brain,
     label: 'Psicologia',
-    desc: 'Humanize a psicologia e atraia quem busca cuidado emocional com conteúdo acolhedor.',
+    desc: 'Conteúdo sobre saúde mental ainda tem muito preconceito a desfazer. Você pode ser essa voz sem escrever do zero toda semana',
     example: '"Ansiedade não é frescura: entenda o que acontece no seu corpo"',
     color: 'from-violet-500/10 to-purple-500/10',
     border: 'hover:border-violet-400/40',
@@ -65,20 +65,20 @@ const FORMATS = [
   {
     icon: Image,
     label: 'Carrossel',
-    desc: 'Slides com visual profissional, prontos para postar no feed',
-    preview: ['Capa que chama atenção', 'Conteúdo claro e direto', 'Slide final com chamada'],
+    desc: 'Slides que as pessoas salvam constroem autoridade melhor do que qualquer anúncio, e a IA gera o carrossel completo do hook ao CTA',
+    preview: ['Hook que para o scroll', 'Conteúdo que educa e engaja', 'CTA que converte'],
   },
   {
     icon: FileText,
     label: 'Post',
-    desc: 'Texto completo com começo, meio e fim. É só copiar e colar',
-    preview: ['Frase de abertura forte', 'Conteúdo bem explicado', 'Convite para agir'],
+    desc: 'Uma abertura que prende, um desenvolvimento que educa e uma chamada para agir, tudo pronto para copiar e colar',
+    preview: ['Abertura que cria identificação', 'Texto claro e direto', 'Convite para agir'],
   },
   {
     icon: Smartphone,
     label: 'Story',
-    desc: 'Um roteiro para você gravar com confiança e naturalidade',
-    preview: ['Desperta a curiosidade', 'Explica de forma simples', 'Convida para o próximo passo'],
+    desc: 'Um roteiro de teleprompter para você gravar com confiança e naturalidade sem travar na frente da câmera',
+    preview: ['Primeira frase cria conexão', 'Explicação simples e fluida', 'CTA com urgência real'],
   },
 ]
 
@@ -275,7 +275,7 @@ export default function Landing() {
               </h1>
 
               <p className="mx-auto mb-8 max-w-lg text-base leading-relaxed text-muted-foreground lg:mx-0 sm:text-lg" style={{ textWrap: 'pretty' }}>
-                Digite uma ideia e o ContentFlow gera carrossel, post e story prontos para postar. Em menos de 30 segundos.
+                Digite um tema e em menos de 30 segundos você tem carrossel, post e story prontos para publicar, com linguagem certa para o seu público e para o algoritmo
               </p>
 
               <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
@@ -315,7 +315,7 @@ export default function Landing() {
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Como funciona</p>
           <h2 className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Três passos. Conteúdo na tela.
+            Em três passos, seu conteúdo está pronto para publicar
           </h2>
 
           <div className="grid gap-6 sm:grid-cols-3">
@@ -324,7 +324,7 @@ export default function Landing() {
                 icon: Pencil,
                 step: '01',
                 title: 'Escreva uma ideia',
-                desc: 'Pode ser bem curta: "colesterol alto", "clareamento dental" ou "como emagrecer com saúde".',
+                desc: 'Uma ideia simples já basta: "hipertensão silenciosa", "como se alimentar melhor" ou "quando buscar terapia" são suficientes para a IA criar algo completo',
                 gradient: 'from-emerald-500/15 to-teal-500/10',
                 iconBg: 'bg-emerald-500/10 text-emerald-600',
               },
@@ -332,7 +332,7 @@ export default function Landing() {
                 icon: LayoutTemplate,
                 step: '02',
                 title: 'Escolha o formato',
-                desc: 'Carrossel, post ou story. A IA já entende o seu público e cria o conteúdo ideal.',
+                desc: 'A IA entende a sua especialidade e cria a estrutura, o gancho e a linguagem certa para o formato que você escolheu',
                 gradient: 'from-teal-500/15 to-cyan-500/10',
                 iconBg: 'bg-teal-500/10 text-teal-600',
               },
@@ -340,7 +340,7 @@ export default function Landing() {
                 icon: Download,
                 step: '03',
                 title: 'Edite e publique',
-                desc: 'Ajuste cores, gradientes e textos de cada slide direto na tela. Baixe e publique quando quiser.',
+                desc: 'Tudo editável direto na tela antes de baixar: cores, textos e gradientes de cada slide sem precisar de Canva ou designer',
                 gradient: 'from-cyan-500/15 to-sky-500/10',
                 iconBg: 'bg-cyan-500/10 text-cyan-600',
               },
@@ -383,10 +383,10 @@ export default function Landing() {
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Para quem é</p>
           <h2 className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Feito sob medida para a área da saúde
+            Especializado para quem cuida de pessoas
           </h2>
           <p className="mx-auto mb-10 max-w-lg text-center text-sm text-muted-foreground">
-            Mantenha a constância e amplie sua autoridade com conteúdo que atrai pacientes
+            O ContentFlow fala a linguagem da sua especialidade e conhece o paciente que você quer atrair
           </p>
 
           <div className="grid gap-5 grid-cols-2 max-w-2xl mx-auto">
@@ -413,7 +413,7 @@ export default function Landing() {
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Formatos</p>
           <h2 className="mb-14 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Tudo que você precisa para o Instagram
+            Três formatos que dominam o feed e constroem autoridade
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-3">
@@ -446,7 +446,7 @@ export default function Landing() {
             Menos de R$1,60 por conteúdo
           </h2>
           <p className="mx-auto mb-14 max-w-md text-center text-sm text-muted-foreground">
-            7 dias grátis para testar. Sem cartão de crédito. Cancele quando quiser.
+            Comece grátis e decida depois se faz sentido para você, sem compromisso e sem cartão de crédito
           </p>
 
           <div className="grid gap-5 sm:grid-cols-3">
