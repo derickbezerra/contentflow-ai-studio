@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="10" fill="#1a3526"/>
+  <!-- top band: white -->
+  <path d="M5 13 C13 9, 21 17, 29 13 C37 9, 43 13, 43 13 L43 19 C43 19, 37 15, 29 19 C21 23, 13 15, 5 19 Z" fill="#e8f0eb"/>
+  <!-- middle band: medium green -->
+  <path d="M5 21 C13 17, 21 25, 29 21 C37 17, 43 21, 43 21 L43 27 C43 27, 37 23, 29 27 C21 31, 13 23, 5 27 Z" fill="#5a8a6a"/>
+  <!-- bottom band: dark green -->
+  <path d="M5 29 C13 25, 21 33, 29 29 C37 25, 43 29, 43 29 L43 35 C43 35, 37 31, 29 35 C21 39, 13 31, 5 35 Z" fill="#3d6b52"/>
+</svg>
