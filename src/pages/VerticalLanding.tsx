@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useParams, Navigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom'
 import {
   Stethoscope, Salad, Smile, Brain,
   ArrowRight, Sparkles, Check, Zap,
@@ -214,9 +214,10 @@ const FORMATS = [
 // ── component ─────────────────────────────────────────────
 
 export default function VerticalLanding() {
-  const { slug } = useParams<{ slug: string }>()
+  const { pathname } = useLocation()
   const navigate = useNavigate()
-  const data = slug ? VERTICAL_DATA[slug] : null
+  const slug = pathname.replace(/^\/para-/, '')
+  const data = VERTICAL_DATA[slug] ?? null
 
   useEffect(() => {
     if (!data) return

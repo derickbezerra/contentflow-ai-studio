@@ -27,7 +27,7 @@ const PLANS = [
     limit: '100 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
-    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo', 'Suporte prioritário'],
+    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
   },
 ]
 

@@ -102,7 +102,7 @@ const PLANS = [
     price: 97,
     limit: '100 conteúdos/mês',
     highlight: false,
-    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Perfil de marca personalizado', 'Histórico de conteúdo', 'Suporte prioritário'],
+    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
   },
 ]
 
@@ -516,9 +516,10 @@ export default function Landing() {
             <h2 className="mb-4 text-3xl font-extrabold text-white sm:text-4xl" style={{ textWrap: 'balance' }}>
               Chega de tela em branco toda semana.
             </h2>
-            <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/70">
-              Profissionais de saúde que postam com consistência ganham mais pacientes. O ContentFlow tira do caminho a parte mais difícil: criar o conteúdo.
-            </p>
+            <div className="mx-auto mb-8 space-y-2 text-sm leading-relaxed text-white/70">
+              <p className="whitespace-nowrap">Profissionais de saúde que postam com consistência ganham mais pacientes.</p>
+              <p className="whitespace-nowrap">O ContentFlow tira do caminho a parte mais difícil: criar o conteúdo.</p>
+            </div>
             <Button
               size="xl"
               onClick={() => navigate('/login')}
