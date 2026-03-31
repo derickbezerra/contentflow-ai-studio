@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { usePlan } from '@/hooks/usePlan'
 import { toast } from 'sonner'
+import { cancelSubscription } from '@/lib/plans'
 import CancelSurveyModal from '@/components/CancelSurveyModal'
 
 type Tone = 'formal' | 'informal' | 'empatico'
@@ -30,6 +31,7 @@ export default function BrandProfile() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showCancelSurvey, setShowCancelSurvey] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -74,27 +76,8 @@ export default function BrandProfile() {
     }
   }
 
-  async function handleManagePlan() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/customer-portal`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-        }
-      )
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else toast.error('Não foi possível abrir o portal de assinatura.')
-    } catch {
-      toast.error('Erro ao acessar portal de assinatura.')
-    }
+  function handleManagePlan() {
+    cancelSubscription(setPortalLoading)
   }
 
   if (loading) {
@@ -108,7 +91,7 @@ export default function BrandProfile() {
   return (
     <div className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto max-w-lg">
-        <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground" onClick={() => navigate('/app')}>
+        <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-muted-foreground" onClick={() => navigate('/app')}>
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
 
@@ -141,7 +124,7 @@ export default function BrandProfile() {
                   key={t.value}
                   type="button"
                   onClick={() => setForm(p => ({ ...p, brand_tone: t.value }))}
-                  className={`rounded-xl border px-4 py-3 text-left transition-all ${
+                  className={`cursor-pointer rounded-xl border px-4 py-3 text-left transition-all ${
                     form.brand_tone === t.value
                       ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
                       : 'border-border bg-card hover:border-primary/30'
@@ -185,7 +168,7 @@ export default function BrandProfile() {
           <div className="mt-10 border-t border-border pt-8">
             <h2 className="mb-1 text-sm font-semibold text-foreground">Assinatura</h2>
             <p className="mb-4 text-xs text-muted-foreground capitalize">
-              Plano {planInfo?.plan} · Acesse o portal para gerenciar pagamento ou cancelar.
+              Plano {planInfo?.plan} ativo. Para gerenciar ou cancelar, acesse o portal de pagamento.
             </p>
             <Button
               variant="ghost"
@@ -204,6 +187,12 @@ export default function BrandProfile() {
           onConfirm={() => { setShowCancelSurvey(false); handleManagePlan() }}
           onClose={() => setShowCancelSurvey(false)}
         />
+      )}
+
+      {portalLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
       )}
     </div>
   )

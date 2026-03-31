@@ -1,35 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Check, Loader2, Zap, Lock, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-
-const PLANS = [
-  {
-    name: 'Starter',
-    price: 'R$27',
-    limit: '10 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
-    highlight: false,
-    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico'],
-  },
-  {
-    name: 'Growth',
-    price: 'R$47',
-    limit: '30 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
-    highlight: true,
-    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
-  },
-  {
-    name: 'Pro',
-    price: 'R$97',
-    limit: '100 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
-    highlight: false,
-    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odonto e Psico', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
-  },
-]
+import { PLANS, handleCheckout, cancelSubscription } from '@/lib/plans'
 
 interface BillingWallProps {
   reason: 'trial_expired' | 'payment_failed'
@@ -44,64 +16,6 @@ export default function BillingWall({ reason }: BillingWallProps) {
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
   }, [])
-
-  async function handleSubscribe(priceIdEnv: string, planName: string) {
-    setLoadingPlan(planName)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Sessão inválida')
-
-      const priceId = (import.meta.env as Record<string, string>)[priceIdEnv]
-      if (!priceId) throw new Error('Plano não configurado')
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const res = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({ priceId }),
-      })
-
-      const data = await res.json()
-      if (!res.ok || !data.url) throw new Error(data.error || 'Erro ao iniciar checkout')
-
-      window.location.href = data.url
-    } catch (err: unknown) {
-      toast.error('Erro ao iniciar checkout. Tente novamente.')
-      console.error(err)
-      setLoadingPlan(null)
-    }
-  }
-
-  async function handleManagePayment() {
-    setLoadingPortal(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Sessão inválida')
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-      })
-
-      const data = await res.json()
-      if (!res.ok || !data.url) throw new Error(data.error || 'Erro ao abrir portal')
-
-      window.location.href = data.url
-    } catch (err: unknown) {
-      toast.error('Erro ao abrir portal de pagamento. Tente novamente.')
-      console.error(err)
-      setLoadingPortal(false)
-    }
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background px-4">
@@ -118,7 +32,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
             <>
               <h1 className="text-2xl font-semibold text-foreground">Seus 7 dias gratuitos acabaram</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Escolha um plano e continue gerando conteúdo por menos de R$1,60 por post
+                Escolha um plano e continue gerando conteúdo a partir de R$47/mês
               </p>
             </>
           ) : (
@@ -138,7 +52,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
               variant="cta"
               size="xl"
               className="w-full max-w-sm"
-              onClick={handleManagePayment}
+              onClick={() => cancelSubscription(setLoadingPortal)}
               disabled={loadingPortal}
             >
               {loadingPortal ? (
@@ -148,7 +62,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
               )}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              Você será redirecionado ao portal seguro do Stripe
+              Sua assinatura será cancelada e o acesso será encerrado imediatamente
             </p>
           </div>
         ) : (
@@ -187,8 +101,8 @@ export default function BillingWall({ reason }: BillingWallProps) {
                     variant={plan.highlight ? 'cta' : 'outline'}
                     size="sm"
                     className="w-full"
-                    onClick={() => handleSubscribe(plan.priceIdEnv, plan.name)}
-                    disabled={loadingPlan !== null}
+                    onClick={() => handleCheckout(plan.planKey, plan.name, setLoadingPlan)}
+                    disabled={loadingPlan === plan.name}
                   >
                     {loadingPlan === plan.name ? (
                       <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Aguarde...</>
@@ -200,7 +114,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
               ))}
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">
-              Cancele quando quiser · Pagamento seguro via Stripe
+              Cancele quando quiser · Pagamento seguro
             </p>
           </>
         )}

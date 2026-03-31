@@ -7,23 +7,23 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 const Logo = () => (
-  <svg width="180" height="44" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="140" height="34" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g>
       <path
         d="M5 30 C11 26, 17 34, 23 30 C29 26, 35 34, 41 30 L41 37 C35 41, 29 33, 23 37 C17 41, 11 33, 5 37 Z"
-        fill="#3d6b52"
+        fill="hsl(var(--primary))"
       />
       <path
         d="M3 21 C9 17, 16 25, 23 21 C30 17, 37 25, 43 21 L43 28 C37 32, 30 24, 23 28 C16 32, 9 24, 3 28 Z"
-        fill="#5a8a6a"
+        fill="hsl(var(--primary) / 0.6)"
       />
       <path
         d="M1 13 C8 9, 16 17, 23 13 C30 9, 38 17, 45 13 L45 20 C38 24, 30 16, 23 20 C16 24, 8 16, 1 20 Z"
-        fill="#c8ddd0"
+        fill="hsl(var(--primary) / 0.2)"
       />
     </g>
     <text x="54" y="30" fontFamily="Georgia, 'Times New Roman', serif" fontSize="21" fontWeight="400">
-      <tspan fill="#1a2e23">Content</tspan><tspan fill="#6b9e7e">Flow</tspan>
+      <tspan fill="hsl(var(--foreground))">Content</tspan><tspan fill="hsl(var(--primary))">Flow</tspan>
     </text>
   </svg>
 );
@@ -65,7 +65,7 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
   }
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 md:px-10">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-md md:px-10">
       <div className="flex items-center">
         <Logo />
       </div>
@@ -107,7 +107,7 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
             </Button>
           </>
         )}
-        {/* Avatar — opens Stripe customer portal */}
+        {/* Avatar — manage subscription */}
         <button
           onClick={user ? handleManagePlan : undefined}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary hover:bg-primary/20 transition-colors"

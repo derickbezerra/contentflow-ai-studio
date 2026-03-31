@@ -30,7 +30,7 @@ export default function Privacy() {
             <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
               <li><strong className="text-foreground">Dados de cadastro:</strong> nome, e-mail e senha (ou dados fornecidos via login com Google)</li>
               <li><strong className="text-foreground">Dados de uso:</strong> especialidade selecionada, tópicos gerados, contagem de gerações e data de reset</li>
-              <li><strong className="text-foreground">Dados de pagamento:</strong> processados pela Stripe. O ContentFlow não armazena dados de cartão</li>
+              <li><strong className="text-foreground">Dados de pagamento:</strong> CPF/CNPJ e dados de cobrança, processados pela Asaas. O ContentFlow não armazena dados de cartão</li>
               <li><strong className="text-foreground">Dados técnicos:</strong> endereço IP e logs de acesso, para segurança e prevenção de fraudes</li>
             </ul>
           </section>
@@ -53,7 +53,7 @@ export default function Privacy() {
             <p className="mb-2 text-muted-foreground">Seus dados podem ser compartilhados apenas com:</p>
             <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
               <li><strong className="text-foreground">Supabase:</strong> infraestrutura de banco de dados e autenticação</li>
-              <li><strong className="text-foreground">Stripe:</strong> processamento de pagamentos</li>
+              <li><strong className="text-foreground">Asaas:</strong> processamento de pagamentos (PIX e Boleto)</li>
               <li><strong className="text-foreground">Anthropic:</strong> os tópicos que você digita são enviados à API de IA para geração de conteúdo. Não enviamos dados pessoais identificáveis além do texto inserido</li>
               <li><strong className="text-foreground">Autoridades competentes:</strong> quando exigido por lei</li>
             </ul>

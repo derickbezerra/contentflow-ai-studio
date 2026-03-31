@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,6 +17,8 @@ import BrandProfile from "./pages/BrandProfile.tsx";
 import Calendar from "./pages/Calendar.tsx";
 import VerticalLanding from "./pages/VerticalLanding.tsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.tsx";
+import AsaasCheckoutModal from "./components/AsaasCheckoutModal.tsx";
+import { registerCheckoutOpener } from "./lib/plans.ts";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +36,49 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AppRoutes() {
+  const [checkoutPlanKey, setCheckoutPlanKey] = useState<string | null>(null)
+
+  useEffect(() => {
+    registerCheckoutOpener((planKey) => setCheckoutPlanKey(planKey))
+  }, [])
+
+  function handleCheckoutSuccess() {
+    setCheckoutPlanKey(null)
+    window.location.reload()
+  }
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/termos" element={<Terms />} />
+        <Route path="/privacidade" element={<Privacy />} />
+        <Route path="/contato" element={<Contact />} />
+        <Route path="/perfil" element={<ProtectedRoute><BrandProfile /></ProtectedRoute>} />
+        <Route path="/calendario" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+        <Route path="/para-medicos" element={<VerticalLanding />} />
+        <Route path="/para-dentistas" element={<VerticalLanding />} />
+        <Route path="/para-psicologos" element={<VerticalLanding />} />
+        <Route path="/para-nutricionistas" element={<VerticalLanding />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {checkoutPlanKey && (
+        <AsaasCheckoutModal
+          planKey={checkoutPlanKey}
+          onClose={() => setCheckoutPlanKey(null)}
+          onSuccess={handleCheckoutSuccess}
+        />
+      )}
+    </>
+  )
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -40,23 +86,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-            <Route path="/app" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-            <Route path="/termos" element={<Terms />} />
-            <Route path="/privacidade" element={<Privacy />} />
-            <Route path="/contato" element={<Contact />} />
-            <Route path="/perfil" element={<ProtectedRoute><BrandProfile /></ProtectedRoute>} />
-            <Route path="/calendario" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-            <Route path="/para-medicos" element={<VerticalLanding />} />
-            <Route path="/para-nutricionistas" element={<VerticalLanding />} />
-            <Route path="/para-dentistas" element={<VerticalLanding />} />
-            <Route path="/para-psicologos" element={<VerticalLanding />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

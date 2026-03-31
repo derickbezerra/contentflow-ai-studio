@@ -59,7 +59,7 @@ export default function Terms() {
           <section>
             <h2 className="mb-3 text-base font-semibold">6. Planos e Pagamentos</h2>
             <p className="text-muted-foreground">
-              O ContentFlow oferece um período de teste gratuito de 7 dias com até 5 gerações de conteúdo. Após esse período, é necessário assinar um dos planos pagos para continuar utilizando o serviço. Os pagamentos são processados pela Stripe e estão sujeitos às condições da plataforma de pagamento. O cancelamento pode ser realizado a qualquer momento pelo portal de assinatura, com acesso mantido até o fim do período já pago.
+              O ContentFlow oferece um período de teste gratuito de 7 dias com até 5 gerações de conteúdo. Após esse período, é necessário assinar um dos planos pagos para continuar utilizando o serviço. Os pagamentos são processados pela Asaas e estão sujeitos às condições da plataforma de pagamento. O cancelamento pode ser realizado a qualquer momento diretamente no app, com acesso encerrado imediatamente após a solicitação.
             </p>
           </section>
 
