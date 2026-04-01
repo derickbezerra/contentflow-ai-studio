@@ -283,7 +283,7 @@ function tip(text: string): string {
 function welcomeHtml(siteUrl: string): string {
   const body = `
     ${p('Oi! Estamos muito felizes em ter você aqui. 👋')}
-    ${p('O <strong style="color:#1a2e23;">ContentFlow</strong> cria posts, carrosséis e stories para o seu Instagram em segundos — com linguagem pensada para profissionais de saúde e validação ética automática (CFM, CFO, CFP, CFN).')}
+    ${p('O <strong style="color:#1a2e23;">ContentFlow</strong> cria posts, carrosséis e stories para o seu Instagram em segundos, com linguagem pensada para profissionais de saúde e validação ética automática (CFM, CFO, CFP, CFN).')}
     ${divider()}
     ${tip('💡 <strong>Dica:</strong> configure seu Perfil de Marca antes de gerar o primeiro conteúdo. O resultado fica muito mais personalizado.')}
     ${p('Quando estiver pronto, escolha um tema e gere seu primeiro post:')}
@@ -306,7 +306,7 @@ function trialD2Html(endsAt: string, siteUrl: string): string {
 
 function d3NoGenHtml(siteUrl: string): string {
   const body = `
-    ${p('Você criou sua conta há 3 dias, mas ainda não gerou nenhum post. Tudo bem — às vezes a rotina não deixa!')}
+    ${p('Você criou sua conta há 3 dias, mas ainda não gerou nenhum post. Tudo bem, às vezes a rotina não deixa!')}
     ${p('Veja o que o ContentFlow gera para você em <strong>menos de 30 segundos</strong>:')}
     ${examplePost()}
     ${p('É só informar o tema e o tipo de conteúdo. O post chega pronto, com validação ética incluída.')}
@@ -318,7 +318,7 @@ function d3NoGenHtml(siteUrl: string): string {
 function d7NoConvHtml(siteUrl: string): string {
   const body = `
     ${p('Você está há 7 dias no ContentFlow e seu período de teste ainda está ativo.')}
-    ${tip('📊 Profissionais que usam o ContentFlow publicam em média <strong>3× mais conteúdo</strong> — sem gastar horas escrevendo.')}
+    ${tip('📊 Profissionais que usam o ContentFlow publicam em média <strong>3× mais conteúdo</strong>, sem gastar horas escrevendo.')}
     ${p('Para não perder o acesso quando o trial encerrar, escolha um plano:')}
     ${planCards()}
     ${btn('Escolher meu plano', `${siteUrl}/app`)}
