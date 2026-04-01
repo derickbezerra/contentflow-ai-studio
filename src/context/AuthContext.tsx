@@ -33,8 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null)
       setLoading(false)
 
-      if (event === 'SIGNED_IN' && session?.user && sessionStorage.getItem('terms_pending_accept')) {
-        sessionStorage.removeItem('terms_pending_accept')
+      if (event === 'SIGNED_IN' && session?.user && localStorage.getItem('terms_pending_accept')) {
+        localStorage.removeItem('terms_pending_accept')
         supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', session.user.id)
       }
     })
@@ -43,8 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function signOut() {
+    // Limpar cache de plano e dados do usuário anterior
+    sessionStorage.clear()
+    // Limpar chaves específicas do localStorage relacionadas ao ContentFlow
+    const keysToRemove = Object.keys(localStorage).filter(key =>
+      key.startsWith('cf_') || key.startsWith('contentflow_') || key.startsWith('sb-')
+    )
+    keysToRemove.forEach(key => localStorage.removeItem(key))
+
     await supabase.auth.signOut()
-    window.location.href = '/'
+    window.location.replace('/login')
   }
 
   return (

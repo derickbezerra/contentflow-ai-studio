@@ -8,6 +8,23 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = `Você é o AI Brain do ContentFlow, especializado em criar conteúdo de alta performance para o Instagram de profissionais de saúde.
 
+REGRAS DE COMPLIANCE — LEIA ANTES DE ESCREVER QUALQUER PALAVRA:
+O conteúdo gerado NUNCA deve ter warnings nem issues. Se durante a escrita você perceber que um trecho criaria um alerta, REESCREVA-O antes de incluir. Os campos "issues" e "warnings" no JSON final DEVEM ser sempre arrays vazios.
+
+Padrões PROIBIDOS para TODOS os profissionais de saúde:
+- Nunca use linguagem que crie medo para converter ("sua saúde não pode esperar", "não deixe para tarde demais", "o risco é maior do que você imagina")
+- Nunca prometa ou sugira resultado clínico específico, mesmo de forma implícita
+- Nunca use comparações antes/depois, superlativos de auto-promoção ou depoimentos de pacientes
+- Nunca induza urgência baseada em risco de saúde como gatilho de venda ou conversão
+- Em vez de urgência pelo medo, use motivação positiva: curiosidade, empoderamento, cuidado preventivo como escolha consciente
+
+Reescritas obrigatórias antes de incluir no output:
+✗ "A saúde do seu filho não pode esperar" → ✓ "Cuidar da saúde do seu filho é um ato de amor preventivo"
+✗ "Cuide antes que o coração avise" → ✓ "Cardiopatia tem prevenção — e começa agora"
+✗ "Não deixe para depois" → ✓ "O check-up de rotina é o seu aliado mais subestimado"
+✗ "O risco é maior do que você imagina" → ✓ "Entender os fatores de risco muda completamente a abordagem"
+
+
 Seu objetivo: gerar conteúdo claro, envolvente, humano e orientado à conversão — que gere salvamentos, comentários e novos pacientes.
 
 PASSO 1 — Classifique a intenção:
@@ -87,16 +104,38 @@ PASSO 6 — Quando o Perfil de marca e/ou Histórico recente forem fornecidos na
 PASSO 7 — Revise: linguagem simples, sem jargão, sem termos muito técnicos.
 REGRA ABSOLUTA: NUNCA use o caractere "—" (travessão) em nenhuma parte do conteúdo. Substitua por ponto, vírgula ou reescreva a frase.
 
+PASSO 8 — Valide o conteúdo gerado contra as normas éticas do conselho profissional da vertical informada:
+
+CFM (doctor) — Resolução CFM 1974/2011 + Código de Ética Médica:
+PROIBIDO: comparação antes/depois explícita ou implícita, garantias de resultado clínico ("você vai conseguir X", "elimine Y em Z semanas"), superlativos de auto-promoção ("melhor médico/a", "único tratamento"), depoimentos de pacientes, preço como argumento de venda, linguagem que crie expectativa irreal ou induza medo para converter.
+
+CFO (dentist) — Código de Ética Odontológica:
+PROIBIDO: fotos ou comparações antes/depois de sorriso/tratamento, garantia de resultado estético ("vai ficar perfeito", "sorriso dos sonhos garantido"), comparação com outros profissionais ou clínicas, divulgação de preços como apelo de marketing, linguagem sensacionalista ou que prometa resultado específico.
+
+CFP (psychologist) — Resolução CFP 11/2012:
+PROIBIDO: divulgar casos clínicos mesmo sem identificar o paciente, garantir resultado terapêutico ("você vai se curar", "resolva sua ansiedade em X sessões"), usar técnicas psicológicas como gatilho de venda, sensacionalismo sobre transtornos, linguagem que romantize ou banalize sofrimento psíquico, diagnóstico de transtorno aplicado ao leitor.
+
+CFN (nutritionist) — Código de Ética do Nutricionista:
+PROIBIDO: prometer emagrecimento em quantidade ou tempo específico ("perca X kg em Y semanas"), dietas milagrosas ou restritivas sem base científica, classificar alimentos como "proibidos" ou "milagrosos" de forma absoluta, fotos ou comparações antes/depois de corpo, garantias de resultado.
+
+Com base na vertical da mensagem do usuário, preencha o campo "compliance":
+- "approved": true se nenhuma regra for violada; false se houver violação clara
+- "council": sigla do conselho correspondente à vertical ("CFM", "CFO", "CFP", "CFN")
+- "issues": array de strings descrevendo violações encontradas (DEVE ser [] — se encontrou algo, você falhou na geração)
+- "warnings": array de strings com alertas de risco (DEVE ser [] — se encontrou algo, você falhou na geração e deve ter reescrito antes)
+
+IMPORTANTE: se ao validar você encontrar qualquer issue ou warning, significa que o conteúdo que você gerou violou as REGRAS DE COMPLIANCE do início deste prompt. O resultado esperado é sempre approved:true, issues:[], warnings:[]. Linguagem educativa, preventiva e motivacional positiva é permitida e desejada — o que é proibido é usar medo ou urgência como gatilho de conversão.
+
 FORMATO DE SAÍDA OBRIGATÓRIO (JSON puro, sem markdown, sem texto antes ou depois):
 
 Para carousel:
-{"intent":"...","slides":[{"title":"...","body":"..."}],"caption":"..."}
+{"intent":"...","slides":[{"title":"...","body":"..."}],"caption":"...","compliance":{"approved":true,"council":"CFM","issues":[],"warnings":[]}}
 
 Para post:
-{"intent":"...","hook":"...","body":"...","cta":"..."}
+{"intent":"...","hook":"...","body":"...","cta":"...","compliance":{"approved":true,"council":"CFM","issues":[],"warnings":[]}}
 
 Para story:
-{"intent":"...","script":"..."}
+{"intent":"...","script":"...","compliance":{"approved":true,"council":"CFM","issues":[],"warnings":[]}}
 
 Sempre em Português Brasileiro. Retorne APENAS o JSON.`
 
@@ -167,7 +206,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { topic, context, content_type, vertical, gender, batch, patient_intent, age_ranges } = await req.json()
+    const { topic, context, content_type, vertical, gender, batch, patient_intent, patient_intents, age_ranges, medical_specialty, stream: streamMode } = await req.json()
 
     const VALID_CONTENT_TYPES = ['carousel', 'post', 'story']
     const VALID_VERTICALS = ['doctor', 'nutritionist', 'dentist', 'psychologist']
@@ -204,6 +243,31 @@ Deno.serve(async (req) => {
       })
     }
 
+    // [A7] Verificação de custo diário PRÉ-requisição
+    // RISCO RESIDUAL: usa SELECT simples (sem FOR UPDATE) em tabela append-only.
+    // Requisições simultâneas podem passar pelo check ao mesmo tempo antes de qualquer
+    // insert ser registrado — o bloqueio é best-effort, não atômico. Para eliminar
+    // completamente a race condition seria necessário uma função RPC com locking explícito.
+    {
+      const threshold = parseFloat(Deno.env.get('ANTHROPIC_DAILY_COST_THRESHOLD') ?? '5')
+      const today = new Date().toISOString().slice(0, 10)
+      const { data: rows } = await supabaseAdmin
+        .from('token_usage')
+        .select('model, input_tokens, output_tokens')
+        .gte('created_at', today)
+      const dailyCostUSD = (rows ?? []).reduce((sum: number, r: { model: string; input_tokens: number; output_tokens: number }) => {
+        const haiku = r.model.includes('haiku')
+        return sum + r.input_tokens * (haiku ? 0.25 : 3) / 1_000_000
+                   + r.output_tokens * (haiku ? 1.25 : 15) / 1_000_000
+      }, 0)
+      if (dailyCostUSD >= threshold) {
+        return new Response(JSON.stringify({ error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.' }), {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
 
     // Fetch brand profile + últimas 5 gerações em paralelo
@@ -232,6 +296,9 @@ Deno.serve(async (req) => {
 
     // ── Brand context ─────────────────────────────────────
     let brandContext = ''
+    if (vertical === 'doctor' && medical_specialty && typeof medical_specialty === 'string') {
+      brandContext += `\n\n[SUBESPECIALIDADE MÉDICA]\nEste médico é especialista em **${medical_specialty}**. Todo o conteúdo deve ser direcionado especificamente para esta especialidade: use exemplos clínicos, terminologia, situações do dia a dia e gatilhos emocionais típicos de pacientes de **${medical_specialty}**. Não use exemplos genéricos de medicina — seja específico para esta área.`
+    }
     if (profile?.brand_name || profile?.brand_bio || profile?.instagram_handle) {
       brandContext += '\n\n[PERFIL DE MARCA]'
       if (profile?.brand_name)       brandContext += `\n- Nome: ${profile.brand_name}`
@@ -252,17 +319,19 @@ Deno.serve(async (req) => {
       premium:    'premium (público de alta renda)',
     }
 
-    const resolvedIntent = patient_intent || profile?.patient_intent_primary
+    const resolvedIntents: string[] = patient_intents?.length
+      ? patient_intents
+      : patient_intent
+        ? [patient_intent]
+        : [profile?.patient_intent_primary, profile?.patient_intent_secondary].filter(Boolean) as string[]
     const resolvedAgeRanges = (age_ranges?.length ? age_ranges : profile?.age_range) as string[] | undefined
 
-    if (resolvedIntent || resolvedAgeRanges?.length) {
+    if (resolvedIntents.length || resolvedAgeRanges?.length) {
       brandContext += '\n\n[PÚBLICO-ALVO]'
-      if (resolvedIntent) {
-        brandContext += `\n- Intenção do paciente: ${INTENT_LABELS[resolvedIntent] ?? resolvedIntent}`
-        if (!patient_intent && profile?.patient_intent_secondary) {
-          brandContext += `\n- Intenção secundária: ${INTENT_LABELS[profile.patient_intent_secondary] ?? profile.patient_intent_secondary}`
-        }
-      }
+      const PRIORITY_LABELS = ['principal', 'secundária', 'terciária']
+      resolvedIntents.forEach((intent, idx) => {
+        brandContext += `\n- Intenção ${PRIORITY_LABELS[idx] ?? idx + 1}ª: ${INTENT_LABELS[intent] ?? intent}`
+      })
       if (resolvedAgeRanges && resolvedAgeRanges.length > 0) {
         brandContext += `\n- Faixa etária do paciente: ${resolvedAgeRanges.join(', ')} anos`
       }
@@ -327,6 +396,84 @@ Deno.serve(async (req) => {
           throw err
         }
       }
+    }
+
+    // ── Streaming single generation ────────────────────────
+    if (!batch && streamMode) {
+      const enc = new TextEncoder()
+      const send = (controller: ReadableStreamDefaultController, data: object) =>
+        controller.enqueue(enc.encode(`data: ${JSON.stringify(data)}\n\n`))
+
+      const readable = new ReadableStream({
+        async start(controller) {
+          try {
+            let fullText = ''
+            const streamMsg = `Tipo: ${content_type}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
+
+            // Use raw fetch instead of SDK — more reliable in Deno for streaming
+            const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-6',
+                max_tokens: 2048,
+                stream: true,
+                system: SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: streamMsg }],
+              }),
+            })
+
+            if (!anthropicRes.ok) {
+              const errText = await anthropicRes.text()
+              throw new Error(`Anthropic ${anthropicRes.status}: ${errText}`)
+            }
+
+            const reader = anthropicRes.body!.getReader()
+            const dec = new TextDecoder()
+            let lineBuf = ''
+
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+              lineBuf += dec.decode(value, { stream: true })
+              const lines = lineBuf.split('\n')
+              lineBuf = lines.pop() ?? ''
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue
+                const raw = line.slice(6).trim()
+                if (raw === '[DONE]') continue
+                try {
+                  const parsed = JSON.parse(raw)
+                  if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+                    fullText += parsed.delta.text
+                    send(controller, { t: parsed.delta.text })
+                  }
+                } catch { /* skip malformed SSE line */ }
+              }
+            }
+
+            const output = JSON.parse(extractJSON(fullText))
+            send(controller, { done: true, output, new_count: quota.new_count })
+          } catch (e) {
+            send(controller, { error: String(e) })
+          } finally {
+            controller.close()
+          }
+        },
+      })
+
+      return new Response(readable, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'X-Accel-Buffering': 'no',
+        },
+      })
     }
 
     // ── Batch or single generation ─────────────────────────

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { toast } from 'sonner'
 
 type Vertical = 'doctor' | 'nutritionist' | 'dentist' | 'psychologist'
 type Goal = 'attract_patients' | 'build_authority' | 'increase_engagement'
@@ -27,7 +28,7 @@ const GOALS: { value: Goal; label: string; description: string }[] = [
 
 const VOLUMES = [1, 2, 3, 4, 5, 7]
 
-export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
+export default function OnboardingModal({ onComplete, onShowPricing: _onShowPricing }: Props) {
   const { user } = useAuth()
   const [step, setStep] = useState(1)
   const [vertical, setVertical] = useState<Vertical | null>(null)
@@ -35,26 +36,53 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
   const [postsPerWeek, setPostsPerWeek] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // ESC key closes (acts as skip)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && vertical) onComplete(vertical)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [vertical, onComplete])
+
   async function handleFinish() {
     if (!user || !vertical || !goal || !postsPerWeek) return
     setSaving(true)
 
-    await supabase.from('users').update({
+    const { error } = await supabase.from('users').update({
       vertical,
       onboarding_goal: goal,
       onboarding_posts_per_week: postsPerWeek,
     }).eq('id', user.id)
 
     setSaving(false)
+
+    if (error) {
+      toast.error('Erro ao salvar preferências. Tente novamente.')
+      return
+    }
+
     onComplete(vertical)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+    >
       <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-xl">
 
         {/* Progress bar */}
-        <div className="flex gap-1.5 p-5 pb-0">
+        <div
+          className="flex gap-1.5 p-5 pb-0"
+          role="progressbar"
+          aria-valuenow={step}
+          aria-valuemin={1}
+          aria-valuemax={3}
+          aria-label={`Passo ${step} de 3`}
+        >
           {[1, 2, 3].map(s => (
             <div key={s} className={`h-1 flex-1 rounded-full transition-colors ${s <= step ? 'bg-primary' : 'bg-muted'}`} />
           ))}
@@ -65,20 +93,20 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
           {/* Step 1 — Especialidade */}
           {step === 1 && (
             <>
-              <h2 className="mb-1 text-xl font-bold text-foreground">Qual é sua especialidade?</h2>
+              <h2 id="onboarding-title" className="mb-1 text-xl font-bold text-foreground">Qual é sua especialidade?</h2>
               <p className="mb-5 text-sm text-muted-foreground">O conteúdo será gerado com a linguagem certa para a sua área.</p>
               <div className="grid grid-cols-2 gap-3">
                 {VERTICALS.map(v => (
                   <button
                     key={v.value}
                     onClick={() => setVertical(v.value)}
-                    className={`flex flex-col items-start gap-1.5 rounded-xl border p-4 text-left transition-all ${
+                    className={`flex flex-col items-start gap-1.5 rounded-xl border p-4 text-left transition-all cursor-pointer ${
                       vertical === v.value
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
                         : 'border-border bg-background hover:border-primary/30'
                     }`}
                   >
-                    <span className="text-2xl">{v.emoji}</span>
+                    <span className="text-2xl" aria-hidden="true">{v.emoji}</span>
                     <span className="text-sm font-semibold text-foreground">{v.label}</span>
                   </button>
                 ))}
@@ -96,14 +124,14 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
           {/* Step 2 — Objetivo */}
           {step === 2 && (
             <>
-              <h2 className="mb-1 text-xl font-bold text-foreground">Qual é seu principal objetivo?</h2>
+              <h2 id="onboarding-title" className="mb-1 text-xl font-bold text-foreground">Qual é seu principal objetivo?</h2>
               <p className="mb-5 text-sm text-muted-foreground">Vamos adaptar as sugestões de conteúdo para o seu foco.</p>
               <div className="flex flex-col gap-3">
                 {GOALS.map(g => (
                   <button
                     key={g.value}
                     onClick={() => setGoal(g.value)}
-                    className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all ${
+                    className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all cursor-pointer ${
                       goal === g.value
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
                         : 'border-border bg-background hover:border-primary/30'
@@ -124,14 +152,14 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
           {/* Step 3 — Volume */}
           {step === 3 && (
             <>
-              <h2 className="mb-1 text-xl font-bold text-foreground">Quantos posts por semana?</h2>
+              <h2 id="onboarding-title" className="mb-1 text-xl font-bold text-foreground">Quantos posts por semana?</h2>
               <p className="mb-5 text-sm text-muted-foreground">Isso ajuda o ContentFlow a sugerir temas na frequência certa.</p>
               <div className="grid grid-cols-3 gap-3">
                 {VOLUMES.map(v => (
                   <button
                     key={v}
                     onClick={() => setPostsPerWeek(v)}
-                    className={`rounded-xl border py-4 text-center transition-all ${
+                    className={`rounded-xl border py-4 text-center transition-all cursor-pointer ${
                       postsPerWeek === v
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
                         : 'border-border bg-background hover:border-primary/30'
@@ -142,6 +170,14 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
                   </button>
                 ))}
               </div>
+              <div className="mt-5 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-center">
+                <p className="text-sm font-medium text-foreground">
+                  🎉 7 dias grátis incluídos
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Até 5 conteúdos durante o período de teste · Sem cartão de crédito
+                </p>
+              </div>
               <div className="mt-5 flex gap-3">
                 <Button variant="ghost" size="xl" className="flex-1" onClick={() => setStep(2)}>Voltar</Button>
                 <Button
@@ -149,7 +185,7 @@ export default function OnboardingModal({ onComplete, onShowPricing }: Props) {
                   disabled={!postsPerWeek || saving}
                   onClick={handleFinish}
                 >
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar meu primeiro conteúdo'}
+                  {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</> : 'Criar meu primeiro conteúdo'}
                 </Button>
               </div>
             </>

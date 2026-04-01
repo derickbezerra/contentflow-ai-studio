@@ -1,22 +1,29 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom'
+const VerticalHeroDemoPlayer = lazy(() =>
+  import('@/components/VerticalHeroDemoPlayer').then(m => ({ default: m.VerticalHeroDemoPlayer }))
+)
 import {
   Stethoscope, Salad, Smile, Brain,
   ArrowRight, Sparkles, Check, Zap,
   Clock, Shield, TrendingUp,
   Pencil, LayoutTemplate, Download,
   Image, FileText, Smartphone,
+  ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-// ── vertical data ─────────────────────────────────────────
+const BASE_URL = 'https://www.flowcontent.com.br'
 
 interface VerticalData {
+  slug: string
   specialty: string
+  council: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any
   pageTitle: string
   metaDescription: string
+  keywords: string
   hero: { badge: string; headline: string; sub: string }
   painHeadline: string
   pains: { title: string; desc: string }[]
@@ -28,17 +35,19 @@ interface VerticalData {
 
 const VERTICAL_DATA: Record<string, VerticalData> = {
   medicos: {
+    slug: 'medicos',
     specialty: 'Medicina',
+    council: 'CFM',
     icon: Stethoscope,
     pageTitle: 'ContentFlow para Médicos | Posts que atraem pacientes para sua agenda',
-    metaDescription:
-      'Conteúdo pronto para médicos que querem atrair mais pacientes. Posts, carrosséis e stories de medicina, direcionados para o tipo de paciente que você atende.',
+    metaDescription: 'Gere conteúdo para Instagram validado pelo CFM em segundos. Posts, carrosséis e stories de medicina, direcionados para o tipo de paciente que você quer na agenda.',
+    keywords: 'conteúdo para médicos instagram, marketing médico, posts para médicos, marketing médico CFM, conteúdo médico instagram',
     hero: {
       badge: 'Para médicos',
       headline: 'Posts prontos para médicos que querem atrair mais pacientes',
-      sub: 'Conteúdo profissional, ético e direcionado para o tipo de paciente que você atende. Gere em minutos, publique quando quiser.',
+      sub: 'Conteúdo profissional, ético e direcionado para o tipo de paciente que você atende. Gere em segundos, publique quando quiser.',
     },
-    painHeadline: 'Por que médicos perdem pacientes para quem aparece no digital',
+    painHeadline: 'O que trava médicos no Instagram',
     pains: [
       {
         title: 'Agenda vazia em alguns períodos',
@@ -49,8 +58,8 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
         desc: 'Médico com conteúdo de qualidade no Instagram é percebido como referência antes mesmo da primeira consulta. Autoridade digital é agenda cheia.',
       },
       {
-        title: 'Insegurança com conteúdo médico',
-        desc: 'Medo de errar na informação paralisa. O ContentFlow cria conteúdo tecnicamente correto que você revisa em segundos antes de publicar.',
+        title: 'Insegurança com as normas do CFM',
+        desc: 'Medo de postar algo que viole o Código de Ética Médica paralisa. O ContentFlow gera conteúdo já validado pelo CFM para você publicar com segurança.',
       },
     ],
     examples: [
@@ -68,29 +77,31 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   },
 
   nutricionistas: {
+    slug: 'nutricionistas',
     specialty: 'Nutrição',
+    council: 'CFN',
     icon: Salad,
     pageTitle: 'ContentFlow para Nutricionistas | Posts que atraem pacientes',
-    metaDescription:
-      'Conteúdo pronto para nutricionistas que querem crescer no Instagram sem perder tempo. Posts sobre emagrecimento, estética e saúde.',
+    metaDescription: 'Gere conteúdo para Instagram validado pelo CFN em segundos. Posts de nutrição sobre emagrecimento, estética e saúde, direcionados para o paciente certo.',
+    keywords: 'conteúdo para nutricionistas instagram, marketing nutricionista, posts para nutricionistas, marketing nutrição CFN, conteúdo nutrição instagram',
     hero: {
       badge: 'Para nutricionistas',
       headline: 'Posts que atraem pacientes para emagrecimento, estética e saúde',
-      sub: 'Conteúdo pronto para nutricionistas que querem crescer no Instagram sem perder tempo criando do zero toda semana.',
+      sub: 'Conteúdo pronto para nutricionistas que querem crescer no Instagram sem criar do zero toda semana. Validado pelo CFN antes de publicar.',
     },
-    painHeadline: 'Por que nutricionistas com bom conteúdo não convertem em consultas',
+    painHeadline: 'O que trava nutricionistas no Instagram',
     pains: [
       {
-        title: 'Dificuldade em gerar engajamento real',
-        desc: 'Curtidas não pagam o aluguel. O problema é conteúdo que não fala diretamente com o paciente que você quer atrair. Engajamento sem direção não converte.',
+        title: 'Conteúdo genérico não converte',
+        desc: 'Receita e dica de alimentação entretêm. Conteúdo que fala direto com a dor do paciente converte em consulta. A diferença está na direção, não no volume.',
       },
       {
         title: 'Concorrência alta no digital',
-        desc: 'Todo nutricionista está no Instagram. A diferença está em quem tem conteúdo direcionado para o paciente certo, não em quem posta mais ou tem mais seguidores.',
+        desc: 'Todo nutricionista está no Instagram. A diferença está em quem tem conteúdo direcionado para o paciente certo, não em quem posta mais.',
       },
       {
-        title: 'Conteúdo genérico não converte em consultas',
-        desc: 'Receita e dica de alimentação entretêm. Conteúdo que fala direto com a dor do paciente converte. A diferença está na direção, não no volume.',
+        title: 'Insegurança com as normas do CFN',
+        desc: 'Termos como "detox" e "alimento que queima gordura" podem violar o Código de Ética. O ContentFlow gera conteúdo dentro das normas do CFN.',
       },
     ],
     examples: [
@@ -108,17 +119,19 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   },
 
   dentistas: {
+    slug: 'dentistas',
     specialty: 'Odontologia',
+    council: 'CFO',
     icon: Smile,
     pageTitle: 'ContentFlow para Dentistas | Conteúdo que atrai pacientes para procedimentos',
-    metaDescription:
-      'Conteúdo que atrai pacientes para procedimentos odontológicos. De clareamento a implantes, gere posts que convertem em consultas agendadas.',
+    metaDescription: 'Gere conteúdo para Instagram validado pelo CFO em segundos. Posts de odontologia que educam e convertem em consultas agendadas.',
+    keywords: 'conteúdo para dentistas instagram, marketing odontológico, posts para dentistas, marketing dentista CFO, conteúdo odontologia instagram',
     hero: {
       badge: 'Para dentistas',
       headline: 'Conteúdo que atrai pacientes para procedimentos odontológicos',
-      sub: 'De clareamento a implantes, gere posts que educam, geram valor e convertem em consultas agendadas.',
+      sub: 'De clareamento a implantes, gere posts que educam, geram valor e convertem em consultas agendadas. Validado pelo CFO.',
     },
-    painHeadline: 'Por que pacientes não marcam mesmo sabendo que precisam',
+    painHeadline: 'O que trava dentistas no Instagram',
     pains: [
       {
         title: 'Pacientes não entendem o valor dos procedimentos',
@@ -129,8 +142,8 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
         desc: 'Indicação é ótima, mas não escala. Presença digital atrai paciente novo que nunca te conheceu e chega pronto para marcar consulta.',
       },
       {
-        title: 'Dificuldade em explicar procedimentos sem parecer vendedor',
-        desc: 'Conteúdo que educa sobre o procedimento com clareza gera interesse natural antes de qualquer proposta de orçamento ou abordagem comercial.',
+        title: 'Medo de violar as normas do CFO',
+        desc: 'Fotos antes/depois e garantias de resultado são proibidas pelo CFO. O ContentFlow gera conteúdo dentro das normas para você publicar sem risco.',
       },
     ],
     examples: [
@@ -148,29 +161,31 @@ const VERTICAL_DATA: Record<string, VerticalData> = {
   },
 
   psicologos: {
+    slug: 'psicologos',
     specialty: 'Psicologia',
+    council: 'CFP',
     icon: Brain,
     pageTitle: 'ContentFlow para Psicólogos | Posts que conectam com pacientes certos',
-    metaDescription:
-      'Conteúdo sensível, ético e direcionado para quem precisa de terapia. Posts de psicologia que geram identificação e constroem confiança.',
+    metaDescription: 'Gere conteúdo para Instagram validado pelo CFP em segundos. Posts de psicologia sensíveis, éticos e que geram identificação com quem precisa de terapia.',
+    keywords: 'conteúdo para psicólogos instagram, marketing psicólogo, posts para psicólogos, marketing psicologia CFP, conteúdo saúde mental instagram',
     hero: {
       badge: 'Para psicólogos',
       headline: 'Posts que conectam com pacientes certos para terapia',
-      sub: 'Conteúdo sensível, ético e direcionado para quem precisa do seu atendimento. Sem banalizar. Sem expor demais.',
+      sub: 'Conteúdo sensível, ético e direcionado para quem precisa do seu atendimento. Sem banalizar. Sem expor demais. Validado pelo CFP.',
     },
-    painHeadline: 'Por que é difícil atrair pacientes certos pelo Instagram',
+    painHeadline: 'O que trava psicólogos no Instagram',
     pains: [
       {
         title: 'Dificuldade em se expor sem parecer invasivo',
         desc: 'Psicólogo que aparece com conteúdo sensível e ético vira referência. O ContentFlow sabe a linha entre educar e expor, entre acolher e banalizar.',
       },
       {
-        title: 'Medo de banalizar o conteúdo de saúde mental',
-        desc: 'O equilíbrio entre acessível e profundo é difícil de acertar sozinho. O ContentFlow cria conteúdo que educa sem simplificar demais e sem afastar quem precisa.',
+        title: 'Medo de banalizar saúde mental',
+        desc: 'O equilíbrio entre acessível e profundo é difícil de acertar sozinho. O ContentFlow cria conteúdo que educa sem simplificar demais.',
       },
       {
-        title: 'Dificuldade de criar conexão emocional pelo texto',
-        desc: 'Saúde mental exige empatia antes de técnica. O conteúdo é feito para gerar identificação primeiro, confiança depois, e interesse em marcar sessão por consequência.',
+        title: 'Insegurança com as normas do CFP',
+        desc: 'Garantir resultado terapêutico ou diagnosticar o leitor viola o código de ética. O ContentFlow gera conteúdo dentro das normas do CFP.',
       },
     ],
     examples: [
@@ -196,27 +211,40 @@ const STATS = [
 ]
 
 const PLANS = [
-  { name: 'Starter', price: 27, limit: '10 conteúdos/mês', highlight: false,
-    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades'] },
-  { name: 'Growth', price: 47, limit: '30 conteúdos/mês', highlight: true,
-    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Histórico de conteúdo'] },
-  { name: 'Pro', price: 97, limit: '100 conteúdos/mês', highlight: false,
-    features: ['100 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Histórico de conteúdo'] },
+  {
+    name: 'Starter',
+    price: 47,
+    limit: '10 conteúdos/mês',
+    highlight: false,
+    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Validação ética (CFM/CFO/CFP/CFN)'],
+  },
+  {
+    name: 'Growth',
+    price: 97,
+    limit: '30 conteúdos/mês',
+    highlight: true,
+    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Validação ética (CFM/CFO/CFP/CFN)', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
+  },
+  {
+    name: 'Pro',
+    price: 127,
+    limit: '50 conteúdos/mês',
+    highlight: false,
+    features: ['50 conteúdos por mês', 'Carrossel, Post e Story', 'Todas as especialidades', 'Analisador de Compliance (CFM/CFO/CFP/CFN)', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
+  },
 ]
 
 const HOW_IT_WORKS = [
-  { icon: Pencil,         step: '01', title: 'Escolha sua especialidade',         desc: 'Medicina, Nutrição, Odonto ou Psico. A linguagem e os temas já são adaptados para a sua área de forma automática.' },
-  { icon: LayoutTemplate, step: '02', title: 'Defina o tipo de paciente',         desc: 'Estético, preventivo, dor, crônico ou premium. Quanto mais específico, mais certeiro o conteúdo para atrair quem você quer.' },
-  { icon: Download,       step: '03', title: 'Receba posts prontos para publicar', desc: 'Carrossel, post ou story prontos em minutos. Revise, ajuste o que quiser e publique quando quiser.' },
+  { icon: Pencil,         step: '01', title: 'Escolha sua especialidade',          desc: 'Medicina, Nutrição, Odonto ou Psico. A linguagem e os temas já são adaptados para a sua área de forma automática.' },
+  { icon: LayoutTemplate, step: '02', title: 'Defina o tipo de paciente',          desc: 'Estético, preventivo, dor, crônico ou premium. Quanto mais específico, mais certeiro o conteúdo.' },
+  { icon: Download,       step: '03', title: 'Receba posts prontos para publicar', desc: 'Carrossel, post ou story prontos em segundos. Revise, ajuste o que quiser e publique.' },
 ]
 
 const FORMATS = [
-  { key: 'carousel' as const, icon: Image,      label: 'Por tipo de paciente',          desc: 'Posts para estético, dor, preventivo, crônico ou premium. Cada conteúdo calibrado para atrair quem você quer na agenda.' },
-  { key: 'post'     as const, icon: FileText,   label: 'Linguagem da sua especialidade', desc: 'Medicina, Nutrição, Odonto, Psico: temas e linguagem específicos para a sua área. Nada de conteúdo genérico.' },
-  { key: 'story'    as const, icon: Smartphone, label: 'Foco em agenda, não em curtidas', desc: 'Posts pensados para gerar consultas. O engajamento é consequência. O agendamento é o objetivo.' },
+  { key: 'carousel', icon: Image,      label: 'Por tipo de paciente',           desc: 'Posts para estético, dor, preventivo, crônico ou premium. Cada conteúdo calibrado para atrair quem você quer na agenda.' },
+  { key: 'post',     icon: FileText,   label: 'Linguagem da sua especialidade',  desc: 'Temas e linguagem específicos para a sua área. Nada de conteúdo genérico que serve para qualquer profissional.' },
+  { key: 'story',    icon: Smartphone, label: 'Foco em agenda, não em curtidas', desc: 'Posts pensados para gerar consultas. O engajamento é consequência. O agendamento é o objetivo.' },
 ]
-
-// ── component ─────────────────────────────────────────────
 
 export default function VerticalLanding() {
   const { pathname } = useLocation()
@@ -224,17 +252,82 @@ export default function VerticalLanding() {
   const slug = pathname.replace(/^\/para-/, '')
   const data = VERTICAL_DATA[slug] ?? null
 
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+
   useEffect(() => {
     if (!data) return
+    const canonical = `${BASE_URL}/para-${data.slug}`
+
+    // Title and description
     document.title = data.pageTitle
-    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null
-    if (!meta) {
-      meta = document.createElement('meta')
-      meta.name = 'description'
-      document.head.appendChild(meta)
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null
+    if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = 'description'; document.head.appendChild(metaDesc) }
+    metaDesc.content = data.metaDescription
+
+    // Keywords
+    let metaKw = document.querySelector('meta[name="keywords"]') as HTMLMetaElement | null
+    if (!metaKw) { metaKw = document.createElement('meta'); metaKw.name = 'keywords'; document.head.appendChild(metaKw) }
+    metaKw.content = data.keywords
+
+    // Canonical
+    let linkCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
+    if (!linkCanonical) { linkCanonical = document.createElement('link'); linkCanonical.rel = 'canonical'; document.head.appendChild(linkCanonical) }
+    linkCanonical.href = canonical
+
+    // Open Graph
+    const ogTags: Record<string, string> = {
+      'og:title': data.pageTitle,
+      'og:description': data.metaDescription,
+      'og:url': canonical,
+      'og:type': 'website',
+      'twitter:card': 'summary_large_image',
+      'twitter:title': data.pageTitle,
+      'twitter:description': data.metaDescription,
     }
-    meta.content = data.metaDescription
-    return () => { document.title = 'ContentFlow' }
+    Object.entries(ogTags).forEach(([prop, content]) => {
+      const attr = prop.startsWith('twitter:') ? 'name' : 'property'
+      let el = document.querySelector(`meta[${attr}="${prop}"]`) as HTMLMetaElement | null
+      if (!el) { el = document.createElement('meta'); el.setAttribute(attr, prop); document.head.appendChild(el) }
+      el.content = content
+    })
+
+    // JSON-LD
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: data.pageTitle,
+      description: data.metaDescription,
+      url: canonical,
+      publisher: {
+        '@type': 'Organization',
+        name: 'ContentFlow',
+        url: BASE_URL,
+        logo: { '@type': 'ImageObject', url: `${BASE_URL}/favicon.svg` },
+      },
+      mainEntity: {
+        '@type': 'SoftwareApplication',
+        name: 'ContentFlow',
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        offers: {
+          '@type': 'AggregateOffer',
+          priceCurrency: 'BRL',
+          lowPrice: '47',
+          highPrice: '127',
+        },
+        description: `Gerador de conteúdo para Instagram para ${data.specialty}. Posts, carrosséis e stories validados pelo ${data.council}.`,
+      },
+    }
+    let scriptLd = document.querySelector('script[data-vertical-ld]') as HTMLScriptElement | null
+    if (!scriptLd) { scriptLd = document.createElement('script'); scriptLd.type = 'application/ld+json'; scriptLd.setAttribute('data-vertical-ld', '1'); document.head.appendChild(scriptLd) }
+    scriptLd.textContent = JSON.stringify(jsonLd)
+
+    return () => {
+      document.title = 'ContentFlow'
+      linkCanonical?.remove()
+      scriptLd?.remove()
+      metaKw?.remove()
+    }
   }, [data])
 
   if (!data) return <Navigate to="/" replace />
@@ -244,10 +337,10 @@ export default function VerticalLanding() {
   return (
     <div className="min-h-screen bg-background">
 
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
-          <Link to="/">
+          <Link to="/" aria-label="ContentFlow">
             <svg width="140" height="34" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g>
                 <path d="M5 30 C11 26, 17 34, 23 30 C29 26, 35 34, 41 30 L41 37 C35 41, 29 33, 23 37 C17 41, 11 33, 5 37 Z" fill="hsl(var(--primary))"/>
@@ -266,41 +359,50 @@ export default function VerticalLanding() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-5 pb-20 pt-16 sm:pt-24">
+      {/* HERO */}
+      <section className="relative overflow-hidden px-5 pb-16 pt-14 sm:pt-20">
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-primary/[0.05] blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className={`mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold text-primary`}>
-            <Icon className="h-3.5 w-3.5" />
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-xs font-semibold text-primary">
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             {data.hero.badge}
           </div>
 
-          <h1 className="mb-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl" style={{ textWrap: 'balance' }}>
+          <h1 className="mb-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl" style={{ textWrap: 'balance' } as React.CSSProperties}>
             {data.hero.headline}
           </h1>
 
-          <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg" style={{ textWrap: 'pretty' }}>
+          <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg" style={{ textWrap: 'pretty' } as React.CSSProperties}>
             {data.hero.sub}
           </p>
 
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Button size="xl" variant="cta" onClick={() => navigate('/login')} className="group shadow-lg shadow-primary/20">
               Testar grátis por 7 dias
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
             <p className="text-xs text-muted-foreground">Sem cartão de crédito</p>
+          </div>
+
+          {/* Remotion demo específico da especialidade */}
+          <div className="mx-auto mt-10 w-full max-w-2xl overflow-hidden rounded-2xl shadow-2xl shadow-black/20 ring-1 ring-primary/10">
+            <Suspense fallback={<div className="aspect-video w-full rounded-2xl bg-[#0a1628]" />}>
+              <div style={{ aspectRatio: "720/420" }}>
+                <VerticalHeroDemoPlayer vertical={slug} />
+              </div>
+            </Suspense>
           </div>
         </div>
       </section>
 
-      {/* ── STATS BAR ── */}
+      {/* STATS BAR */}
       <div className="border-y border-border/60 bg-card/60">
         <div className="mx-auto max-w-4xl px-5 py-5">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {STATS.map(s => (
               <div key={s.label} className="flex flex-col items-center gap-1 text-center">
-                <s.icon className="mb-0.5 h-4 w-4 text-primary/60" />
+                <s.icon className="mb-0.5 h-4 w-4 text-primary/60" aria-hidden="true" />
                 <span className="text-xl font-bold text-foreground">{s.value}</span>
                 <span className="text-xs text-muted-foreground">{s.label}</span>
               </div>
@@ -309,11 +411,21 @@ export default function VerticalLanding() {
         </div>
       </div>
 
-      {/* ── PAIN POINTS ── */}
-      <section className="px-5 py-16 sm:py-24">
+      {/* COMPLIANCE BADGE */}
+      <div className="border-b border-border/40 bg-primary/[0.03] px-5 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-center gap-3">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+          <p className="text-center text-sm text-muted-foreground">
+            Todo conteúdo gerado é validado automaticamente pelo <strong className="text-foreground">{data.council}</strong> antes de você publicar. Publique sem medo de punição do conselho.
+          </p>
+        </div>
+      </div>
+
+      {/* PAIN POINTS */}
+      <section className="px-5 py-10 sm:py-16">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Reconhece isso?</p>
-          <h2 className="mb-12 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Por que isso acontece</p>
+          <h2 className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' } as React.CSSProperties}>
             {data.painHeadline}
           </h2>
 
@@ -334,94 +446,14 @@ export default function VerticalLanding() {
         </div>
       </section>
 
-      {/* ── EXAMPLES ── */}
-      <section className="bg-card/40 px-5 py-16 sm:py-24">
-        <div className="mx-auto max-w-3xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Posts reais</p>
-          <h2 className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Exemplos de posts para {data.specialty.toLowerCase()}
-          </h2>
-          <p className="mb-10 text-center text-sm text-muted-foreground">
-            Posts reais gerados pelo ContentFlow. Clique em qualquer um para ter uma ideia do que você vai receber.
-          </p>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {data.examples.map((ex, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-4`}
-              >
-                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${data.bgGradient} bg-gradient-to-br`}>
-                  <Sparkles className={`h-4 w-4 ${data.color}`} />
-                </div>
-                <p className="text-sm italic text-muted-foreground">{ex}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FORMATS ── */}
-      <section className="px-5 py-16 sm:py-24">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Por que funciona</p>
-          <h2 className="mb-12 text-center text-2xl font-bold text-foreground sm:text-3xl" style={{ textWrap: 'balance' }}>
-            Conteúdo direcionado para o paciente certo
-          </h2>
-
-          <div className="grid gap-5 sm:grid-cols-3">
-            {FORMATS.map(f => (
-              <div
-                key={f.key}
-                className="rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-1.5 text-base font-semibold text-foreground">{f.label}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="bg-card/40 px-5 py-16 sm:py-24">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Como funciona</p>
-          <h2 className="mb-12 text-center text-2xl font-bold text-foreground sm:text-3xl">
-            Em três passos, seu conteúdo está pronto para publicar
-          </h2>
-
-          <div className="grid gap-5 sm:grid-cols-3">
-            {HOW_IT_WORKS.map(item => (
-              <div
-                key={item.step}
-                className="relative rounded-2xl border border-border bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl"
-              >
-                <span className="absolute right-5 top-4 text-4xl font-extrabold text-foreground/[0.04] select-none">
-                  {item.step}
-                </span>
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-2 text-base font-semibold text-foreground">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PRICING ── */}
-      <section className="px-5 py-16 sm:py-24" id="planos">
+      {/* PRICING */}
+      <section className="px-5 py-10 sm:py-16" id="planos">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">Planos</p>
           <h2 className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
             Comece a atrair pacientes hoje
           </h2>
-          <p className="mx-auto mb-12 max-w-md text-center text-sm text-muted-foreground">
+          <p className="mx-auto mb-10 max-w-md text-center text-sm text-muted-foreground">
             7 dias grátis. Sem cartão de crédito. Cancele quando quiser.
           </p>
 
@@ -444,24 +476,31 @@ export default function VerticalLanding() {
                   {plan.name}
                 </p>
                 <div className="mb-1 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-foreground">R${plan.price}</span>
+                  <span className="text-sm text-muted-foreground">R$</span>
+                  <span className="text-4xl font-extrabold text-foreground">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">/mês</span>
                 </div>
                 <p className="mb-6 text-xs text-muted-foreground">{plan.limit}</p>
                 <ul className="mb-7 flex-1 space-y-2.5">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-foreground">
-                      <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlight ? 'text-primary' : 'text-muted-foreground'}`} />
-                      {f}
-                    </li>
-                  ))}
+                  {plan.features.map(f => {
+                    const isCompliance = f.startsWith('Analisador de Compliance')
+                    return (
+                      <li key={f} className="flex items-start gap-2.5 text-sm text-foreground">
+                        {isCompliance
+                          ? <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                          : <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlight ? 'text-primary' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        }
+                        <span className={isCompliance ? 'font-semibold text-primary' : ''}>{f}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
                 <Button
                   variant={plan.highlight ? 'cta' : 'outline'}
                   className={`w-full ${plan.highlight ? 'shadow-md shadow-primary/20' : ''}`}
                   onClick={() => navigate('/login')}
                 >
-                  {plan.highlight && <Zap className="h-4 w-4" />}
+                  {plan.highlight && <Zap className="h-4 w-4" aria-hidden="true" />}
                   Começar grátis por 7 dias
                 </Button>
               </div>
@@ -470,20 +509,20 @@ export default function VerticalLanding() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ── */}
-      <section className="px-5 py-16 sm:py-24">
+      {/* FINAL CTA */}
+      <section className="px-5 py-10 sm:py-16">
         <div
-          className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-8 py-16 text-center sm:px-16"
+          className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-8 py-14 text-center sm:px-16"
           style={{ background: 'linear-gradient(135deg, hsl(160,84%,20%), hsl(170,60%,28%))' }}
         >
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
           <div className="relative">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white/80">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               Sem cartão de crédito
             </div>
-            <h2 className="mb-4 text-3xl font-extrabold text-white sm:text-4xl" style={{ textWrap: 'balance' }}>
+            <h2 className="mb-4 text-3xl font-extrabold text-white sm:text-4xl" style={{ textWrap: 'balance' } as React.CSSProperties}>
               {data.cta.headline}
             </h2>
             <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/70">
@@ -495,27 +534,26 @@ export default function VerticalLanding() {
               className="group bg-white text-primary hover:bg-white/90 shadow-xl"
             >
               Testar grátis por 7 dias
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer className="border-t border-border px-5 py-8">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ContentFlow. Todos os direitos reservados.</p>
           <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-            <Link to="/para-medicos"       className="transition-colors hover:text-foreground">Para médicos</Link>
+            <Link to="/para-medicos"        className="transition-colors hover:text-foreground">Para médicos</Link>
             <Link to="/para-nutricionistas" className="transition-colors hover:text-foreground">Para nutricionistas</Link>
-            <Link to="/para-dentistas"     className="transition-colors hover:text-foreground">Para dentistas</Link>
-            <Link to="/para-psicologos"    className="transition-colors hover:text-foreground">Para psicólogos</Link>
-            <Link to="/termos"             className="transition-colors hover:text-foreground">Termos</Link>
-            <Link to="/privacidade"        className="transition-colors hover:text-foreground">Privacidade</Link>
+            <Link to="/para-dentistas"      className="transition-colors hover:text-foreground">Para dentistas</Link>
+            <Link to="/para-psicologos"     className="transition-colors hover:text-foreground">Para psicólogos</Link>
+            <Link to="/termos"              className="transition-colors hover:text-foreground">Termos</Link>
+            <Link to="/privacidade"         className="transition-colors hover:text-foreground">Privacidade</Link>
           </div>
         </div>
       </footer>
     </div>
   )
 }
-
