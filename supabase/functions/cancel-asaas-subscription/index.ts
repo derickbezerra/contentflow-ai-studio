@@ -60,10 +60,18 @@ Deno.serve(async (req) => {
     }
 
     // Delete (cancel) the subscription on Asaas
-    const res = await fetch(`${ASAAS_API_URL}/subscriptions/${profile.asaas_subscription_id}`, {
-      method: 'DELETE',
-      headers: { 'access_token': ASAAS_API_KEY },
-    })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 15000)
+    let res: Response
+    try {
+      res = await fetch(`${ASAAS_API_URL}/subscriptions/${profile.asaas_subscription_id}`, {
+        signal: controller.signal,
+        method: 'DELETE',
+        headers: { 'access_token': ASAAS_API_KEY },
+      })
+    } finally {
+      clearTimeout(timer)
+    }
 
     if (!res.ok) {
       const err = await res.text()

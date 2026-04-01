@@ -50,7 +50,6 @@ import {
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const ADMIN_EMAIL = "bezerra@belvy.com.br";
 
 const VERTICAL_LABELS: Record<string, string> = {
   doctor: "Medicina",
@@ -165,7 +164,7 @@ function AdminInner() {
   // Run only once — no dependency on user/navigate to avoid stale redirects.
   useEffect(() => {
     if (!user) { navigate("/app"); return; }
-    if (user.email?.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    if (user.email !== import.meta.env.VITE_ADMIN_EMAIL) {
       navigate("/app");
       return;
     }

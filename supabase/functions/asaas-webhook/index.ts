@@ -56,19 +56,27 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Invalid event structure' }), { status: 400 })
     }
 
-    const eventId = event.id ?? `${event.event}_${event.payment?.id ?? event.subscription?.id ?? crypto.randomUUID()}`
+    const paymentId = event.payment?.id ?? null
+    const subscriptionId = event.subscription?.id ?? (typeof event.subscription === 'string' ? event.subscription : null)
+    const stableId = paymentId ?? subscriptionId
+
+    const eventId = stableId
+      ? `${event.event}_${stableId}`
+      : null
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Idempotency — ignore already-processed events
-    const { error: dupErr } = await supabase
-      .from('processed_asaas_events')
-      .insert({ id: eventId })
-    if (dupErr?.code === '23505') {
-      return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 })
+    // Idempotency — only deduplicate events with a stable ID
+    if (eventId) {
+      const { error: dupErr } = await supabase
+        .from('processed_asaas_events')
+        .insert({ id: eventId })
+      if (dupErr?.code === '23505') {
+        return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 })
+      }
     }
 
     // -----------------------------------------------------------------------

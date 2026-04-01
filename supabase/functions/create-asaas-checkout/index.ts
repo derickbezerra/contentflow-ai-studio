@@ -29,19 +29,26 @@ const PLAN_PRICES: Record<string, number> = {
 }
 
 async function asaas(path: string, method = 'GET', body?: unknown) {
-  const res = await fetch(`${ASAAS_API_URL}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'access_token': ASAAS_API_KEY,
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Asaas ${method} ${path} → ${res.status}: ${err}`)
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 15000)
+  try {
+    const res = await fetch(`${ASAAS_API_URL}${path}`, {
+      signal: controller.signal,
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'access_token': ASAAS_API_KEY,
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    })
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`Asaas ${method} ${path} → ${res.status}: ${err}`)
+    }
+    return res.json()
+  } finally {
+    clearTimeout(timer)
   }
-  return res.json()
 }
 
 Deno.serve(async (req) => {

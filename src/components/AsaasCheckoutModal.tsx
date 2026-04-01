@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { X, Loader2, Copy, Check, QrCode, FileText, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -82,6 +82,8 @@ function formatPhone(value: string) {
 
 export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: AsaasCheckoutModalProps) {
   const plan = PLANS.find(p => p.planKey === planKey)
+
+  const submittingRef = useRef(false)
 
   const [step, setStep] = useState<Step>('form')
   const [loading, setLoading] = useState(false)
@@ -172,6 +174,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!plan) return
+    if (submittingRef.current) return  // guard contra double-submit
 
     const rawCpf = cpf.replace(/\D/g, '')
     if (rawCpf.length === 11) {
@@ -189,6 +192,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
       return
     }
 
+    submittingRef.current = true
     setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -226,6 +230,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
       toast.error(err instanceof Error ? err.message : 'Erro ao criar cobrança. Tente novamente.')
     } finally {
       setLoading(false)
+      submittingRef.current = false
     }
   }
 
@@ -391,7 +396,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
               {polling ? (
                 <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Aguardando confirmação do pagamento...</>
               ) : (
-                'Após pagar, seu plano será ativado automaticamente.'
+                'Após pagar, a confirmação chega em segundos.'
               )}
             </div>
 
@@ -405,7 +410,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
             )}
 
             <p className="text-center text-xs text-muted-foreground">
-              O acesso é liberado automaticamente assim que o pagamento for confirmado.
+              O acesso é liberado em segundos após a confirmação do PIX.
             </p>
           </div>
         )}

@@ -23,7 +23,7 @@ export default function PricingModal({ onClose }: PricingModalProps) {
       aria-modal="true"
       aria-labelledby="pricing-modal-title"
     >
-      <div className="relative w-full max-w-2xl rounded-2xl bg-background p-6 shadow-xl">
+      <div className="relative w-full max-w-2xl overflow-y-auto max-h-[90vh] rounded-2xl bg-background p-6 shadow-xl">
         <button
           onClick={onClose}
           aria-label="Fechar"

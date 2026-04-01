@@ -168,7 +168,7 @@ export default function BrandProfile() {
           <div className="mt-10 border-t border-border pt-8">
             <h2 className="mb-1 text-sm font-semibold text-foreground">Assinatura</h2>
             <p className="mb-4 text-xs text-muted-foreground capitalize">
-              Plano {planInfo?.plan} ativo. Para gerenciar ou cancelar, acesse o portal de pagamento.
+              Plano {planInfo?.plan} ativo. Clique no botão abaixo para cancelar sua assinatura.
             </p>
             <Button
               variant="ghost"
