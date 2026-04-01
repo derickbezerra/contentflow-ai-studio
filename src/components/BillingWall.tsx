@@ -45,7 +45,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
         </div>
 
         {reason === 'payment_failed' ? (
-          /* Payment failed: instruct user to check email for Asaas payment link */
+          /* Payment failed: instruct user to check email for payment link */
           <div className="flex flex-col items-center gap-4">
             <Button
               variant="cta"
@@ -98,7 +98,7 @@ export default function BillingWall({ reason }: BillingWallProps) {
                     variant={plan.highlight ? 'cta' : 'outline'}
                     size="sm"
                     className="w-full"
-                    onClick={() => handleCheckout(plan.planKey, plan.name, setLoadingPlan)}
+                    onClick={() => handleCheckout(plan.priceIdEnv, plan.name, setLoadingPlan)}
                     disabled={loadingPlan === plan.name}
                   >
                     {loadingPlan === plan.name ? (

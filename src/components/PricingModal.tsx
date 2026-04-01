@@ -77,7 +77,7 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                 variant={plan.highlight ? 'cta' : 'outline'}
                 size="sm"
                 className="w-full"
-                onClick={() => handleCheckout(plan.planKey, plan.name, setLoadingPlan)}
+                onClick={() => handleCheckout(plan.priceIdEnv, plan.name, setLoadingPlan)}
                 disabled={loadingPlan === plan.name}
               >
                 {loadingPlan === plan.name ? (

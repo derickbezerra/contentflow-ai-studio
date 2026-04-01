@@ -1,64 +1,96 @@
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-
 export const PLANS = [
   {
     name: 'Starter',
     planKey: 'starter',
     price: 'R$47',
-    priceValue: 47,
     limit: '10 conteúdos/mês',
+    priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
     highlight: false,
-    features: ['10 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odontologia e Psicologia'],
+    features: [
+      '10 conteúdos por mês',
+      'Carrossel, Post e Story',
+      'Medicina, Nutrição, Odonto e Psico',
+      'Validação ética (CFM/CFO/CFP/CFN)',
+    ],
   },
   {
     name: 'Growth',
     planKey: 'growth',
     price: 'R$97',
-    priceValue: 97,
     limit: '30 conteúdos/mês',
+    priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
     highlight: true,
-    features: ['30 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odontologia e Psicologia', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
+    features: [
+      '30 conteúdos por mês',
+      'Carrossel, Post e Story',
+      'Medicina, Nutrição, Odonto e Psico',
+      'Perfil de marca personalizado',
+      'Histórico de conteúdo',
+      'Validação ética (CFM/CFO/CFP/CFN)',
+    ],
   },
   {
     name: 'Pro',
     planKey: 'pro',
     price: 'R$127',
-    priceValue: 127,
-    limit: '50 conteúdos/mês',
+    limit: '100 conteúdos/mês',
+    priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
-    features: ['50 conteúdos por mês', 'Carrossel, Post e Story', 'Medicina, Nutrição, Odontologia e Psicologia', 'Analisador de Compliance (CFM/CFO/CFP/CFN)', 'Perfil de marca personalizado', 'Histórico de conteúdo'],
+    features: [
+      '100 conteúdos por mês',
+      'Carrossel, Post e Story',
+      'Medicina, Nutrição, Odonto e Psico',
+      'Perfil de marca personalizado',
+      'Histórico de conteúdo',
+      'Análise de Compliance (50 créditos/mês)',
+      'Validação ética (CFM/CFO/CFP/CFN)',
+    ],
   },
 ]
 
-// Global checkout opener — registered by App.tsx, called by any component
-let _openCheckout: ((planKey: string) => void) | null = null
-
-export function registerCheckoutOpener(fn: (planKey: string) => void) {
-  _openCheckout = fn
-}
-
-export function handleCheckout(
-  planKey: string,
-  _planName: string,
-  setLoadingPlan?: (name: string | null) => void,
-) {
-  if (_openCheckout) {
-    _openCheckout(planKey)
-  } else {
-    toast.error('Checkout não disponível. Recarregue a página.')
-  }
-  // Clear loading state immediately — modal handles its own loading
-  setLoadingPlan?.(null)
-}
-
-export async function cancelSubscription(setLoading: (v: boolean) => void) {
-  setLoading(true)
+export async function handleCheckout(priceIdEnv: string, planName: string, setLoadingPlan?: (p: string | null) => void) {
+  setLoadingPlan?.(planName)
   try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    )
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Sessão inválida')
+    if (!session) {
+      window.location.href = '/login'
+      return
+    }
+    const priceId = import.meta.env[priceIdEnv]
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ priceId }),
+    })
+    const data = await res.json()
+    if (data.url) {
+      window.location.href = data.url
+    }
+  } catch (err) {
+    console.error('Checkout error:', err)
+    setLoadingPlan?.(null)
+  }
+}
 
-    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cancel-asaas-subscription`, {
+export async function handlePortal() {
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    )
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/customer-portal`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,21 +98,11 @@ export async function cancelSubscription(setLoading: (v: boolean) => void) {
         'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
       },
     })
-
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Erro ao cancelar assinatura')
-
-    toast.success('Assinatura cancelada com sucesso.')
-    // Reload to reflect new plan state
-    setTimeout(() => window.location.reload(), 1500)
-  } catch (err: unknown) {
-    toast.error('Erro ao cancelar. Tente novamente.')
-    console.error(err)
-    setLoading(false)
+    if (data.url) window.location.href = data.url
+  } catch (err) {
+    console.error('Portal error:', err)
   }
 }
 
-// Legacy export kept for compatibility — no longer used for redirect
-export async function handlePortal(setLoading: (v: boolean) => void) {
-  await cancelSubscription(setLoading)
-}
+export const cancelSubscription = handlePortal
