@@ -233,7 +233,7 @@ function AdminInner() {
   }
 
   // Normalize — older Edge Function versions may omit some fields
-  const financeiro = stats.financeiro ?? { mrr: 0, arpu: 0, custos: { anthropic: 0, asaas: 0, infraestrutura: 0, total: 0 }, lucro: 0, margem: 0 };
+  const financeiro = stats.financeiro ?? { mrr: 0, arpu: 0, custos: { anthropic: 0, stripe: 0, infraestrutura: 0, total: 0 }, lucro: 0, margem: 0 };
   const activation = stats.activation ?? { activationRate: 0, avgDaysToFirstGeneration: null, generationsPerActiveUser: 0, activeUsers: 0 };
   const cohorts    = stats.cohorts ?? [];
   const cancelSurveys = stats.cancelSurveys ?? { byReason: {}, reasonLabels: {}, recent: [] };
@@ -251,7 +251,7 @@ function AdminInner() {
 
   const custoData = [
     { name: "Anthropic", value: financeiro.custos.anthropic, color: "#f59e0b" },
-    { name: "Asaas", value: financeiro.custos.asaas, color: "#00b37e" },
+    { name: "Stripe", value: financeiro.custos.stripe ?? 0, color: "#6366f1" },
     { name: "Infraestrutura", value: financeiro.custos.infraestrutura, color: "#94a3b8" },
   ];
 
