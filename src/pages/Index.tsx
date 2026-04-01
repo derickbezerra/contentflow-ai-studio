@@ -518,29 +518,62 @@ const Index = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Show success toast if redirected back to app after checkout
+  // Post-checkout: fire pixels once, then poll for plan activation
+  const [checkoutPolling, setCheckoutPolling] = useState(false);
+  const pollAttemptsRef = useRef(0);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("checkout") === "success") {
-      toast.success("Assinatura confirmada! Bem-vindo ao ContentFlow.");
-      const planValue = Number(params.get("value") ?? 0);
-      window.history.replaceState({}, "", "/app");
-      setTimeout(() => refetch(), 3000);
+    if (params.get("checkout") !== "success") return;
 
-      // Meta Pixel — Purchase
-      if (typeof (window as any).fbq === "function") {
-        (window as any).fbq("track", "Purchase", { currency: "BRL", value: planValue });
-      }
-      // Google Analytics 4 — purchase
-      if (typeof (window as any).gtag === "function") {
-        (window as any).gtag("event", "purchase", { currency: "BRL", value: planValue });
-      }
-      // TikTok Pixel — PlaceAnOrder
-      if (typeof (window as any).ttq?.track === "function") {
-        (window as any).ttq.track("PlaceAnOrder", { currency: "BRL", value: planValue });
-      }
+    const planValue = Number(params.get("value") ?? 0);
+    window.history.replaceState({}, "", "/app");
+
+    // Fire conversion pixels immediately
+    if (typeof (window as any).fbq === "function") {
+      (window as any).fbq("track", "Purchase", { currency: "BRL", value: planValue });
     }
-  }, [refetch]);
+    if (typeof (window as any).gtag === "function") {
+      (window as any).gtag("event", "purchase", { currency: "BRL", value: planValue });
+    }
+    if (typeof (window as any).ttq?.track === "function") {
+      (window as any).ttq.track("PlaceAnOrder", { currency: "BRL", value: planValue });
+    }
+
+    // Start polling for plan activation
+    pollAttemptsRef.current = 0;
+    setCheckoutPolling(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll plan status every 2s for up to 30s after checkout
+  useEffect(() => {
+    if (!checkoutPolling) return;
+
+    const maxAttempts = 15; // 15 x 2s = 30s
+    const poll = setInterval(() => {
+      pollAttemptsRef.current++;
+      refetch(true);
+    }, 2000);
+
+    return () => { clearInterval(poll); };
+  }, [checkoutPolling, refetch]);
+
+  // React to planInfo changes during checkout polling
+  useEffect(() => {
+    if (!checkoutPolling) return;
+
+    if (planInfo && planInfo.plan !== "free" && planInfo.effectivePlan !== "free") {
+      setCheckoutPolling(false);
+      toast.success("Plano ativado com sucesso!");
+      return;
+    }
+
+    if (pollAttemptsRef.current >= 15) {
+      setCheckoutPolling(false);
+      toast.info("Seu pagamento foi confirmado. O plano pode levar alguns minutos para ativar. Tente recarregar a página.");
+    }
+  }, [checkoutPolling, planInfo]);
 
   const handleGenerate = async () => {
     if (!idea.trim()) return;

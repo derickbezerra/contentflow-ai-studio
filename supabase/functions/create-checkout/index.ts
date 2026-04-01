@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('users')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, stripe_subscription_id, payment_status')
       .eq('id', user.id)
       .single()
 
@@ -39,6 +39,18 @@ Deno.serve(async (req) => {
       })
       customerId = customer.id
       await supabase.from('users').update({ stripe_customer_id: customerId }).eq('id', user.id)
+    }
+
+    // If user already has an active subscription, redirect to billing portal instead
+    if (profile?.stripe_subscription_id && profile?.payment_status === 'active') {
+      const appUrl = req.headers.get('origin') || Deno.env.get('APP_URL') || 'https://contentflow.vercel.app'
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${appUrl}/app`,
+      })
+      return new Response(JSON.stringify({ url: portalSession.url }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     const { priceId } = await req.json()

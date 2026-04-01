@@ -252,10 +252,62 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
     }
     messageContent.push({ type: 'text', text: textContent })
 
-    const PRIMARY_MODEL = 'claude-opus-4-5'
-    const SECONDARY_MODEL = 'claude-sonnet-4-6'
-    const FALLBACK_MODEL = 'claude-haiku-4-5-20251001'
+    const PRIMARY_MODEL = Deno.env.get('COMPLIANCE_PRIMARY_MODEL') ?? 'claude-opus-4-5'
+    const SECONDARY_MODEL = Deno.env.get('COMPLIANCE_SECONDARY_MODEL') ?? 'claude-sonnet-4-6'
+    const FALLBACK_MODEL = Deno.env.get('COMPLIANCE_FALLBACK_MODEL') ?? 'claude-haiku-4-5-20251001'
     const TIMEOUT_MS = 30_000
+    const MAX_429_RETRIES = 3
+
+    async function sendAdminAlert(status: number, errText: string): Promise<void> {
+      const resendKey = Deno.env.get('RESEND_API_KEY')
+      const adminEmail = Deno.env.get('ADMIN_EMAIL')
+      if (!resendKey || !adminEmail) {
+        console.error('RESEND_API_KEY or ADMIN_EMAIL not configured, skipping admin alert')
+        return
+      }
+
+      // Check if we already sent an alert today
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const { count: alertCount } = await supabase
+        .from('compliance_analyses')
+        .select('*', { count: 'exact', head: true })
+        .eq('vertical', '__admin_alert__')
+        .gte('created_at', todayStart.toISOString())
+
+      if ((alertCount ?? 0) > 0) {
+        console.warn('Admin alert already sent today, skipping')
+        return
+      }
+
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${resendKey}`,
+          },
+          body: JSON.stringify({
+            from: 'ContentFlow <alerts@flowcontent.com.br>',
+            to: [adminEmail],
+            subject: `[URGENTE] ContentFlow Compliance: Erro Anthropic ${status}`,
+            html: `<p>A API da Anthropic retornou erro <strong>${status}</strong> na function analyze-compliance.</p><p>Isso pode indicar um problema de autenticacao ou billing. Verifique imediatamente.</p><pre>${errText.slice(0, 500)}</pre><p>Horario: ${new Date().toISOString()}</p>`,
+          }),
+        })
+
+        // Record that we sent an alert today
+        await supabase.from('compliance_analyses').insert({
+          user_id: user.id,
+          vertical: '__admin_alert__',
+          post_text: `Auth alert ${status}`,
+          result: { alert: true, status, timestamp: new Date().toISOString() },
+        })
+
+        console.log(`Admin alert sent for Anthropic ${status}`)
+      } catch (alertErr) {
+        console.error('Failed to send admin alert:', alertErr)
+      }
+    }
 
     async function callAnthropicWithFallback(): Promise<{ rawContent: string; model: string }> {
       const models = [PRIMARY_MODEL, SECONDARY_MODEL, FALLBACK_MODEL]
@@ -263,48 +315,76 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
       for (let i = 0; i < models.length; i++) {
         const model = models[i]
         const isLastModel = i === models.length - 1
-        const abortController = new AbortController()
-        const timeout = setTimeout(() => abortController.abort(), TIMEOUT_MS)
 
-        try {
-          const res = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': anthropicKey,
-              'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify({
-              model,
-              max_tokens: 2048,
-              system: SYSTEM_PROMPT,
-              messages: [{ role: 'user', content: messageContent }],
-            }),
-            signal: abortController.signal,
-          })
+        // 429 retry loop for each model
+        for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
+          const abortController = new AbortController()
+          const timeout = setTimeout(() => abortController.abort(), TIMEOUT_MS)
 
-          if (res.status === 529 && !isLastModel) {
-            console.warn(`${model} returned 529, falling back to next model`)
-            continue
+          try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': anthropicKey,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model,
+                max_tokens: 2048,
+                system: SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: messageContent }],
+              }),
+              signal: abortController.signal,
+            })
+
+            // 429: retry same model with exponential backoff
+            if (res.status === 429 && attempt < MAX_429_RETRIES) {
+              const retryAfterHeader = res.headers.get('Retry-After')
+              const backoffSeconds = retryAfterHeader
+                ? parseInt(retryAfterHeader, 10)
+                : Math.pow(2, attempt + 1) // 2s, 4s, 8s
+              console.warn(`Anthropic 429, retry ${attempt + 1}/${MAX_429_RETRIES} for ${model}`)
+              clearTimeout(timeout)
+              await new Promise((r) => setTimeout(r, backoffSeconds * 1000))
+              continue
+            }
+
+            // 529: immediately fall back to next model
+            if (res.status === 529 && !isLastModel) {
+              console.warn(`${model} returned 529, falling back to next model`)
+              clearTimeout(timeout)
+              break
+            }
+
+            // 401/402: admin alert + throw
+            if (res.status === 401 || res.status === 402) {
+              const errText = await res.text()
+              console.error('Anthropic auth/billing error:', errText)
+              await sendAdminAlert(res.status, errText)
+              throw Object.assign(new Error(`Anthropic ${res.status}: ${errText}`), { status: res.status })
+            }
+
+            if (!res.ok) {
+              const errText = await res.text()
+              console.error('Anthropic error:', errText)
+              throw Object.assign(new Error(`Anthropic ${res.status}: ${errText}`), { status: res.status })
+            }
+
+            const data = await res.json()
+            return { rawContent: data.content?.[0]?.text ?? '', model }
+          } catch (err: unknown) {
+            const isAbort = err instanceof DOMException && err.name === 'AbortError'
+            if (isAbort && !isLastModel) {
+              console.warn(`${model} timeout, falling back to next model`)
+              clearTimeout(timeout)
+              break
+            }
+            clearTimeout(timeout)
+            throw err
+          } finally {
+            clearTimeout(timeout)
           }
-
-          if (!res.ok) {
-            const errText = await res.text()
-            console.error('Anthropic error:', errText)
-            throw Object.assign(new Error(`Anthropic ${res.status}: ${errText}`), { status: res.status })
-          }
-
-          const data = await res.json()
-          return { rawContent: data.content?.[0]?.text ?? '', model }
-        } catch (err: unknown) {
-          const isAbort = err instanceof DOMException && err.name === 'AbortError'
-          if (isAbort && !isLastModel) {
-            console.warn(`${model} timeout, falling back to next model`)
-            continue
-          }
-          throw err
-        } finally {
-          clearTimeout(timeout)
         }
       }
 

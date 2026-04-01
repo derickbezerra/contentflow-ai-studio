@@ -150,6 +150,9 @@ Para story:
 
 Sempre em Português Brasileiro. Retorne APENAS o JSON.`
 
+const PRIMARY_MODEL = Deno.env.get('ANTHROPIC_PRIMARY_MODEL') ?? 'claude-sonnet-4-6'
+const FALLBACK_MODEL = Deno.env.get('ANTHROPIC_FALLBACK_MODEL') ?? 'claude-haiku-4-5-20251001'
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) })
@@ -259,6 +262,7 @@ Deno.serve(async (req) => {
     // Requisições simultâneas podem passar pelo check ao mesmo tempo antes de qualquer
     // insert ser registrado — o bloqueio é best-effort, não atômico. Para eliminar
     // completamente a race condition seria necessário uma função RPC com locking explícito.
+    let forceHaiku = false
     {
       const threshold = parseFloat(Deno.env.get('ANTHROPIC_DAILY_COST_THRESHOLD') ?? '5')
       const today = new Date().toISOString().slice(0, 10)
@@ -271,11 +275,16 @@ Deno.serve(async (req) => {
         return sum + r.input_tokens * (haiku ? 0.25 : 3) / 1_000_000
                    + r.output_tokens * (haiku ? 1.25 : 15) / 1_000_000
       }, 0)
-      if (dailyCostUSD >= threshold) {
+      if (dailyCostUSD >= threshold * 2) {
+        // Emergency stop: cost exceeded 2x threshold
         return new Response(JSON.stringify({ error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.' }), {
           status: 503,
           headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         })
+      }
+      if (dailyCostUSD >= threshold) {
+        console.warn('Daily cost threshold reached, switching to Haiku-only mode')
+        forceHaiku = true
       }
     }
 
@@ -378,12 +387,47 @@ Deno.serve(async (req) => {
       throw new Error('Unbalanced JSON')
     }
 
+    async function sendAnthropicAuthAlert(errorStatus: number) {
+      try {
+        const today = new Date().toISOString().slice(0, 10)
+        const { count } = await supabaseAdmin
+          .from('cost_alerts_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('alert_type', 'anthropic_auth_error')
+          .gte('created_at', today)
+        if ((count ?? 0) > 0) return // Already sent today
+
+        const resendKey = Deno.env.get('RESEND_API_KEY')
+        const adminEmail = Deno.env.get('ADMIN_EMAIL') ?? 'bezerra@belvy.com.br'
+        if (!resendKey) return
+
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'ContentFlow <contato@flowcontent.com.br>',
+            to: [adminEmail],
+            subject: '[URGENTE] ContentFlow: Erro de autenticação Anthropic',
+            html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a2e23"><div style="background:#dc2626;padding:24px 32px;border-radius:12px 12px 0 0"><p style="color:#fff;font-size:18px;font-weight:600;margin:0">Erro de autenticação Anthropic</p></div><div style="border:1px solid #e2e8f0;border-top:none;padding:28px 32px;border-radius:0 0 12px 12px"><p style="font-size:15px;margin:0 0 12px">A API da Anthropic retornou erro <strong>${errorStatus}</strong>. Verifique a API key e o billing em <a href="https://console.anthropic.com">console.anthropic.com</a>.</p><p style="font-size:14px;color:#64748b;margin:0">As gerações estão bloqueadas até que o problema seja resolvido.</p></div></div>`,
+          }),
+        }).catch(e => console.error('auth alert email error:', e))
+
+        await supabaseAdmin.from('cost_alerts_log').insert({
+          alert_type: 'anthropic_auth_error',
+          threshold_usd: 0,
+          daily_cost_usd: 0,
+        })
+      } catch (e) {
+        console.error('sendAnthropicAuthAlert error:', e)
+      }
+    }
+
     async function callClaude(ct: string): Promise<{ output: Record<string, unknown>; model: string; usage: { input_tokens: number; output_tokens: number } }> {
       const userMessage = `Tipo: ${ct}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
       const MAX_RETRIES = 3
       const TIMEOUT_MS = 30_000
       let attempt = 0
-      let model = 'claude-sonnet-4-6'
+      let model = forceHaiku ? FALLBACK_MODEL : PRIMARY_MODEL
       while (true) {
         const abortController = new AbortController()
         const timeoutId = setTimeout(() => abortController.abort(), TIMEOUT_MS)
@@ -402,15 +446,18 @@ Deno.serve(async (req) => {
           clearTimeout(timeoutId)
           const status = (err as { status?: number })?.status
           const isAbort = err instanceof DOMException && err.name === 'AbortError'
-          if ((status === 529 || isAbort) && model === 'claude-sonnet-4-6') {
+          if ((status === 529 || isAbort) && model === PRIMARY_MODEL) {
             console.warn(`Sonnet ${isAbort ? 'timeout' : '529'}, falling back to Haiku`)
-            model = 'claude-haiku-4-5-20251001'
+            model = FALLBACK_MODEL
             continue
           }
           if (status === 429 && attempt < MAX_RETRIES - 1) {
             attempt++
             await new Promise(resolve => setTimeout(resolve, 1000 * 2 ** attempt))
             continue
+          }
+          if (status === 401 || status === 402) {
+            sendAnthropicAuthAlert(status).catch(e => console.error('auth alert fire-and-forget error:', e))
           }
           throw err
         }
@@ -457,6 +504,9 @@ Deno.serve(async (req) => {
                   throw Object.assign(new Error('Overloaded'), { status: 529 })
                 }
                 if (!anthropicRes.ok) {
+                  if (anthropicRes.status === 401 || anthropicRes.status === 402) {
+                    sendAnthropicAuthAlert(anthropicRes.status).catch(e => console.error('auth alert fire-and-forget error:', e))
+                  }
                   const errText = await anthropicRes.text()
                   throw Object.assign(new Error(`Anthropic ${anthropicRes.status}: ${errText}`), { status: anthropicRes.status })
                 }
@@ -492,7 +542,7 @@ Deno.serve(async (req) => {
               }
             }
 
-            let streamModel = 'claude-sonnet-4-6'
+            let streamModel = forceHaiku ? FALLBACK_MODEL : PRIMARY_MODEL
             try {
               const result = await streamFromModel(streamModel)
               fullText = result.fullText
@@ -500,9 +550,9 @@ Deno.serve(async (req) => {
             } catch (err: unknown) {
               const status = (err as { status?: number })?.status
               const isAbort = err instanceof DOMException && err.name === 'AbortError'
-              if ((status === 529 || isAbort) && streamModel === 'claude-sonnet-4-6') {
+              if ((status === 529 || isAbort) && streamModel === PRIMARY_MODEL) {
                 console.warn(`Sonnet ${isAbort ? 'timeout' : '529'} (stream), falling back to Haiku`)
-                streamModel = 'claude-haiku-4-5-20251001'
+                streamModel = FALLBACK_MODEL
                 const result = await streamFromModel(streamModel)
                 fullText = result.fullText
                 streamModel = result.model
@@ -514,6 +564,16 @@ Deno.serve(async (req) => {
             const output = JSON.parse(extractJSON(fullText))
             const modelUsed = streamModel.includes('haiku') ? 'haiku' : 'sonnet'
             send(controller, { done: true, output, model_used: modelUsed, new_count: quota.new_count })
+
+            // Log estimated token usage for streaming (approximate)
+            const estimatedInputTokens = Math.ceil((SYSTEM_PROMPT.length + streamMsg.length) / 4)
+            const estimatedOutputTokens = Math.ceil(fullText.length / 4)
+            supabaseAdmin.from('token_usage').insert({
+              user_id: user.id,
+              model: streamModel,
+              input_tokens: estimatedInputTokens,
+              output_tokens: estimatedOutputTokens,
+            }).catch(e => console.error('token_usage log error (stream):', e))
           } catch (e) {
             console.error('Stream error:', e)
             send(controller, { error: 'Erro ao gerar conteúdo. Tente novamente.' })
@@ -554,7 +614,7 @@ Deno.serve(async (req) => {
       }).catch(e => console.error('token_usage log error:', e))
 
       const batchModels = new Set([carousel.model, post.model, story.model])
-      const modelUsed = batchModels.has('claude-haiku-4-5-20251001') ? 'haiku' : 'sonnet'
+      const modelUsed = batchModels.has(FALLBACK_MODEL) ? 'haiku' : 'sonnet'
 
       responsePayload = {
         batch: true,
