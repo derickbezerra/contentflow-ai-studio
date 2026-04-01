@@ -58,11 +58,19 @@ Deno.serve(async (req) => {
 
     const appUrl = req.headers.get('origin') || Deno.env.get('APP_URL') || 'https://contentflow.vercel.app'
 
+    // Map priceId → plan value for conversion tracking
+    const planValueMap: Record<string, number> = {
+      [Deno.env.get('STRIPE_STARTER_PRICE_ID') ?? '']: 47,
+      [Deno.env.get('STRIPE_GROWTH_PRICE_ID')  ?? '']: 97,
+      [Deno.env.get('STRIPE_PRO_PRICE_ID')     ?? '']: 127,
+    }
+    const planValue = planValueMap[priceId] ?? 0
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/app?checkout=success`,
+      success_url: `${appUrl}/app?checkout=success&value=${planValue}`,
       cancel_url: `${appUrl}/app?checkout=cancel`,
       metadata: { user_id: user.id },
       allow_promotion_codes: true,

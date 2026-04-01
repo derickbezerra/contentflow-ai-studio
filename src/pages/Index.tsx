@@ -481,20 +481,21 @@ const Index = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") === "success") {
       toast.success("Assinatura confirmada! Bem-vindo ao ContentFlow.");
+      const planValue = Number(params.get("value") ?? 0);
       window.history.replaceState({}, "", "/app");
       setTimeout(() => refetch(), 3000);
 
       // Meta Pixel — Purchase
       if (typeof (window as any).fbq === "function") {
-        (window as any).fbq("track", "Purchase", { currency: "BRL", value: 0 });
+        (window as any).fbq("track", "Purchase", { currency: "BRL", value: planValue });
       }
       // Google Analytics 4 — purchase
       if (typeof (window as any).gtag === "function") {
-        (window as any).gtag("event", "purchase", { currency: "BRL", value: 0 });
+        (window as any).gtag("event", "purchase", { currency: "BRL", value: planValue });
       }
       // TikTok Pixel — PlaceAnOrder
       if (typeof (window as any).ttq?.track === "function") {
-        (window as any).ttq.track("PlaceAnOrder", { currency: "BRL", value: 0 });
+        (window as any).ttq.track("PlaceAnOrder", { currency: "BRL", value: planValue });
       }
     }
   }, [refetch]);
