@@ -52,7 +52,7 @@ export default function Login() {
   async function handleGoogleLogin() {
     if (!termsAccepted) return
     setGoogleLoading(true)
-    sessionStorage.setItem('terms_pending_accept', '1')
+    localStorage.setItem('terms_pending_accept', '1')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

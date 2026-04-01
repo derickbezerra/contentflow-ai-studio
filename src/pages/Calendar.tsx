@@ -25,8 +25,8 @@ interface PlannedEntry {
 
 const TYPE_COLORS: Record<ContentType, string> = {
   carousel: 'bg-primary/10 text-primary',
-  post: 'bg-blue-100 text-blue-700',
-  story: 'bg-purple-100 text-purple-700',
+  post: 'bg-secondary text-secondary-foreground',
+  story: 'bg-muted text-muted-foreground',
 }
 
 const TYPE_LABELS: Record<ContentType, string> = {
@@ -551,7 +551,7 @@ export default function Calendar() {
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <Button variant="ghost" size="sm" className="mb-6 text-muted-foreground" onClick={() => navigate('/app')}>
+        <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-muted-foreground" onClick={() => navigate('/app')}>
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Button>
 

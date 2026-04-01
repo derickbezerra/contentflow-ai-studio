@@ -8,7 +8,7 @@ export const PLAN_LIMITS: Record<Plan, number> = {
   free: 5,
   starter: 10,
   growth: 30,
-  pro: 100,
+  pro: 50,
 }
 
 export const FREE_LIMIT = PLAN_LIMITS.free
@@ -52,34 +52,28 @@ function writeCache(info: PlanInfo) {
 export function usePlan() {
   const { user } = useAuth()
   // Initialize from cache → no flash when navigating back
-  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(readCache)
-  const [loading, setLoading] = useState(!readCache())
+  const initial = readCache()
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(initial)
+  const [loading, setLoading] = useState(!initial)
 
   const fetchPlan = useCallback(async (silent = false) => {
     if (!user) return
     if (!silent) setLoading(true)
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('users')
-      .select('plan, generation_count, generation_reset_at, trial_ends_at, payment_status, cancel_at_period_end, current_period_end')
+      .select('plan, generation_count, trial_ends_at, payment_status, cancel_at_period_end, current_period_end')
       .eq('id', user.id)
       .single()
 
-    if (data) {
-      let count = data.generation_count ?? 0
+    if (error) {
+      console.error('[usePlan] Failed to fetch plan:', error.message)
+      setLoading(false)
+      return
+    }
 
-      const resetAt = data.generation_reset_at ? new Date(data.generation_reset_at) : null
-      if (resetAt && new Date() > resetAt) {
-        const nextMonth = new Date()
-        nextMonth.setDate(1)
-        nextMonth.setMonth(nextMonth.getMonth() + 1)
-        nextMonth.setHours(0, 0, 0, 0)
-        await supabase.from('users').update({
-          generation_count: 0,
-          generation_reset_at: nextMonth.toISOString(),
-        }).eq('id', user.id)
-        count = 0
-      }
+    if (data) {
+      const count = data.generation_count ?? 0
 
       const plan: Plan = (data.plan as Plan) ?? 'free'
       const trialEndsAt = data.trial_ends_at ? new Date(data.trial_ends_at) : null
@@ -134,5 +128,5 @@ export function usePlan() {
     })
   }
 
-  return { planInfo, setPlanInfo, loading, refetch: fetchPlan }
+  return { planInfo, setPlanInfo, loading, refetch: fetchPlan, incrementGeneration }
 }

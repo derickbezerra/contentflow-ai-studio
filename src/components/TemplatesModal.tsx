@@ -184,8 +184,8 @@ const TYPE_LABEL: Record<ContentType, string> = {
 
 const TYPE_COLOR: Record<ContentType, string> = {
   carousel: 'bg-primary/10 text-primary',
-  post:     'bg-blue-100 text-blue-700',
-  story:    'bg-purple-100 text-purple-700',
+  post:     'bg-secondary text-secondary-foreground',
+  story:    'bg-muted text-muted-foreground',
 }
 
 // ── component ─────────────────────────────────────────────
@@ -194,17 +194,23 @@ export default function TemplatesModal({ activeVertical, onSelect, onClose }: Pr
   const [tab, setTab] = useState<Vertical>(activeVertical)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="templates-modal-title"
+    >
       <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-2xl bg-card shadow-xl sm:max-w-2xl sm:rounded-2xl">
 
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <div>
-            <h2 className="text-base font-bold text-foreground">Templates do dia</h2>
+            <h2 id="templates-modal-title" className="text-base font-bold text-foreground">Templates do dia</h2>
             <p className="text-xs text-muted-foreground">8 sugestões selecionadas hoje para a sua especialidade</p>
           </div>
           <button
             onClick={onClose}
+            aria-label="Fechar modal de templates"
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
@@ -212,12 +218,14 @@ export default function TemplatesModal({ activeVertical, onSelect, onClose }: Pr
         </div>
 
         {/* Specialty tabs */}
-        <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border px-4 py-2.5">
+        <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border px-4 py-2.5" role="tablist" aria-label="Especialidades">
           {VERTICALS.map(v => (
             <button
               key={v}
+              role="tab"
+              aria-selected={tab === v}
               onClick={() => setTab(v)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={`shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-all ${
                 tab === v
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -231,9 +239,9 @@ export default function TemplatesModal({ activeVertical, onSelect, onClose }: Pr
         {/* Template grid */}
         <div className="overflow-y-auto p-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {DAILY_TEMPLATES[tab].map((t, i) => (
+            {DAILY_TEMPLATES[tab].map((t) => (
               <button
-                key={i}
+                key={t.name}
                 onClick={() => { onSelect(t.topic, t.contentType); onClose() }}
                 className="group rounded-xl border border-border bg-background p-4 text-left transition-all hover:border-primary/30 hover:bg-primary/[0.03] hover:shadow-sm active:scale-[0.99]"
               >

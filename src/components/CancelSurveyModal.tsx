@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
@@ -25,6 +25,12 @@ export default function CancelSurveyModal({ onConfirm, onClose }: Props) {
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   async function handleSubmit() {
     if (!reason) {
       toast.error('Selecione um motivo para continuar.')
@@ -43,9 +49,22 @@ export default function CancelSurveyModal({ onConfirm, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
-        <h2 className="mb-1 text-lg font-bold text-foreground">Antes de cancelar…</h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cancel-survey-title"
+    >
+      <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+        <button
+          onClick={onClose}
+          aria-label="Fechar"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h2 id="cancel-survey-title" className="mb-1 text-lg font-bold text-foreground">Antes de cancelar…</h2>
         <p className="mb-5 text-sm text-muted-foreground">
           O que levou você a cancelar? Sua resposta nos ajuda a melhorar o produto.
         </p>
@@ -56,7 +75,7 @@ export default function CancelSurveyModal({ onConfirm, onClose }: Props) {
               key={r.value}
               type="button"
               onClick={() => setReason(r.value)}
-              className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition-all ${
+              className={`w-full cursor-pointer rounded-xl border px-4 py-3 text-left text-sm transition-all ${
                 reason === r.value
                   ? 'border-primary bg-primary/5 font-medium text-foreground ring-1 ring-primary/30'
                   : 'border-border bg-background text-muted-foreground hover:border-primary/30'
@@ -67,14 +86,17 @@ export default function CancelSurveyModal({ onConfirm, onClose }: Props) {
           ))}
         </div>
 
-        <textarea
-          value={comment}
-          onChange={e => setComment(e.target.value)}
-          placeholder="Comentário adicional (opcional)"
-          rows={3}
-          maxLength={500}
-          className="mt-3 w-full resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        <div className="relative mt-3">
+          <textarea
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Comentário adicional (opcional)"
+            rows={3}
+            maxLength={500}
+            className="w-full resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <p className="mt-1 text-right text-xs text-muted-foreground">{comment.length}/500</p>
+        </div>
 
         <div className="mt-5 flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onClose}>
@@ -86,7 +108,7 @@ export default function CancelSurveyModal({ onConfirm, onClose }: Props) {
             onClick={handleSubmit}
             disabled={!reason || loading}
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Cancelar plano'}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</> : 'Cancelar plano'}
           </Button>
         </div>
       </div>

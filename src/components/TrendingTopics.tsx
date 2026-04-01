@@ -24,7 +24,7 @@ export default function TrendingTopics({ vertical, onSelect, headerRight }: Prop
     setTopics([])
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) return
+      if (!session) { setLoading(false); return }
 
       try {
         const res = await fetch(
@@ -38,8 +38,9 @@ export default function TrendingTopics({ vertical, onSelect, headerRight }: Prop
         )
         const data = await res.json()
         if (data.topics) setTopics(data.topics)
-        else setError(true)
-      } catch {
+        else { console.error('[TrendingTopics] bad response:', res.status, data); setError(true) }
+      } catch (e) {
+        console.error('[TrendingTopics] fetch error:', e)
         setError(true)
       } finally {
         setLoading(false)
@@ -63,11 +64,11 @@ export default function TrendingTopics({ vertical, onSelect, headerRight }: Prop
 
       {/* Topics */}
       {loading ? (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-7 animate-pulse rounded-full bg-muted"
+              className="h-8 animate-pulse rounded-full bg-muted"
               style={{ width: `${72 + (i % 3) * 28}px` }}
             />
           ))}
@@ -79,7 +80,7 @@ export default function TrendingTopics({ vertical, onSelect, headerRight }: Prop
               key={i}
               onClick={() => onSelect(t.title)}
               title={t.subtitle}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95"
+              className="min-h-[36px] rounded-full border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95"
             >
               {t.title}
             </button>

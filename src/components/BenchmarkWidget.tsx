@@ -41,18 +41,29 @@ export default function BenchmarkWidget({ vertical, userCount }: Props) {
 
     fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-benchmarks`,
-      { headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY } }
+      { headers: {
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      }}
     )
       .then(r => r.json())
       .then(json => {
+        const verticalData = json?.[vertical] ?? null
         sessionStorage.setItem('cf_benchmarks', JSON.stringify(json))
-        setData(json[vertical])
+        setData(verticalData)
       })
       .catch(() => { /* silent — non-critical widget */ })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vertical])
 
-  if (!data || data.activeUsers < 3) return null
+  if (data == null) return (
+    <div className="animate-pulse rounded-xl border border-border bg-muted/40 px-4 py-3" aria-hidden="true">
+      <div className="mb-2 h-3 w-3/4 rounded bg-muted" />
+      <div className="h-1.5 w-full rounded-full bg-muted" />
+    </div>
+  )
+
+  if (data.activeUsers < 3) return null
 
   const { avgMonthlyGenerations, formatDistribution: fd } = data
   const userLabel = VERTICAL_LABEL[vertical]
@@ -71,7 +82,7 @@ export default function BenchmarkWidget({ vertical, userCount }: Props) {
           </>
         )}
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1" role="img" aria-label={`Distribuição: Carrossel ${fd.carousel}%, Post ${fd.post}%, Story ${fd.story}%`}>
         {(['carousel', 'post', 'story'] as const).map(fmt => {
           const pct = fd[fmt]
           if (pct === 0) return null
