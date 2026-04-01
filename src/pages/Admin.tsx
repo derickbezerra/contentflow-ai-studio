@@ -114,7 +114,7 @@ interface StatsData {
     arpu: number;
     custos: {
       anthropic: number;
-      asaas: number;
+      stripe: number;
       infraestrutura: number;
       total: number;
     };
@@ -330,13 +330,13 @@ function AdminInner() {
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">MRR estimado</p>
           <p className="mt-2 text-3xl font-bold text-foreground">R$ {fmtBRL(financeiro.mrr)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">baseado no plano · não receita real Asaas</p>
+          <p className="mt-1 text-xs text-muted-foreground">baseado no plano · não receita real Stripe</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Custos totais</p>
           <p className="mt-2 text-3xl font-bold text-foreground">R$ {fmtBRL(financeiro.custos.total)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Anthropic + Asaas + infra</p>
+          <p className="mt-1 text-xs text-muted-foreground">Anthropic + Stripe + infra</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -640,7 +640,7 @@ function AdminInner() {
                   })}
                 {(cancelSurveys.withoutSurvey ?? 0) > 0 && (
                   <p className="mt-3 border-t border-border/50 pt-2.5 text-[11px] text-muted-foreground">
-                    +{cancelSurveys.withoutSurvey} cancelamento{cancelSurveys.withoutSurvey === 1 ? "" : "s"} via Asaas sem resposta
+                    +{cancelSurveys.withoutSurvey} cancelamento{cancelSurveys.withoutSurvey === 1 ? "" : "s"} via Stripe sem resposta
                   </p>
                 )}
               </div>
