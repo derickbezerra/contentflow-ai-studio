@@ -121,6 +121,7 @@ export function VerticalHeroDemoPlayer({ vertical }: { vertical: string }) {
       loop
       autoPlay
       controls={false}
+      acknowledgeRemotionLicense
       style={{
         width: "100%",
         height: "100%",
