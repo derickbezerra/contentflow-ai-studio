@@ -126,10 +126,75 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Fix 1: Server-side Pro plan check
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+
+    if (userError || !userData || userData.plan !== 'pro') {
+      return new Response(JSON.stringify({ error: 'Disponível apenas no plano Pro' }), {
+        status: 403,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Fix 2: Server-side credit limit (50/month)
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+    const { count: monthlyCount, error: countError } = await supabase
+      .from('compliance_analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', firstDayOfMonth)
+
+    if (countError) {
+      console.error('Error counting monthly analyses:', countError)
+      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        status: 500,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    if ((monthlyCount ?? 0) >= 50) {
+      return new Response(JSON.stringify({ error: 'Limite mensal de análises atingido (50/mês)' }), {
+        status: 403,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Fix 3: Rate limiting (10 seconds between analyses)
+    const tenSecondsAgo = new Date(Date.now() - 10_000).toISOString()
+
+    const { count: recentCount, error: rateError } = await supabase
+      .from('compliance_analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', tenSecondsAgo)
+
+    if (rateError) {
+      console.error('Error checking rate limit:', rateError)
+    } else if ((recentCount ?? 0) > 0) {
+      return new Response(JSON.stringify({ error: 'Aguarde alguns segundos entre análises' }), {
+        status: 429,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
     const { text, vertical, imageDescription, imageData, imageMediaType } = await req.json()
 
+    // Fix 4: Text length limit
     if (!text || !vertical) {
       return new Response(JSON.stringify({ error: 'text and vertical are required' }), {
+        status: 400,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (text.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Texto muito longo. Máximo: 5.000 caracteres.' }), {
         status: 400,
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
@@ -138,6 +203,15 @@ Deno.serve(async (req) => {
     const councilInfo = COUNCIL_RULES[vertical]
     if (!councilInfo) {
       return new Response(JSON.stringify({ error: 'Invalid vertical' }), {
+        status: 400,
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Fix 5: imageMediaType validation
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (imageMediaType && !ALLOWED_IMAGE_TYPES.includes(imageMediaType)) {
+      return new Response(JSON.stringify({ error: 'Tipo de imagem não suportado. Use JPEG, PNG, WebP ou GIF.' }), {
         status: 400,
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
@@ -178,15 +252,17 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
     }
     messageContent.push({ type: 'text', text: textContent })
 
-    const FALLBACK_MODEL = 'claude-haiku-4-5-20251001'
     const PRIMARY_MODEL = 'claude-opus-4-5'
+    const SECONDARY_MODEL = 'claude-sonnet-4-6'
+    const FALLBACK_MODEL = 'claude-haiku-4-5-20251001'
     const TIMEOUT_MS = 30_000
 
     async function callAnthropicWithFallback(): Promise<{ rawContent: string; model: string }> {
-      const models = [PRIMARY_MODEL, FALLBACK_MODEL]
+      const models = [PRIMARY_MODEL, SECONDARY_MODEL, FALLBACK_MODEL]
 
       for (let i = 0; i < models.length; i++) {
         const model = models[i]
+        const isLastModel = i === models.length - 1
         const abortController = new AbortController()
         const timeout = setTimeout(() => abortController.abort(), TIMEOUT_MS)
 
@@ -207,8 +283,8 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
             signal: abortController.signal,
           })
 
-          if (res.status === 529 && i === 0) {
-            console.warn('Opus 529, falling back to Haiku')
+          if (res.status === 529 && !isLastModel) {
+            console.warn(`${model} returned 529, falling back to next model`)
             continue
           }
 
@@ -222,8 +298,8 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
           return { rawContent: data.content?.[0]?.text ?? '', model }
         } catch (err: unknown) {
           const isAbort = err instanceof DOMException && err.name === 'AbortError'
-          if (isAbort && i === 0) {
-            console.warn('Opus timeout, falling back to Haiku')
+          if (isAbort && !isLastModel) {
+            console.warn(`${model} timeout, falling back to next model`)
             continue
           }
           throw err
@@ -251,7 +327,11 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
       // Try to extract JSON from markdown code block if present
       const match = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/)
       if (match) {
-        analysis = JSON.parse(match[1])
+        try {
+          analysis = JSON.parse(match[1])
+        } catch {
+          throw new Error('Failed to parse extracted JSON from code block')
+        }
       } else {
         throw new Error('Failed to parse analysis JSON')
       }
@@ -266,7 +346,7 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
       result: analysis,
     })
 
-    const modelUsed = usedModel.includes('haiku') ? 'haiku' : usedModel.includes('opus') ? 'opus' : 'sonnet'
+    const modelUsed = usedModel.includes('opus') ? 'opus' : usedModel.includes('sonnet') ? 'sonnet' : 'haiku'
     return new Response(JSON.stringify({ ...analysis, model_used: modelUsed }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })

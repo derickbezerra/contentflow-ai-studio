@@ -93,6 +93,8 @@ const COMPLIANCE_COUNCILS = [
   { label: 'Nutrição', value: 'nutritionist' },
 ]
 
+const COMPLIANCE_MONTHLY_LIMIT = 50
+
 function ComplianceFullPage({
   planInfo,
   onUpgrade,
@@ -113,8 +115,24 @@ function ComplianceFullPage({
   const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [monthlyUsage, setMonthlyUsage] = useState<number | null>(null)
 
-  const creditsLeft = planInfo ? Math.max(0, planInfo.planLimit - planInfo.generationCount) : 0
+  const creditsLeft = monthlyUsage !== null ? Math.max(0, COMPLIANCE_MONTHLY_LIMIT - monthlyUsage) : 0
+
+  // Fetch compliance-specific monthly usage
+  useEffect(() => {
+    if (!user || !isPro) return
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    supabase
+      .from('compliance_analyses')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', startOfMonth)
+      .then(({ count, error }) => {
+        if (!error && count !== null) setMonthlyUsage(count)
+      })
+  }, [user, isPro])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -160,6 +178,7 @@ function ComplianceFullPage({
       if (!res.ok) throw new Error('Falhou')
       const data = await res.json()
       setResult(data)
+      setMonthlyUsage(prev => (prev !== null ? prev + 1 : 1))
       onCreditUsed()
     } catch {
       toast.error('Erro ao analisar. Tente novamente.')
@@ -380,7 +399,7 @@ function ComplianceFullPage({
             )}
 
             {/* Approved aspects */}
-            {result.approved_aspects.length > 0 && (
+            {result.approved_aspects?.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pontos aprovados</p>
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/30">

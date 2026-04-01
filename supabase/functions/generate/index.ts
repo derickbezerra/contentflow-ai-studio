@@ -385,25 +385,25 @@ Deno.serve(async (req) => {
       let attempt = 0
       let model = 'claude-sonnet-4-6'
       while (true) {
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => abortController.abort(), TIMEOUT_MS)
         try {
-          const message = await Promise.race([
-            anthropic.messages.create({
-              model,
-              max_tokens: 2048,
-              system: SYSTEM_PROMPT,
-              messages: [{ role: 'user', content: userMessage }],
-            }),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('TIMEOUT')), TIMEOUT_MS)
-            ),
-          ])
+          const message = await anthropic.messages.create({
+            model,
+            max_tokens: 2048,
+            system: SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: userMessage }],
+            signal: abortController.signal,
+          })
+          clearTimeout(timeoutId)
           const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
           return { output: JSON.parse(extractJSON(rawText)), model, usage: message.usage }
         } catch (err: unknown) {
+          clearTimeout(timeoutId)
           const status = (err as { status?: number })?.status
-          const isTimeout = err instanceof Error && err.message === 'TIMEOUT'
-          if ((status === 529 || isTimeout) && model === 'claude-sonnet-4-6') {
-            console.warn(`Sonnet ${isTimeout ? 'timeout' : '529'}, falling back to Haiku`)
+          const isAbort = err instanceof DOMException && err.name === 'AbortError'
+          if ((status === 529 || isAbort) && model === 'claude-sonnet-4-6') {
+            console.warn(`Sonnet ${isAbort ? 'timeout' : '529'}, falling back to Haiku`)
             model = 'claude-haiku-4-5-20251001'
             continue
           }
@@ -515,7 +515,8 @@ Deno.serve(async (req) => {
             const modelUsed = streamModel.includes('haiku') ? 'haiku' : 'sonnet'
             send(controller, { done: true, output, model_used: modelUsed, new_count: quota.new_count })
           } catch (e) {
-            send(controller, { error: String(e) })
+            console.error('Stream error:', e)
+            send(controller, { error: 'Erro ao gerar conteúdo. Tente novamente.' })
           } finally {
             controller.close()
           }

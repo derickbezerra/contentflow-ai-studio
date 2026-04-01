@@ -391,6 +391,7 @@ export default function ComplianceAnalyzer() {
                     <button
                       key={v.value}
                       onClick={() => setVertical(v.value)}
+                      tabIndex={!isPro ? -1 : undefined}
                       className={cn(
                         "flex flex-col items-center gap-2 rounded-xl border p-4 transition-all text-center",
                         selected
@@ -451,6 +452,7 @@ export default function ComplianceAnalyzer() {
                 className="min-h-[180px] resize-y text-sm leading-relaxed"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
+                disabled={!isPro}
               />
               {postText.length > 0 && postText.trim().length <= 20 && (
                 <p className="text-xs text-muted-foreground">
@@ -510,7 +512,7 @@ export default function ComplianceAnalyzer() {
             {/* CTA button */}
             <Button
               onClick={handleAnalyze}
-              disabled={!isReady || loading || !hasCredits}
+              disabled={!isPro || !isReady || loading || !hasCredits}
               className="w-full gap-2 py-6 text-base font-semibold"
               size="lg"
             >
@@ -618,7 +620,7 @@ export default function ComplianceAnalyzer() {
             )}
 
             {/* Approved aspects */}
-            {result.approved_aspects?.length > 0 && (
+            {(result.approved_aspects?.length ?? 0) > 0 && (
               <div className="rounded-xl border border-green-200 bg-green-50/50 p-5">
                 <p className="mb-3 text-sm font-semibold text-green-700">
                   Aspectos aprovados
