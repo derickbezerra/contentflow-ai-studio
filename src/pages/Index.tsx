@@ -483,6 +483,19 @@ const Index = () => {
       toast.success("Assinatura confirmada! Bem-vindo ao ContentFlow.");
       window.history.replaceState({}, "", "/app");
       setTimeout(() => refetch(), 3000);
+
+      // Meta Pixel — Purchase
+      if (typeof (window as any).fbq === "function") {
+        (window as any).fbq("track", "Purchase", { currency: "BRL", value: 0 });
+      }
+      // Google Analytics 4 — purchase
+      if (typeof (window as any).gtag === "function") {
+        (window as any).gtag("event", "purchase", { currency: "BRL", value: 0 });
+      }
+      // TikTok Pixel — PlaceAnOrder
+      if (typeof (window as any).ttq?.track === "function") {
+        (window as any).ttq.track("PlaceAnOrder", { currency: "BRL", value: 0 });
+      }
     }
   }, [refetch]);
 
