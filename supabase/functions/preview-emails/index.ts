@@ -1,154 +1,33 @@
-import { createClient } from 'npm:@supabase/supabase-js'
-
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'bezerra@belvy.com.br'
 const RESEND_KEY = Deno.env.get('RESEND_API_KEY')!
-const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://flowcontent.com.br'
+const SITE_URL   = Deno.env.get('SITE_URL') ?? 'https://flowcontent.com.br'
 
-// Internal cron endpoint — not exposed to users
 Deno.serve(async (req) => {
-  // Require internal secret to prevent unauthorized calls
-  const secret = req.headers.get('x-cron-secret')
-  if (secret !== Deno.env.get('CRON_SECRET')) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
-  }
+  // Temporary preview function — no auth required (delete after testing)
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+  const { email } = await req.json().catch(() => ({}))
+  if (!email) return new Response(JSON.stringify({ error: 'email required' }), { status: 400 })
 
-  const results = { welcome: 0, trial_d2: 0, trial_expired: 0, d3_no_gen: 0, d7_no_conv: 0, errors: 0 }
+  const EMAILS = [
+    { subject: '[PREVIEW] Bem-vindo ao ContentFlow!',               html: welcomeHtml(SITE_URL) },
+    { subject: '[PREVIEW] Seu período de teste termina em 2 dias',  html: trialD2Html('08 de abril', SITE_URL) },
+    { subject: '[PREVIEW] Você ainda não gerou nenhum conteúdo',    html: d3NoGenHtml(SITE_URL) },
+    { subject: '[PREVIEW] Ainda dá tempo de continuar no ContentFlow', html: d7NoConvHtml(SITE_URL) },
+    { subject: '[PREVIEW] Seu período de teste encerrou',           html: trialExpiredHtml(SITE_URL) },
+  ]
 
-  // ── 1. Welcome email ─────────────────────────────────────────────────────
-  // Users created more than 2 minutes ago who haven't received welcome yet
-  const { data: newUsers } = await supabase
-    .from('users')
-    .select('id, email')
-    .is('welcome_sent_at', null)
-    .not('email', 'is', null)
-    .lte('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString())
-
-  for (const user of newUsers ?? []) {
-    const ok = await sendEmail(user.email, 'Bem-vindo ao ContentFlow!', welcomeHtml(SITE_URL))
-    if (ok) {
-      await supabase.from('users').update({ welcome_sent_at: new Date().toISOString() }).eq('id', user.id)
-      results.welcome++
-    } else {
-      results.errors++
-    }
-  }
-
-  // ── 2. Trial expiring in 2 days (D-2) ────────────────────────────────────
-  // Free users whose trial ends between now+1d23h and now+2d1h (window to avoid double-send)
-  const d2Start = new Date(Date.now() + (2 * 24 - 1) * 60 * 60 * 1000).toISOString()
-  const d2End   = new Date(Date.now() + (2 * 24 + 1) * 60 * 60 * 1000).toISOString()
-
-  const { data: d2Users } = await supabase
-    .from('users')
-    .select('id, email, trial_ends_at')
-    .eq('plan', 'free')
-    .is('trial_d2_sent_at', null)
-    .gte('trial_ends_at', d2Start)
-    .lte('trial_ends_at', d2End)
-
-  for (const user of d2Users ?? []) {
-    const endsAt = new Date(user.trial_ends_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
-    const ok = await sendEmail(user.email, 'Seu período de teste termina em 2 dias', trialD2Html(endsAt, SITE_URL))
-    if (ok) {
-      await supabase.from('users').update({ trial_d2_sent_at: new Date().toISOString() }).eq('id', user.id)
-      results.trial_d2++
-    } else {
-      results.errors++
-    }
-  }
-
-  // ── 3. Trial expired ─────────────────────────────────────────────────────
-  // Free users whose trial ended in the last 24h (catchup window)
-  const expiredSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-
-  const { data: expiredUsers } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('plan', 'free')
-    .is('trial_expired_sent_at', null)
-    .not('trial_ends_at', 'is', null)
-    .lt('trial_ends_at', new Date().toISOString())
-    .gte('trial_ends_at', expiredSince)
-
-  for (const user of expiredUsers ?? []) {
-    const ok = await sendEmail(user.email, 'Seu período de teste encerrou', trialExpiredHtml(SITE_URL))
-    if (ok) {
-      await supabase.from('users').update({ trial_expired_sent_at: new Date().toISOString() }).eq('id', user.id)
-      results.trial_expired++
-    } else {
-      results.errors++
-    }
-  }
-
-  // ── 4. D+3 sem geração ───────────────────────────────────────────────────
-  // Free users who signed up 3+ days ago but never generated any content
-  const { data: d3Users } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('plan', 'free')
-    .eq('generation_count', 0)
-    .is('d3_no_generation_sent_at', null)
-    .not('trial_ends_at', 'is', null)
-    .gt('trial_ends_at', new Date().toISOString())       // trial still active
-    .lte('created_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString())
-
-  for (const user of d3Users ?? []) {
-    const ok = await sendEmail(user.email, 'Você ainda não gerou nenhum conteúdo', d3NoGenHtml(SITE_URL))
-    if (ok) {
-      await supabase.from('users').update({ d3_no_generation_sent_at: new Date().toISOString() }).eq('id', user.id)
-      results.d3_no_gen++
-    } else {
-      results.errors++
-    }
-  }
-
-  // ── 5. D+7 sem conversão ─────────────────────────────────────────────────
-  // Free users on trial for 7+ days who haven't subscribed yet
-  const { data: d7Users } = await supabase
-    .from('users')
-    .select('id, email')
-    .eq('plan', 'free')
-    .is('d7_no_conversion_sent_at', null)
-    .not('trial_ends_at', 'is', null)
-    .gt('trial_ends_at', new Date().toISOString())       // trial still active
-    .lte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-
-  for (const user of d7Users ?? []) {
-    const ok = await sendEmail(user.email, 'Ainda dá tempo de continuar no ContentFlow', d7NoConvHtml(SITE_URL))
-    if (ok) {
-      await supabase.from('users').update({ d7_no_conversion_sent_at: new Date().toISOString() }).eq('id', user.id)
-      results.d7_no_conv++
-    } else {
-      results.errors++
-    }
-  }
-
-  console.log('lifecycle-emails:', results)
-  return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } })
-})
-
-async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
-  try {
+  const results = []
+  for (const e of EMAILS) {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: 'ContentFlow <contato@flowcontent.com.br>', to: [to], subject, html }),
+      body: JSON.stringify({ from: 'ContentFlow <contato@flowcontent.com.br>', to: [email], subject: e.subject, html: e.html }),
     })
-    if (!res.ok) {
-      console.error('resend error:', await res.text())
-      return false
-    }
-    return true
-  } catch (e) {
-    console.error('sendEmail error:', e)
-    return false
+    results.push({ subject: e.subject, ok: res.ok, status: res.status })
+    await new Promise(r => setTimeout(r, 300))
   }
-}
+
+  return new Response(JSON.stringify({ sent: results }), { headers: { 'Content-Type': 'application/json' } })
+})
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 

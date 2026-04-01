@@ -32,8 +32,8 @@ function computePlanState({
   }
 }
 
-const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-const past = new Date(Date.now() - 24 * 60 * 60 * 1000)
+const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 500)
+const past = new Date(Date.now() - 24 * 60 * 60 * 500)
 
 describe('Plan limits', () => {
   it('free plan has limit of 5', () => {
@@ -48,8 +48,8 @@ describe('Plan limits', () => {
     expect(PLAN_LIMITS.growth).toBe(30)
   })
 
-  it('pro plan has limit of 100', () => {
-    expect(PLAN_LIMITS.pro).toBe(100)
+  it('pro plan has limit of 50', () => {
+    expect(PLAN_LIMITS.pro).toBe(50)
   })
 })
 
@@ -99,9 +99,9 @@ describe('Paid plan state', () => {
     expect(state.canGenerate).toBe(false)
   })
 
-  it('pro user has 100 generation limit', () => {
+  it('pro user has 50 generation limit', () => {
     const state = computePlanState({ plan: 'pro', generationCount: 99, trialEndsAt: null, paymentStatus: 'active' })
     expect(state.canGenerate).toBe(true)
-    expect(state.planLimit).toBe(100)
+    expect(state.planLimit).toBe(50)
   })
 })

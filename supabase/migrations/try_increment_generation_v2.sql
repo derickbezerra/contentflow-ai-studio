@@ -51,7 +51,7 @@ BEGIN
     WHEN 'free'      THEN 5
     WHEN 'starter'   THEN 10
     WHEN 'growth'    THEN 30
-    WHEN 'pro'       THEN 100
+    WHEN 'pro'       THEN 50
     ELSE 5
   END;
 

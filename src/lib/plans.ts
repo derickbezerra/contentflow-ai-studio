@@ -33,11 +33,11 @@ export const PLANS = [
     name: 'Pro',
     planKey: 'pro',
     price: 'R$127',
-    limit: '100 conteúdos/mês',
+    limit: '50 conteúdos/mês',
     priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
     features: [
-      '100 conteúdos por mês',
+      '50 conteúdos por mês',
       'Carrossel, Post e Story',
       'Medicina, Nutrição, Odonto e Psico',
       'Perfil de marca personalizado',
