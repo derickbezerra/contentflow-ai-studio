@@ -21,13 +21,55 @@ interface PixData {
   expirationDate: string
 }
 
-function formatCpf(value: string) {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 11)
+function isValidCpf(cpf: string): boolean {
+  const clean = cpf.replace(/\D/g, '')
+  if (clean.length !== 11) return false
+  if (/^(\d)\1{10}$/.test(clean)) return false
+
+  let sum = 0
+  for (let i = 0; i < 9; i++) sum += parseInt(clean[i]) * (10 - i)
+  let d1 = 11 - (sum % 11)
+  if (d1 >= 10) d1 = 0
+
+  sum = 0
+  for (let i = 0; i < 10; i++) sum += parseInt(clean[i]) * (11 - i)
+  let d2 = 11 - (sum % 11)
+  if (d2 >= 10) d2 = 0
+
+  return parseInt(clean[9]) === d1 && parseInt(clean[10]) === d2
+}
+
+function isValidCnpj(cnpj: string): boolean {
+  const clean = cnpj.replace(/\D/g, '')
+  if (clean.length !== 14) return false
+  if (/^(\d)\1{13}$/.test(clean)) return false
+
+  const calc = (c: string, weights: number[]) => {
+    let sum = 0
+    for (let i = 0; i < weights.length; i++) sum += parseInt(c[i]) * weights[i]
+    const rem = sum % 11
+    return rem < 2 ? 0 : 11 - rem
+  }
+
+  const d1 = calc(clean, [5,4,3,2,9,8,7,6,5,4,3,2])
+  const d2 = calc(clean, [6,5,4,3,2,9,8,7,6,5,4,3,2])
+
+  return parseInt(clean[12]) === d1 && parseInt(clean[13]) === d2
+}
+
+function formatCpfCnpj(value: string) {
+  const clean = value.replace(/\D/g, '').slice(0, 14)
+  if (clean.length <= 11) {
+    return clean
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+  return clean
+    .replace(/(\d{2})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
 }
 
 function formatPhone(value: string) {
@@ -46,6 +88,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
   const [polling, setPolling] = useState(false)
   const [copiedPix, setCopiedPix] = useState(false)
   const [copiedBoleto, setCopiedBoleto] = useState(false)
+  const [pixExpired, setPixExpired] = useState(false)
 
   // Form fields
   const [name, setName] = useState('')
@@ -83,15 +126,39 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
   useEffect(() => {
     if (step !== 'pix' || !paymentId) return
     let active = true
+    let attempts = 0
+    const MAX_ATTEMPTS = 45 // 3 minutos
+
     setPolling(true)
 
     const interval = setInterval(async () => {
       if (!active) return
-      const paid = await checkPaymentStatus()
-      if (paid) {
+      attempts++
+
+      // Checar expiração do QR code
+      if (pixData?.expirationDate) {
+        const expired = new Date() > new Date(pixData.expirationDate)
+        if (expired) {
+          clearInterval(interval)
+          setPolling(false)
+          setPixExpired(true)
+          return
+        }
+      }
+
+      // Checar limite de tentativas
+      if (attempts >= MAX_ATTEMPTS) {
         clearInterval(interval)
         setPolling(false)
-        if (active) onSuccess()
+        setPixExpired(true)
+        return
+      }
+
+      const paid = await checkPaymentStatus()
+      if (paid && active) {
+        clearInterval(interval)
+        setPolling(false)
+        onSuccess()
       }
     }, 4000)
 
@@ -100,15 +167,25 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
       clearInterval(interval)
       setPolling(false)
     }
-  }, [step, paymentId, checkPaymentStatus, onSuccess])
+  }, [step, paymentId, pixData, checkPaymentStatus, onSuccess])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!plan) return
 
     const rawCpf = cpf.replace(/\D/g, '')
-    if (rawCpf.length !== 11 && rawCpf.length !== 14) {
-      toast.error('CPF/CNPJ inválido.')
+    if (rawCpf.length === 11) {
+      if (!isValidCpf(rawCpf)) {
+        toast.error('CPF inválido. Verifique os dígitos.')
+        return
+      }
+    } else if (rawCpf.length === 14) {
+      if (!isValidCnpj(rawCpf)) {
+        toast.error('CNPJ inválido. Verifique os dígitos.')
+        return
+      }
+    } else {
+      toast.error('CPF deve ter 11 dígitos ou CNPJ 14 dígitos.')
       return
     }
 
@@ -215,7 +292,7 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
               <Input
                 id="cf-cpf"
                 value={cpf}
-                onChange={e => setCpf(formatCpf(e.target.value))}
+                onChange={e => setCpf(formatCpfCnpj(e.target.value))}
                 placeholder="000.000.000-00"
                 required
                 inputMode="numeric"
@@ -317,6 +394,15 @@ export default function AsaasCheckoutModal({ planKey, onClose, onSuccess }: Asaa
                 'Após pagar, seu plano será ativado automaticamente.'
               )}
             </div>
+
+            {pixExpired && (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <p className="text-sm font-medium text-destructive">QR Code expirado</p>
+                <Button variant="outline" size="sm" onClick={() => { setStep('form'); setPixExpired(false); setPixData(null); }}>
+                  Gerar novo QR Code
+                </Button>
+              </div>
+            )}
 
             <p className="text-center text-xs text-muted-foreground">
               O acesso é liberado automaticamente assim que o pagamento for confirmado.

@@ -115,7 +115,7 @@ interface StatsData {
     arpu: number;
     custos: {
       anthropic: number;
-      stripe: number;
+      asaas: number;
       infraestrutura: number;
       total: number;
     };
@@ -234,7 +234,7 @@ function AdminInner() {
   }
 
   // Normalize — older Edge Function versions may omit some fields
-  const financeiro = stats.financeiro ?? { mrr: 0, arpu: 0, custos: { anthropic: 0, stripe: 0, infraestrutura: 0, total: 0 }, lucro: 0, margem: 0 };
+  const financeiro = stats.financeiro ?? { mrr: 0, arpu: 0, custos: { anthropic: 0, asaas: 0, infraestrutura: 0, total: 0 }, lucro: 0, margem: 0 };
   const activation = stats.activation ?? { activationRate: 0, avgDaysToFirstGeneration: null, generationsPerActiveUser: 0, activeUsers: 0 };
   const cohorts    = stats.cohorts ?? [];
   const cancelSurveys = stats.cancelSurveys ?? { byReason: {}, reasonLabels: {}, recent: [] };
@@ -252,7 +252,7 @@ function AdminInner() {
 
   const custoData = [
     { name: "Anthropic", value: financeiro.custos.anthropic, color: "#f59e0b" },
-    { name: "Stripe", value: financeiro.custos.stripe, color: "#6366f1" },
+    { name: "Asaas", value: financeiro.custos.asaas, color: "#00b37e" },
     { name: "Infraestrutura", value: financeiro.custos.infraestrutura, color: "#94a3b8" },
   ];
 
@@ -329,15 +329,15 @@ function AdminInner() {
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Financeiro</p>
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">MRR</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">MRR estimado</p>
           <p className="mt-2 text-3xl font-bold text-foreground">R$ {fmtBRL(financeiro.mrr)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">receita mensal recorrente</p>
+          <p className="mt-1 text-xs text-muted-foreground">baseado no plano · não receita real Asaas</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Custos totais</p>
           <p className="mt-2 text-3xl font-bold text-foreground">R$ {fmtBRL(financeiro.custos.total)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">Anthropic + Stripe + infra</p>
+          <p className="mt-1 text-xs text-muted-foreground">Anthropic + Asaas + infra</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -493,7 +493,7 @@ function AdminInner() {
               <span className="text-sm font-bold text-foreground">R$ {fmtBRL(financeiro.custos.total)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">MRR</span>
+              <span className="text-xs font-semibold text-foreground">MRR estimado</span>
               <span className="text-sm font-bold text-primary">R$ {fmtBRL(financeiro.mrr)}</span>
             </div>
             <div className="flex items-center justify-between">
@@ -641,7 +641,7 @@ function AdminInner() {
                   })}
                 {(cancelSurveys.withoutSurvey ?? 0) > 0 && (
                   <p className="mt-3 border-t border-border/50 pt-2.5 text-[11px] text-muted-foreground">
-                    +{cancelSurveys.withoutSurvey} cancelamento{cancelSurveys.withoutSurvey === 1 ? "" : "s"} via Stripe sem resposta
+                    +{cancelSurveys.withoutSurvey} cancelamento{cancelSurveys.withoutSurvey === 1 ? "" : "s"} via Asaas sem resposta
                   </p>
                 )}
               </div>

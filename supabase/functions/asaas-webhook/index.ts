@@ -4,6 +4,23 @@ const ASAAS_WEBHOOK_TOKEN = Deno.env.get('ASAAS_WEBHOOK_TOKEN')!
 const ASAAS_API_URL = Deno.env.get('ASAAS_API_URL') ?? 'https://api-sandbox.asaas.com/v3'
 const ASAAS_API_KEY = Deno.env.get('ASAAS_API_KEY')!
 
+async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+  if (a.length !== b.length) return false
+  const encoder = new TextEncoder()
+  const aBytes = encoder.encode(a)
+  const bBytes = encoder.encode(b)
+  // XOR todos os bytes — não retorna cedo (timing-safe)
+  let diff = 0
+  for (let i = 0; i < aBytes.length; i++) {
+    diff |= aBytes[i] ^ bBytes[i]
+  }
+  return diff === 0
+}
+
+function isValidAsaasId(id: unknown): id is string {
+  return typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id) && id.length > 0 && id.length <= 100
+}
+
 async function asaasGet(path: string) {
   const res = await fetch(`${ASAAS_API_URL}${path}`, {
     headers: { 'access_token': ASAAS_API_KEY },
@@ -23,14 +40,23 @@ function getPlanFromDescription(description: string): string {
 
 Deno.serve(async (req) => {
   try {
-    // Validate Asaas webhook token
-    const token = req.headers.get('asaas-access-token')
-    if (token !== ASAAS_WEBHOOK_TOKEN) {
+    // Validate Asaas webhook token (timing-safe comparison)
+    const token = req.headers.get('asaas-access-token') ?? ''
+    const isValid = await timingSafeEqual(token, ASAAS_WEBHOOK_TOKEN)
+    if (!isValid) {
+      console.warn('Webhook unauthorized attempt — invalid token')
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
 
     const event = await req.json()
-    const eventId = event.id ?? `${event.event}_${event.payment?.id ?? event.subscription?.id}_${Date.now()}`
+
+    // Validate minimum event structure
+    if (!event || typeof event.event !== 'string') {
+      console.warn('Webhook: invalid event structure received')
+      return new Response(JSON.stringify({ error: 'Invalid event structure' }), { status: 400 })
+    }
+
+    const eventId = event.id ?? `${event.event}_${event.payment?.id ?? event.subscription?.id ?? crypto.randomUUID()}`
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -50,12 +76,16 @@ Deno.serve(async (req) => {
     // -----------------------------------------------------------------------
     if (event.event === 'PAYMENT_CONFIRMED' || event.event === 'PAYMENT_RECEIVED') {
       const payment = event.payment
-      if (!payment?.subscription) {
+      if (!isValidAsaasId(payment?.subscription)) {
         return new Response(JSON.stringify({ received: true }), { status: 200 })
       }
 
       // Fetch subscription details to get customer + description
       const subscription = await asaasGet(`/subscriptions/${payment.subscription}`)
+      if (!isValidAsaasId(subscription?.customer)) {
+        console.warn('Webhook PAYMENT_CONFIRMED: invalid customer ID in subscription response')
+        return new Response(JSON.stringify({ received: true }), { status: 200 })
+      }
       const customerId: string = subscription.customer
 
       const { data: profile } = await supabase
@@ -90,11 +120,15 @@ Deno.serve(async (req) => {
     // -----------------------------------------------------------------------
     if (event.event === 'PAYMENT_OVERDUE') {
       const payment = event.payment
-      if (!payment?.subscription) {
+      if (!isValidAsaasId(payment?.subscription)) {
         return new Response(JSON.stringify({ received: true }), { status: 200 })
       }
 
       const subscription = await asaasGet(`/subscriptions/${payment.subscription}`)
+      if (!isValidAsaasId(subscription?.customer)) {
+        console.warn('Webhook PAYMENT_OVERDUE: invalid customer ID in subscription response')
+        return new Response(JSON.stringify({ received: true }), { status: 200 })
+      }
       const customerId: string = subscription.customer
 
       const { data: profile } = await supabase
@@ -142,12 +176,17 @@ Deno.serve(async (req) => {
     // SUBSCRIPTION_INACTIVATED — cancel plan
     // -----------------------------------------------------------------------
     if (event.event === 'SUBSCRIPTION_INACTIVATED') {
-      const subscriptionId: string = event.subscription?.id ?? event.subscription
-      if (!subscriptionId) {
+      const rawSubscriptionId = event.subscription?.id ?? event.subscription
+      if (!isValidAsaasId(rawSubscriptionId)) {
         return new Response(JSON.stringify({ received: true }), { status: 200 })
       }
+      const subscriptionId: string = rawSubscriptionId
 
       const subscription = await asaasGet(`/subscriptions/${subscriptionId}`)
+      if (!isValidAsaasId(subscription?.customer)) {
+        console.warn('Webhook SUBSCRIPTION_INACTIVATED: invalid customer ID in subscription response')
+        return new Response(JSON.stringify({ received: true }), { status: 200 })
+      }
       const customerId: string = subscription.customer
 
       const { data: profile } = await supabase
@@ -200,6 +239,6 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ received: true }), { status: 200 })
   } catch (error) {
     console.error('asaas-webhook error:', error)
-    return new Response(JSON.stringify({ error: String(error) }), { status: 500 })
+    return new Response(JSON.stringify({ error: 'Webhook processing failed' }), { status: 500 })
   }
 })

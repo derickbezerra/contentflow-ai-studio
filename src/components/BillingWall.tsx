@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Check, Loader2, Zap, Lock, CreditCard } from 'lucide-react'
+import { Check, Loader2, Zap, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { PLANS, handleCheckout, cancelSubscription } from '@/lib/plans'
+import { PLANS, handleCheckout } from '@/lib/plans'
 
 interface BillingWallProps {
   reason: 'trial_expired' | 'payment_failed'
@@ -9,10 +9,9 @@ interface BillingWallProps {
 
 export default function BillingWall({ reason }: BillingWallProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const [loadingPortal, setLoadingPortal] = useState(false)
 
   useEffect(() => {
-    const handleFocus = () => { setLoadingPlan(null); setLoadingPortal(false) }
+    const handleFocus = () => { setLoadingPlan(null) }
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
   }, [])
@@ -37,33 +36,31 @@ export default function BillingWall({ reason }: BillingWallProps) {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold text-foreground">Problema com seu pagamento</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Pagamento em atraso</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                Atualize sua forma de pagamento para continuar usando o ContentFlow
+                Enviamos um e-mail com o link de pagamento. Verifique sua caixa de entrada.
               </p>
             </>
           )}
         </div>
 
         {reason === 'payment_failed' ? (
-          /* Payment failed: show manage payment button */
+          /* Payment failed: instruct user to check email for Asaas payment link */
           <div className="flex flex-col items-center gap-4">
             <Button
               variant="cta"
               size="xl"
               className="w-full max-w-sm"
-              onClick={() => cancelSubscription(setLoadingPortal)}
-              disabled={loadingPortal}
+              onClick={() => window.location.reload()}
             >
-              {loadingPortal ? (
-                <><Loader2 className="h-5 w-5 animate-spin" /> Aguarde...</>
-              ) : (
-                <><CreditCard className="h-5 w-5" /> Atualizar forma de pagamento</>
-              )}
+              Já paguei — verificar acesso
             </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              Sua assinatura será cancelada e o acesso será encerrado imediatamente
-            </p>
+            <a
+              href="/contato"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Falar com suporte →
+            </a>
           </div>
         ) : (
           /* Trial expired: show plan cards */
