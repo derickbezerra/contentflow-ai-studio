@@ -2,9 +2,7 @@ import { LogOut, Zap, History, BarChart2, UserCircle, CalendarDays } from "lucid
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 const Logo = () => (
   <svg width="140" height="34" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -36,85 +34,89 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
   const { user, signOut } = useAuth();
   const { planInfo } = usePlan();
   const navigate = useNavigate();
-  const initials = user?.email?.slice(0, 2).toUpperCase() ?? "CF";
+  const location = useLocation();
+  const initials = user?.user_metadata?.full_name
+    ? user.user_metadata.full_name.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()
+    : user?.email?.slice(0, 2).toUpperCase() ?? "CF";
 
-  async function handleManagePlan() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-          "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error("Não foi possível abrir o portal de assinatura.");
-      }
-    } catch {
-      toast.error("Erro ao acessar portal de assinatura.");
-    }
-  }
+  const navItem = (path: string, icon: React.ReactNode, label: string) => {
+    const active = location.pathname === path;
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(path)}
+        className={`gap-1.5 transition-colors ${
+          active
+            ? "text-foreground bg-muted"
+            : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        {icon}
+        <span className="hidden sm:inline">{label}</span>
+      </Button>
+    );
+  };
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-md md:px-10">
-      <div className="flex items-center">
+    <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-background/90 px-4 py-2.5 backdrop-blur-md md:px-8">
+      {/* Logo → Landing Page */}
+      <Link
+        to="/"
+        className="flex items-center opacity-90 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+        aria-label="Ir para a página inicial"
+      >
         <Logo />
-      </div>
-      <div className="flex items-center gap-3">
+      </Link>
+
+      <div className="flex items-center gap-1">
         {user && (
           <>
-            <span className="hidden text-xs text-muted-foreground sm:block">{user.email}</span>
-
-            {/* Plan badge — opens upgrade modal */}
-            {planInfo?.plan !== "free" && planInfo?.plan != null ? (
+            {/* Plan badge */}
+            {planInfo?.plan && planInfo.plan !== "free" && (
               <button
                 onClick={onUpgrade}
-                className="hidden sm:flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 capitalize transition-colors"
+                className="mr-2 hidden sm:flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 capitalize transition-colors"
               >
-                <Zap className="h-3 w-3 fill-primary" /> {planInfo?.plan}
+                <Zap className="h-3 w-3 fill-primary" /> {planInfo.plan}
               </button>
-            ) : null}
-
-            {user?.email === 'bezerra@belvy.com.br' && (
-              <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate('/admin')}>
-                <BarChart2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Admin</span>
-              </Button>
             )}
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/perfil")}>
-              <UserCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Perfil</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/calendario")}>
-              <CalendarDays className="h-4 w-4" />
-              <span className="hidden sm:inline">Calendário</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => navigate("/history")}>
-              <History className="h-4 w-4" />
-              <span className="hidden sm:inline">Histórico</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={signOut}>
+
+            {isAdmin && navItem('/admin', <BarChart2 className="h-4 w-4" />, 'Admin')}
+            {navItem('/perfil', <UserCircle className="h-4 w-4" />, 'Perfil')}
+            {navItem('/calendario', <CalendarDays className="h-4 w-4" />, 'Calendário')}
+            {navItem('/history', <History className="h-4 w-4" />, 'Histórico')}
+
+            <div className="mx-1 h-5 w-px bg-border/60" />
+
+            {/* Email — hidden on mobile */}
+            <span className="hidden text-xs text-muted-foreground lg:block mr-1">{user.email}</span>
+
+            {/* Avatar → perfil */}
+            <button
+              onClick={() => navigate('/perfil')}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors ring-1 ring-primary/20"
+              title="Meu perfil"
+              aria-label="Acessar perfil"
+            >
+              {initials}
+            </button>
+
+            {/* Logout */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive ml-0.5"
+              onClick={signOut}
+              title="Sair"
+              aria-label="Sair da conta"
+            >
               <LogOut className="h-4 w-4" />
             </Button>
           </>
         )}
-        {/* Avatar — manage subscription */}
-        <button
-          onClick={user ? handleManagePlan : undefined}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary hover:bg-primary/20 transition-colors"
-          title="Gerenciar assinatura"
-        >
-          {initials}
-        </button>
       </div>
     </header>
   );
