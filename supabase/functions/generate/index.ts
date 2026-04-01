@@ -1,9 +1,20 @@
 import Anthropic from 'npm:@anthropic-ai/sdk'
 import { createClient } from 'npm:@supabase/supabase-js'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? ''
+  const ALLOWED_ORIGINS = [
+    'https://flowcontent.com.br',
+    'https://www.flowcontent.com.br',
+    'https://contentflow-ai-studio.vercel.app',
+    'http://localhost:8080',
+    'http://localhost:3000',
+  ]
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 }
 
 const SYSTEM_PROMPT = `Você é o AI Brain do ContentFlow, especializado em criar conteúdo de alta performance para o Instagram de profissionais de saúde.
@@ -141,7 +152,7 @@ Sempre em Português Brasileiro. Retorne APENAS o JSON.`
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   // Verify JWT
@@ -149,7 +160,7 @@ Deno.serve(async (req) => {
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
   const supabaseAuth = createClient(
@@ -161,7 +172,7 @@ Deno.serve(async (req) => {
   if (authError || !user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 
@@ -179,7 +190,7 @@ Deno.serve(async (req) => {
     if (!rateLimitOk) {
       return new Response(JSON.stringify({ error: 'Muitas requisições. Aguarde alguns segundos e tente novamente.' }), {
         status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -195,14 +206,14 @@ Deno.serve(async (req) => {
       }
       return new Response(JSON.stringify({ error: messages[quota?.reason] ?? 'Não autorizado.' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
     if (Number(req.headers.get('content-length')) > 5000) {
       return new Response(JSON.stringify({ error: 'Payload muito grande.' }), {
         status: 413,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -214,32 +225,32 @@ Deno.serve(async (req) => {
 
     if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Tópico é obrigatório.' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
     if (topic.length > 500) {
       return new Response(JSON.stringify({ error: 'Tópico muito longo (máx. 500 caracteres).' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
     if (context && (typeof context !== 'string' || context.length > 1000)) {
       return new Response(JSON.stringify({ error: 'Contexto muito longo (máx. 1000 caracteres).' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
     if (!batch && !VALID_CONTENT_TYPES.includes(content_type)) {
       return new Response(JSON.stringify({ error: 'Tipo de conteúdo inválido.' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
     if (!VALID_VERTICALS.includes(vertical)) {
       return new Response(JSON.stringify({ error: 'Vertical inválida.' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
     if (!VALID_GENDERS.includes(gender)) {
       return new Response(JSON.stringify({ error: 'Público inválido.' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -263,7 +274,7 @@ Deno.serve(async (req) => {
       if (dailyCostUSD >= threshold) {
         return new Response(JSON.stringify({ error: 'Serviço temporariamente indisponível. Tente novamente mais tarde.' }), {
           status: 503,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
         })
       }
     }
@@ -468,7 +479,7 @@ Deno.serve(async (req) => {
 
       return new Response(readable, {
         headers: {
-          ...corsHeaders,
+          ...getCorsHeaders(req),
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           'X-Accel-Buffering': 'no',
@@ -556,13 +567,13 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify(responsePayload), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   } catch (error) {
     console.error('generate error:', error)
     return new Response(JSON.stringify({ error: 'Falha ao gerar conteúdo. Tente novamente.' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 })

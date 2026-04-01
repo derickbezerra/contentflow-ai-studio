@@ -37,21 +37,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
-
-    // Verify JWT
+    // Verify JWT using ANON_KEY client with user token
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    )
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
+
+    // Admin client for DB operations
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
 
     const url = new URL(req.url)
     const vertical = url.searchParams.get('vertical') ?? 'doctor'
@@ -63,18 +68,6 @@ Deno.serve(async (req) => {
       psychologist: 'psicologia',
     }
     const specialty = specialtyMap[vertical] ?? 'medicina'
-
-    // Rate limiting — max 1 request per 30 seconds per user (topics are cached, so this is generous)
-    const { data: rateLimitOk } = await supabase.rpc('check_and_set_rate_limit', {
-      user_id: user.id,
-      min_interval_seconds: 30,
-    })
-    if (rateLimitOk !== true) {
-      return new Response(JSON.stringify({ error: 'Muitas requisições.' }), {
-        status: 429,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      })
-    }
 
     // Check cache
     const { data: cached } = await supabase

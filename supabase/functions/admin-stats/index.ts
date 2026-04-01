@@ -1,16 +1,31 @@
 import { createClient } from 'npm:@supabase/supabase-js'
 
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'bezerra@belvy.com.br'
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? ''
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? ''
+  const ALLOWED_ORIGINS = [
+    'https://flowcontent.com.br',
+    'https://www.flowcontent.com.br',
+    'https://contentflow-ai-studio.vercel.app',
+    'http://localhost:8080',
+    'http://localhost:3000',
+  ]
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 }
 
 // ── Custos fixos mensais (R$) ─────────────────────────────
 const CUSTO_INFRAESTRUTURA = 3.33  // Domínio (R$40/ano ÷ 12); Supabase e Vercel no plano free
 
 // ── Preços por plano (R$) ─────────────────────────────────
-const PRECO: Record<string, number> = { starter: 27, growth: 47, pro: 97 }
+const PRECO: Record<string, number> = { starter: 47, growth: 97, pro: 127 }
+
+// ── Data de início do MRR real (ignora contas de teste anteriores) ────────
+const MRR_START_DATE = '2026-03-24'
 
 // ── Custo estimado por geração (R$) ───────────────────────
 // Claude Sonnet 4.6: ~$0.018/geração × R$5.80/USD ≈ R$0.10
@@ -34,11 +49,11 @@ const REASON_LABELS: Record<string, string> = {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) })
 
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+    if (!authHeader) return new Response('Unauthorized', { status: 401, headers: getCorsHeaders(req) })
 
     const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -47,7 +62,7 @@ Deno.serve(async (req) => {
     )
     const { data: { user } } = await supabaseUser.auth.getUser()
     if (!user || user.email !== ADMIN_EMAIL) {
-      return new Response('Forbidden', { status: 403, headers: corsHeaders })
+      return new Response('Forbidden', { status: 403, headers: getCorsHeaders(req) })
     }
 
     const supabase = createClient(
@@ -109,7 +124,14 @@ Deno.serve(async (req) => {
     const contentGrowth = days30.map(date => ({ date, count: contentByDay[date] || 0 }))
 
     // ── Receita ───────────────────────────────────────────
-    const mrr = (byPlan.starter || 0) * 27 + (byPlan.growth || 0) * 47 + (byPlan.pro || 0) * 97
+    // Conta MRR apenas de assinantes a partir do lançamento oficial (ignora contas de teste)
+    const mrrByPlan: Record<string, number> = { starter: 0, growth: 0, pro: 0 }
+    for (const u of (users || [])) {
+      if (['starter', 'growth', 'pro'].includes(u.plan) && u.created_at >= MRR_START_DATE) {
+        mrrByPlan[u.plan] = (mrrByPlan[u.plan] || 0) + 1
+      }
+    }
+    const mrr = mrrByPlan.starter * PRECO.starter + mrrByPlan.growth * PRECO.growth + mrrByPlan.pro * PRECO.pro
 
     // ── Custos variáveis ──────────────────────────────────
     const geracoes30d = days30.reduce((sum, date) => sum + (contentByDay[date] || 0), 0)
@@ -245,8 +267,8 @@ Deno.serve(async (req) => {
       cancelSurveys,
       // legacy
       mrr,
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }), { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } })
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: corsHeaders })
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: getCorsHeaders(req) })
   }
 })

@@ -1,8 +1,19 @@
 import { createClient } from 'npm:@supabase/supabase-js'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? ''
+  const ALLOWED_ORIGINS = [
+    'https://flowcontent.com.br',
+    'https://www.flowcontent.com.br',
+    'https://contentflow-ai-studio.vercel.app',
+    'http://localhost:8080',
+    'http://localhost:3000',
+  ]
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
 }
 
 const COUNCIL_RULES: Record<string, { name: string; rules: string }> = {
@@ -86,7 +97,7 @@ FORMATO DE SAÍDA OBRIGATÓRIO (JSON puro, sem markdown):
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -98,7 +109,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -111,7 +122,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -120,7 +131,7 @@ Deno.serve(async (req) => {
     if (!text || !vertical) {
       return new Response(JSON.stringify({ error: 'text and vertical are required' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -128,14 +139,14 @@ Deno.serve(async (req) => {
     if (!councilInfo) {
       return new Response(JSON.stringify({ error: 'Invalid vertical' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
     if (imageData && imageData.length > 700000) {
       return new Response(JSON.stringify({ error: 'Imagem muito grande. Máximo 500KB.' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -187,7 +198,7 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
       console.error('Anthropic error:', err)
       return new Response(JSON.stringify({ error: 'AI service error' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
 
@@ -217,13 +228,13 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
     })
 
     return new Response(JSON.stringify(analysis), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   } catch (err) {
     console.error('analyze-compliance error:', err)
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   }
 })
