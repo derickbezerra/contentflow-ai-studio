@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
+import { SPECIALTY_TOPICS } from '@/components/QuickStartTopics'
 
 type Vertical = 'doctor' | 'nutritionist' | 'dentist' | 'psychologist'
 type Goal = 'attract_patients' | 'build_authority' | 'increase_engagement'
 
 interface Props {
-  onComplete: (vertical: Vertical) => void
+  onComplete: (vertical: Vertical, suggestedTopic?: string) => void
   onShowPricing: (vertical: Vertical) => void
 }
 
@@ -62,7 +63,9 @@ export default function OnboardingModal({ onComplete, onShowPricing: _onShowPric
       return
     }
 
-    onComplete(vertical)
+    const topics = SPECIALTY_TOPICS[vertical]
+    const suggestedTopic = topics?.[0]
+    onComplete(vertical, suggestedTopic)
   }
 
   return (

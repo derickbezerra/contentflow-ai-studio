@@ -15,6 +15,7 @@ import Privacy from "./pages/Privacy.tsx";
 import Contact from "./pages/Contact.tsx";
 import BrandProfile from "./pages/BrandProfile.tsx";
 import Calendar from "./pages/Calendar.tsx";
+import ComplianceAnalyzer from "./pages/ComplianceAnalyzer.tsx";
 import VerticalLanding from "./pages/VerticalLanding.tsx";
 import { AuthProvider, useAuth } from "./context/AuthContext.tsx";
 
@@ -47,6 +48,7 @@ function AppRoutes() {
       <Route path="/contato" element={<Contact />} />
       <Route path="/perfil" element={<ProtectedRoute><BrandProfile /></ProtectedRoute>} />
       <Route path="/calendario" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+      <Route path="/compliance" element={<ProtectedRoute><ComplianceAnalyzer /></ProtectedRoute>} />
       <Route path="/para-medicos" element={<VerticalLanding />} />
       <Route path="/para-dentistas" element={<VerticalLanding />} />
       <Route path="/para-psicologos" element={<VerticalLanding />} />

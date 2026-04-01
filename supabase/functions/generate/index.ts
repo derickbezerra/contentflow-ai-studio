@@ -381,21 +381,29 @@ Deno.serve(async (req) => {
     async function callClaude(ct: string): Promise<{ output: Record<string, unknown>; model: string; usage: { input_tokens: number; output_tokens: number } }> {
       const userMessage = `Tipo: ${ct}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
       const MAX_RETRIES = 3
+      const TIMEOUT_MS = 30_000
       let attempt = 0
       let model = 'claude-sonnet-4-6'
       while (true) {
         try {
-          const message = await anthropic.messages.create({
-            model,
-            max_tokens: 2048,
-            system: SYSTEM_PROMPT,
-            messages: [{ role: 'user', content: userMessage }],
-          })
+          const message = await Promise.race([
+            anthropic.messages.create({
+              model,
+              max_tokens: 2048,
+              system: SYSTEM_PROMPT,
+              messages: [{ role: 'user', content: userMessage }],
+            }),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('TIMEOUT')), TIMEOUT_MS)
+            ),
+          ])
           const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
           return { output: JSON.parse(extractJSON(rawText)), model, usage: message.usage }
         } catch (err: unknown) {
           const status = (err as { status?: number })?.status
-          if (status === 529 && model === 'claude-sonnet-4-6') {
+          const isTimeout = err instanceof Error && err.message === 'TIMEOUT'
+          if ((status === 529 || isTimeout) && model === 'claude-sonnet-4-6') {
+            console.warn(`Sonnet ${isTimeout ? 'timeout' : '529'}, falling back to Haiku`)
             model = 'claude-haiku-4-5-20251001'
             continue
           }
@@ -421,54 +429,91 @@ Deno.serve(async (req) => {
             let fullText = ''
             const streamMsg = `Tipo: ${content_type}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
 
-            // Use raw fetch instead of SDK — more reliable in Deno for streaming
-            const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!,
-                'anthropic-version': '2023-06-01',
-              },
-              body: JSON.stringify({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 2048,
-                stream: true,
-                system: SYSTEM_PROMPT,
-                messages: [{ role: 'user', content: streamMsg }],
-              }),
-            })
+            const STREAM_TIMEOUT_MS = 30_000
 
-            if (!anthropicRes.ok) {
-              const errText = await anthropicRes.text()
-              throw new Error(`Anthropic ${anthropicRes.status}: ${errText}`)
+            async function streamFromModel(model: string): Promise<{ fullText: string; model: string }> {
+              const abortController = new AbortController()
+              const timeout = setTimeout(() => abortController.abort(), STREAM_TIMEOUT_MS)
+
+              try {
+                const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!,
+                    'anthropic-version': '2023-06-01',
+                  },
+                  body: JSON.stringify({
+                    model,
+                    max_tokens: 2048,
+                    stream: true,
+                    system: SYSTEM_PROMPT,
+                    messages: [{ role: 'user', content: streamMsg }],
+                  }),
+                  signal: abortController.signal,
+                })
+
+                if (anthropicRes.status === 529) {
+                  throw Object.assign(new Error('Overloaded'), { status: 529 })
+                }
+                if (!anthropicRes.ok) {
+                  const errText = await anthropicRes.text()
+                  throw Object.assign(new Error(`Anthropic ${anthropicRes.status}: ${errText}`), { status: anthropicRes.status })
+                }
+
+                let text = ''
+                const reader = anthropicRes.body!.getReader()
+                const dec = new TextDecoder()
+                let lineBuf = ''
+
+                while (true) {
+                  const { done, value } = await reader.read()
+                  if (done) break
+                  lineBuf += dec.decode(value, { stream: true })
+                  const lines = lineBuf.split('\n')
+                  lineBuf = lines.pop() ?? ''
+                  for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue
+                    const raw = line.slice(6).trim()
+                    if (raw === '[DONE]') continue
+                    try {
+                      const parsed = JSON.parse(raw)
+                      if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+                        text += parsed.delta.text
+                        send(controller, { t: parsed.delta.text })
+                      }
+                    } catch { /* skip malformed SSE line */ }
+                  }
+                }
+
+                return { fullText: text, model }
+              } finally {
+                clearTimeout(timeout)
+              }
             }
 
-            const reader = anthropicRes.body!.getReader()
-            const dec = new TextDecoder()
-            let lineBuf = ''
-
-            while (true) {
-              const { done, value } = await reader.read()
-              if (done) break
-              lineBuf += dec.decode(value, { stream: true })
-              const lines = lineBuf.split('\n')
-              lineBuf = lines.pop() ?? ''
-              for (const line of lines) {
-                if (!line.startsWith('data: ')) continue
-                const raw = line.slice(6).trim()
-                if (raw === '[DONE]') continue
-                try {
-                  const parsed = JSON.parse(raw)
-                  if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
-                    fullText += parsed.delta.text
-                    send(controller, { t: parsed.delta.text })
-                  }
-                } catch { /* skip malformed SSE line */ }
+            let streamModel = 'claude-sonnet-4-6'
+            try {
+              const result = await streamFromModel(streamModel)
+              fullText = result.fullText
+              streamModel = result.model
+            } catch (err: unknown) {
+              const status = (err as { status?: number })?.status
+              const isAbort = err instanceof DOMException && err.name === 'AbortError'
+              if ((status === 529 || isAbort) && streamModel === 'claude-sonnet-4-6') {
+                console.warn(`Sonnet ${isAbort ? 'timeout' : '529'} (stream), falling back to Haiku`)
+                streamModel = 'claude-haiku-4-5-20251001'
+                const result = await streamFromModel(streamModel)
+                fullText = result.fullText
+                streamModel = result.model
+              } else {
+                throw err
               }
             }
 
             const output = JSON.parse(extractJSON(fullText))
-            send(controller, { done: true, output, new_count: quota.new_count })
+            const modelUsed = streamModel.includes('haiku') ? 'haiku' : 'sonnet'
+            send(controller, { done: true, output, model_used: modelUsed, new_count: quota.new_count })
           } catch (e) {
             send(controller, { error: String(e) })
           } finally {
@@ -507,6 +552,9 @@ Deno.serve(async (req) => {
         output_tokens: totalOutput,
       }).catch(e => console.error('token_usage log error:', e))
 
+      const batchModels = new Set([carousel.model, post.model, story.model])
+      const modelUsed = batchModels.has('claude-haiku-4-5-20251001') ? 'haiku' : 'sonnet'
+
       responsePayload = {
         batch: true,
         outputs: {
@@ -514,6 +562,7 @@ Deno.serve(async (req) => {
           post: post.output,
           story: story.output,
         },
+        model_used: modelUsed,
         new_count: quota.new_count,
       }
     } else {
@@ -563,7 +612,11 @@ Deno.serve(async (req) => {
       }
       }).catch(e => console.error('token_usage log error:', e))
 
-      responsePayload = { output, new_count: quota.new_count }
+      responsePayload = {
+        output,
+        model_used: model.includes('haiku') ? 'haiku' : 'sonnet',
+        new_count: quota.new_count,
+      }
     }
 
     return new Response(JSON.stringify(responsePayload), {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { Sparkles, Loader2, Zap, LayoutGrid, Layers, ShieldCheck, Lock, Check, AlertTriangle, Upload, X } from "lucide-react";
+import { Sparkles, Loader2, Zap, LayoutGrid, Layers, ShieldCheck, Lock, Check, AlertTriangle, Upload, X, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/TopBar";
 import CarouselOutput from "@/components/CarouselOutput";
@@ -20,6 +20,7 @@ import FeedbackBar from "@/components/FeedbackBar";
 import ContentValidator, { type Compliance } from "@/components/ContentValidator";
 import { useLocation } from "react-router-dom";
 import { handleCheckout, PLANS } from "@/lib/plans";
+import QuickStartTopics from "@/components/QuickStartTopics";
 
 type ContentType = "carousel" | "post" | "story";
 type Vertical = "doctor" | "nutritionist" | "dentist" | "psychologist";
@@ -428,6 +429,12 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<'create' | 'compliance'>('create');
   const { planInfo, setPlanInfo, refetch, incrementGeneration } = usePlan();
   const resultRef = useRef<HTMLDivElement>(null);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [totalGenerations, setTotalGenerations] = useState<number | null>(null);
+  const [onboardingComplete, setOnboardingComplete] = useState(
+    () => localStorage.getItem('cf_onboarding_done') === 'true'
+  );
+  const [hasBrandProfile, setHasBrandProfile] = useState(false);
 
   // Persist vertical + medical specialty across reloads
   useEffect(() => {
@@ -451,9 +458,12 @@ const Index = () => {
           setShowOnboarding(true);
         } else {
           setVertical(data.vertical as Vertical);
+          setOnboardingComplete(true);
+          localStorage.setItem('cf_onboarding_done', 'true');
         }
         if (data?.instagram_handle) {
           setInstagramHandle(data.instagram_handle);
+          if (data.instagram_handle.trim()) setHasBrandProfile(true);
         }
         const intents: PatientIntent[] = [];
         if (data?.patient_intent_primary) intents.push(data.patient_intent_primary as PatientIntent);
@@ -462,6 +472,19 @@ const Index = () => {
         if (data?.age_range?.length) {
           setAgeRanges(data.age_range);
         }
+      });
+  }, [user]);
+
+  // Check total generation count for empty state / first-gen celebration
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('content')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .then(({ count }) => {
+        setTotalGenerations(count ?? 0);
+        if ((count ?? 0) > 0) setHasGenerated(true);
       });
   }, [user]);
 
@@ -571,6 +594,14 @@ const Index = () => {
               setResult({ type: contentType, ...ev.output });
               setCompliance(ev.output?.compliance ?? null);
               setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+              // First-generation celebration
+              if (!hasGenerated) {
+                setHasGenerated(true);
+                setTotalGenerations(prev => (prev ?? 0) + 1);
+                setTimeout(() => toast.success('Seu primeiro conteúdo foi criado!'), 500);
+              } else {
+                setTotalGenerations(prev => (prev ?? 0) + 1);
+              }
               if (user) {
                 supabase.from("content").insert([{ user_id: user.id, type: contentType, input: idea, output_json: ev.output }])
                   .then(({ error }) => { if (error) console.error("Failed to save content:", error); });
@@ -613,6 +644,15 @@ const Index = () => {
       setTimeout(() => {
         resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
+
+      // First-generation celebration
+      if (!hasGenerated) {
+        setHasGenerated(true);
+        setTotalGenerations(prev => (prev ?? 0) + 3);
+        setTimeout(() => toast.success('Seu primeiro conteúdo foi criado!'), 500);
+      } else {
+        setTotalGenerations(prev => (prev ?? 0) + 3);
+      }
 
       if (user) {
         supabase.from("content").insert([
@@ -742,8 +782,40 @@ const Index = () => {
                   </div>
                 </div>
 
+                {/* Progress checklist for new users */}
+                {totalGenerations !== null && totalGenerations <= 3 && (
+                  <div className="mb-4 w-full rounded-xl border border-border bg-card px-4 py-3">
+                    <p className="mb-2.5 text-xs font-bold uppercase tracking-widest text-muted-foreground/50">
+                      Primeiros passos
+                    </p>
+                    <div className="space-y-2">
+                      {[
+                        { label: 'Perfil criado', done: onboardingComplete },
+                        { label: 'Primeiro conteúdo', done: hasGenerated },
+                        { label: 'Perfil de marca', done: hasBrandProfile },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center gap-2">
+                          {item.done ? (
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-muted-foreground/30" />
+                          )}
+                          <span className={`text-sm ${item.done ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                            {item.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Input area */}
                 <div className="w-full animate-fade-up space-y-4">
+
+                  {/* Quick-start topic suggestions */}
+                  {totalGenerations !== null && totalGenerations === 0 && !idea.trim() && (
+                    <QuickStartTopics vertical={vertical} onSelect={(t) => setIdea(t)} />
+                  )}
 
                   {/* Trending topics + Templates */}
                   <TrendingTopics
@@ -797,6 +869,7 @@ const Index = () => {
                         if (!user) return;
                         const { error } = await supabase.from('users').update({ instagram_handle: instagramHandle }).eq('id', user.id);
                         if (error) console.error("Failed to save instagram_handle:", error);
+                        if (instagramHandle.trim()) setHasBrandProfile(true);
                       }}
                       placeholder="Ex: @suaclinica ou Clínica Vitallis (aparece no card)"
                       className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/40"
@@ -1012,6 +1085,19 @@ const Index = () => {
                   )}
                 </div>
 
+                {/* Empty state guidance */}
+                {!result && !batchResults && !isStreaming && !loading && totalGenerations === 0 && (
+                  <div className="mt-10 flex w-full flex-col items-center rounded-2xl border border-dashed border-border bg-card/50 px-6 py-10 text-center md:mt-14">
+                    <Sparkles className="mb-3 h-8 w-8 text-primary/30" />
+                    <p className="text-sm font-semibold text-foreground">
+                      Nenhum conteúdo gerado ainda
+                    </p>
+                    <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-muted-foreground">
+                      Escolha um tema acima ou digite o seu para começar. O ContentFlow cria carrosseis, posts e stories prontos para o Instagram.
+                    </p>
+                  </div>
+                )}
+
                 {/* Streaming skeleton */}
                 {isStreaming && (
                   <div ref={resultRef} className="mt-10 w-full md:mt-14">
@@ -1092,9 +1178,15 @@ const Index = () => {
         )}
         {showOnboarding && (
           <OnboardingModal
-            onComplete={(v) => {
+            onComplete={(v, suggestedTopic) => {
               setVertical(v);
               setShowOnboarding(false);
+              setOnboardingComplete(true);
+              localStorage.setItem('cf_onboarding_done', 'true');
+              if (suggestedTopic) {
+                setIdea(suggestedTopic);
+                toast.success('Tema sugerido preenchido. Clique em Gerar conteúdo para começar!');
+              }
             }}
             onShowPricing={(v) => {
               setVertical(v);

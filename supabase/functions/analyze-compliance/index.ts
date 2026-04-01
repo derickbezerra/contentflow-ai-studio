@@ -178,32 +178,71 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
     }
     messageContent.push({ type: 'text', text: textContent })
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 2048,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: messageContent }],
-      }),
-    })
+    const FALLBACK_MODEL = 'claude-haiku-4-5-20251001'
+    const PRIMARY_MODEL = 'claude-opus-4-5'
+    const TIMEOUT_MS = 30_000
 
-    if (!anthropicResponse.ok) {
-      const err = await anthropicResponse.text()
-      console.error('Anthropic error:', err)
+    async function callAnthropicWithFallback(): Promise<{ rawContent: string; model: string }> {
+      const models = [PRIMARY_MODEL, FALLBACK_MODEL]
+
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i]
+        const abortController = new AbortController()
+        const timeout = setTimeout(() => abortController.abort(), TIMEOUT_MS)
+
+        try {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': anthropicKey,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model,
+              max_tokens: 2048,
+              system: SYSTEM_PROMPT,
+              messages: [{ role: 'user', content: messageContent }],
+            }),
+            signal: abortController.signal,
+          })
+
+          if (res.status === 529 && i === 0) {
+            console.warn('Opus 529, falling back to Haiku')
+            continue
+          }
+
+          if (!res.ok) {
+            const errText = await res.text()
+            console.error('Anthropic error:', errText)
+            throw Object.assign(new Error(`Anthropic ${res.status}: ${errText}`), { status: res.status })
+          }
+
+          const data = await res.json()
+          return { rawContent: data.content?.[0]?.text ?? '', model }
+        } catch (err: unknown) {
+          const isAbort = err instanceof DOMException && err.name === 'AbortError'
+          if (isAbort && i === 0) {
+            console.warn('Opus timeout, falling back to Haiku')
+            continue
+          }
+          throw err
+        } finally {
+          clearTimeout(timeout)
+        }
+      }
+
+      throw new Error('All models failed')
+    }
+
+    const { rawContent, model: usedModel } = await callAnthropicWithFallback()
+
+    if (!rawContent) {
       return new Response(JSON.stringify({ error: 'AI service error' }), {
         status: 500,
         headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       })
     }
-
-    const anthropicData = await anthropicResponse.json()
-    const rawContent = anthropicData.content?.[0]?.text ?? ''
 
     let analysis
     try {
@@ -227,7 +266,8 @@ Retorne a análise no formato JSON especificado. Seja preciso, cite trechos exat
       result: analysis,
     })
 
-    return new Response(JSON.stringify(analysis), {
+    const modelUsed = usedModel.includes('haiku') ? 'haiku' : usedModel.includes('opus') ? 'opus' : 'sonnet'
+    return new Response(JSON.stringify({ ...analysis, model_used: modelUsed }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     })
   } catch (err) {

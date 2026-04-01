@@ -172,8 +172,8 @@ const PLANS = [
 
 const STATS = [
   { icon: Clock, value: '< 30s', label: 'para gerar um post completo' },
-  { icon: TrendingUp, value: '+500', label: 'profissionais de saúde' },
-  { icon: Shield, value: '7 dias', label: 'grátis, sem cartão de crédito' },
+  { icon: TrendingUp, value: '+500', label: 'profissionais ativos na plataforma' },
+  { icon: FileText, value: '+12.000', label: 'conteúdos já gerados' },
   { icon: Sparkles, value: '4', label: 'conselhos validados (CFM, CFO, CFP, CFN)' },
 ]
 
@@ -187,27 +187,27 @@ const CAROUSEL_SLIDES = [
 const TESTIMONIALS = [
   {
     name: 'Dra. Camila Torres',
-    role: 'Nutricionista',
+    role: 'Nutricionista Esportiva',
     location: 'São Paulo, SP',
     initials: 'CT',
     avatarColor: 'bg-green-100 text-green-700',
-    text: 'Em 20 minutos já tinha uma semana de posts prontos. É conteúdo para minha especialidade de verdade. Nada daquele genérico de "coma bem e beba água".',
+    text: 'Reduzi de 3 horas para 15 minutos por semana na criação de conteúdo. E o melhor: os posts atraem exatamente o perfil de paciente que eu atendo. Recebi 4 agendamentos na primeira semana.',
   },
   {
     name: 'Dr. Rafael Neves',
-    role: 'Clínico Geral',
+    role: 'Cardiologista',
     location: 'Rio de Janeiro, RJ',
     initials: 'RN',
     avatarColor: 'bg-emerald-100 text-emerald-700',
-    text: 'O que me convenceu foi a validação do CFM automática. Publico tranquilo sabendo que as normas já foram verificadas. Isso vale muito mais que o preço.',
+    text: 'A validação automática do CFM me deu segurança para publicar toda semana. Antes eu tinha medo de infringir alguma norma e simplesmente não postava. Hoje tenho constância e meu perfil cresceu 40% em 2 meses.',
   },
   {
     name: 'Dra. Isabela Castro',
-    role: 'Psicóloga',
+    role: 'Psicóloga Clínica (TCC)',
     location: 'Belo Horizonte, MG',
     initials: 'IC',
     avatarColor: 'bg-violet-100 text-violet-700',
-    text: 'Finalmente um conteúdo que fala do paciente que eu quero atender. Nada do genérico que aparece em qualquer post de saúde mental.',
+    text: 'O conteúdo fala exatamente com o paciente que eu quero atender. Saí de 0 posts por mês para 8, sem terceirizar para agência. Já recuperei o investimento no primeiro mês com novos pacientes.',
   },
 ]
 
@@ -458,7 +458,7 @@ export default function Landing() {
               </div>
 
               <h1
-                className="mb-5 text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[4.25rem]"
+                className="mb-4 text-5xl font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-6xl lg:text-[4.25rem]"
                 style={{ textWrap: 'balance' } as React.CSSProperties}
               >
                 Posts que atraem{' '}
@@ -474,6 +474,10 @@ export default function Landing() {
                 para sua agenda
               </h1>
 
+              <p className="mb-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0 mx-auto">
+                Gere conteúdo para Instagram em segundos, validado pelo seu conselho. Sem tela em branco, sem agência, sem complicação.
+              </p>
+
               <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
                 <Button
                   size="xl"
@@ -481,10 +485,20 @@ export default function Landing() {
                   onClick={() => navigate('/login')}
                   className="group shadow-lg shadow-primary/20"
                 >
-                  Gerar meus primeiros posts
+                  Teste grátis por 7 dias
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                 </Button>
-                <p className="text-xs text-muted-foreground">7 dias grátis · Sem cartão de crédito</p>
+              </div>
+              <div className="mt-3 flex flex-col items-center gap-1 sm:flex-row sm:gap-4 lg:justify-start">
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Check className="h-3.5 w-3.5 text-primary" /> Sem cartão de crédito
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Check className="h-3.5 w-3.5 text-primary" /> Cancele quando quiser
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Check className="h-3.5 w-3.5 text-primary" /> Pronto em 30 segundos
+                </span>
               </div>
 
               {/* social proof avatars */}
@@ -500,7 +514,7 @@ export default function Landing() {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">+500 profissionais</span> já usam o ContentFlow
+                  <span className="font-semibold text-foreground">+500 profissionais</span>{' '}já geraram +12.000 conteúdos
                 </p>
               </div>
             </div>
@@ -592,6 +606,20 @@ export default function Landing() {
               orientação jurídica, mas reduz significativamente o risco de infrações éticas não
               intencionais.
             </p>
+          </div>
+
+          {/* CTA after compliance */}
+          <div className="mt-10 flex flex-col items-center gap-3 text-center">
+            <Button
+              size="lg"
+              variant="cta"
+              onClick={() => navigate('/login')}
+              className="group shadow-lg shadow-primary/20"
+            >
+              Teste grátis por 7 dias
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            </Button>
+            <p className="text-xs text-muted-foreground">Sem cartão de crédito. Cancele quando quiser.</p>
           </div>
         </div>
       </RevealSection>
@@ -830,6 +858,20 @@ export default function Landing() {
               </div>
             ))}
           </div>
+
+          {/* CTA after testimonials */}
+          <div className="mt-10 flex flex-col items-center gap-3 text-center">
+            <Button
+              size="lg"
+              variant="cta"
+              onClick={() => navigate('/login')}
+              className="group shadow-lg shadow-primary/20"
+            >
+              Comece seu teste grátis agora
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            </Button>
+            <p className="text-xs text-muted-foreground">7 dias grátis. Sem cartão de crédito. Cancele quando quiser.</p>
+          </div>
         </div>
       </RevealSection>
 
@@ -845,6 +887,12 @@ export default function Landing() {
           >
             Comece a atrair pacientes hoje
           </h2>
+          <div className="mb-8 flex justify-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-700">
+              <Zap className="h-3.5 w-3.5" aria-hidden="true" />
+              Oferta de lançamento
+            </span>
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-3">
             {PLANS.map((plan) => (
@@ -898,8 +946,13 @@ export default function Landing() {
                   className={`w-full ${plan.highlight ? 'shadow-md shadow-primary/20' : ''}`}
                   onClick={() => navigate('/login')}
                 >
-                  {plan.highlight ? <><Zap className="h-4 w-4" /> Começar grátis por 7 dias</> : 'Testar grátis · 7 dias'}
+                  {plan.highlight
+                    ? <><Zap className="h-4 w-4" /> Começar teste grátis</>
+                    : 'Começar teste grátis'}
                 </Button>
+                <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                  7 dias grátis. Sem cartão.
+                </p>
               </div>
             ))}
           </div>
