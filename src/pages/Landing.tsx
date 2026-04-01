@@ -244,17 +244,33 @@ function useReveal() {
   useEffect(() => {
     const el = ref.current
     if (!el) return
+
+    const reveal = () => el.classList.add('revealed')
+
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.classList.add('revealed')
+          reveal()
           io.disconnect()
         }
       },
-      { threshold: 0.08 }
+      { threshold: 0.05, rootMargin: '0px 0px 100px 0px' }
     )
     io.observe(el)
-    return () => io.disconnect()
+
+    // Handle anchor-link navigation: browser scrolls AFTER mount
+    const timer = setTimeout(() => {
+      const rect = el.getBoundingClientRect()
+      if (rect.top < window.innerHeight + 150) {
+        reveal()
+        io.disconnect()
+      }
+    }, 150)
+
+    return () => {
+      io.disconnect()
+      clearTimeout(timer)
+    }
   }, [])
   return ref
 }

@@ -8,6 +8,7 @@ import { usePlan } from '@/hooks/usePlan'
 import { toast } from 'sonner'
 import { cancelSubscription } from '@/lib/plans'
 import CancelSurveyModal from '@/components/CancelSurveyModal'
+import TopBar from '@/components/TopBar'
 
 type Tone = 'formal' | 'informal' | 'empatico'
 
@@ -24,6 +25,7 @@ export default function BrandProfile() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
     brand_name: '',
+    instagram_handle: '',
     brand_tone: 'informal' as Tone,
     brand_bio: '',
   })
@@ -37,13 +39,14 @@ export default function BrandProfile() {
     if (!user) return
     supabase
       .from('users')
-      .select('brand_name, brand_tone, brand_bio')
+      .select('brand_name, brand_tone, brand_bio, instagram_handle')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
         if (data) {
           setForm({
             brand_name: data.brand_name ?? '',
+            instagram_handle: data.instagram_handle ?? '',
             brand_tone: (data.brand_tone as Tone) ?? 'informal',
             brand_bio: data.brand_bio ?? '',
           })
@@ -62,6 +65,7 @@ export default function BrandProfile() {
       .from('users')
       .update({
         brand_name: form.brand_name.trim() || null,
+        instagram_handle: form.instagram_handle.trim() || null,
         brand_tone: form.brand_tone,
         brand_bio: form.brand_bio.trim() || null,
       })
@@ -82,14 +86,19 @@ export default function BrandProfile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      <div className="min-h-screen flex flex-col bg-background">
+        <TopBar />
+        <main className="flex flex-1 items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <main className="flex-1 px-4 py-10">
       <div className="mx-auto max-w-lg">
         <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-muted-foreground" onClick={() => navigate('/app')}>
           <ArrowLeft className="h-4 w-4" /> Voltar
@@ -111,6 +120,20 @@ export default function BrandProfile() {
               onChange={e => setForm(p => ({ ...p, brand_name: e.target.value }))}
               maxLength={100}
               placeholder="Ex: Dra. Ana Costa / Clínica Vitallis"
+              className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          {/* Instagram */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              @ Instagram ou nome do perfil
+            </label>
+            <input
+              value={form.instagram_handle}
+              onChange={e => setForm(p => ({ ...p, instagram_handle: e.target.value }))}
+              maxLength={100}
+              placeholder="Ex: @dra.anacosta"
               className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -181,6 +204,7 @@ export default function BrandProfile() {
           </div>
         )}
       </div>
+      </main>
 
       {showCancelSurvey && (
         <CancelSurveyModal

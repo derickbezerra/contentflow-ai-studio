@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Loader2, Check, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Loader2, Check, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
+import TopBar from '@/components/TopBar'
 
 type ContentType = 'carousel' | 'post' | 'story'
 
@@ -549,12 +550,10 @@ export default function Calendar() {
   const today = todayIso()
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <main className="flex-1 px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-muted-foreground" onClick={() => navigate('/app')}>
-          <ArrowLeft className="h-4 w-4" /> Voltar
-        </Button>
-
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-foreground">Calendário editorial</h1>
           <div className="flex rounded-xl border border-border bg-muted p-1">
@@ -612,6 +611,7 @@ export default function Calendar() {
           )
         )}
       </div>
+      </main>
 
       {addPlanFor && (
         <AddPlanModal

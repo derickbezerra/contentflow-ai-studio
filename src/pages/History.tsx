@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Loader2, FileText, LayoutGrid, Mic, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, FileText, LayoutGrid, Mic, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
 import CarouselOutput from '@/components/CarouselOutput'
 import PostOutput from '@/components/PostOutput'
 import StoryOutput from '@/components/StoryOutput'
+import TopBar from '@/components/TopBar'
 
 type ContentType = 'carousel' | 'post' | 'story'
 type FilterType = ContentType | 'all'
@@ -78,7 +78,6 @@ function RenderedOutput({ item }: { item: HistoryItem }) {
 
 export default function History() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
@@ -117,12 +116,10 @@ export default function History() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopBar />
+      <main className="flex-1 px-4 py-10">
       <div className="mx-auto max-w-2xl">
-        <Button variant="ghost" size="sm" className="mb-6 gap-1.5 text-muted-foreground" onClick={() => navigate('/app')}>
-          <ArrowLeft className="h-4 w-4" /> Voltar
-        </Button>
-
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Histórico</h1>
@@ -223,6 +220,7 @@ export default function History() {
           </div>
         )}
       </div>
+      </main>
     </div>
   )
 }
