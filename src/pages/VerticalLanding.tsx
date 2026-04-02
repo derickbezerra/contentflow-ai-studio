@@ -354,7 +354,7 @@ export default function VerticalLanding() {
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>Entrar</Button>
-            <Button size="sm" onClick={() => navigate('/login')}>Começar grátis</Button>
+            <Button size="sm" onClick={() => navigate('/signup')}>Começar grátis</Button>
           </div>
         </div>
       </nav>
@@ -378,7 +378,7 @@ export default function VerticalLanding() {
           </p>
 
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button size="xl" variant="cta" onClick={() => navigate('/login')} className="group shadow-lg shadow-primary/20">
+            <Button size="xl" variant="cta" onClick={() => navigate('/signup')} className="group shadow-lg shadow-primary/20">
               Testar grátis por 7 dias
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
@@ -498,7 +498,7 @@ export default function VerticalLanding() {
                 <Button
                   variant={plan.highlight ? 'cta' : 'outline'}
                   className={`w-full ${plan.highlight ? 'shadow-md shadow-primary/20' : ''}`}
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/signup')}
                 >
                   {plan.highlight && <Zap className="h-4 w-4" aria-hidden="true" />}
                   Começar grátis por 7 dias
@@ -530,7 +530,7 @@ export default function VerticalLanding() {
             </p>
             <Button
               size="xl"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               className="group bg-white text-primary hover:bg-white/90 shadow-xl"
             >
               Testar grátis por 7 dias

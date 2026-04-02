@@ -377,7 +377,7 @@ export default function Landing() {
             <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
               Entrar
             </Button>
-            <Button size="sm" onClick={() => navigate('/login')}>
+            <Button size="sm" onClick={() => navigate('/signup')}>
               Começar grátis
             </Button>
           </div>
@@ -425,7 +425,7 @@ export default function Landing() {
                 <Button
                   size="xl"
                   variant="cta"
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/signup')}
                   className="group shadow-lg shadow-primary/20"
                 >
                   Teste grátis por 7 dias
@@ -568,7 +568,7 @@ export default function Landing() {
             <Button
               size="lg"
               variant="cta"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               className="group shadow-lg shadow-primary/20"
             >
               Teste grátis por 7 dias
@@ -638,7 +638,7 @@ export default function Landing() {
             <Button
               size="lg"
               variant="cta"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               className="group shadow-lg shadow-primary/20"
             >
               Comece seu teste grátis agora
@@ -712,7 +712,7 @@ export default function Landing() {
                 <Button
                   variant={plan.highlight ? 'cta' : 'outline'}
                   className={`w-full ${plan.highlight ? 'shadow-md shadow-primary/20' : ''}`}
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/signup')}
                 >
                   {plan.highlight
                     ? <><Zap className="h-4 w-4" /> Começar teste grátis</>
@@ -774,7 +774,7 @@ export default function Landing() {
             </div>
             <Button
               size="xl"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               className="group bg-white text-primary shadow-xl hover:bg-white/90"
             >
               Gerar meus primeiros posts
@@ -794,7 +794,7 @@ export default function Landing() {
           variant="cta"
           size="lg"
           className="w-full shadow-lg shadow-primary/20"
-          onClick={() => navigate('/login')}
+          onClick={() => navigate('/signup')}
         >
           Testar grátis por 7 dias
           <ArrowRight className="h-4 w-4" />

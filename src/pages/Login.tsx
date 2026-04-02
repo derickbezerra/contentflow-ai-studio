@@ -1,21 +1,8 @@
 import { useState } from 'react'
-import { Loader2, MailCheck, Check, X } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, Link } from 'react-router-dom'
-
-function passwordRules(pw: string) {
-  return {
-    length:  pw.length >= 8,
-    letter:  /[a-zA-Z]/.test(pw),
-    special: /[^a-zA-Z0-9]/.test(pw),
-  }
-}
-
-function isPasswordValid(pw: string) {
-  const r = passwordRules(pw)
-  return r.length && r.letter && r.special
-}
 
 function GoogleIcon() {
   return (
@@ -29,125 +16,44 @@ function GoogleIcon() {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('')
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup' | 'confirm'>('login')
-  const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
   const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (mode === 'signup' && !termsAccepted) {
-      setError('Você precisa aceitar os Termos de Uso para criar uma conta.')
-      return
-    }
     setLoading(true)
     setError('')
 
-    // ── Login ──
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        setError(
-          error.message === 'Invalid login credentials'
-            ? 'E-mail ou senha incorretos.'
-            : error.message
-        )
-        setLoading(false)
-        return
-      }
-      navigate('/app')
-      return
-    }
-
-    // ── Signup ──
-    if (!isPasswordValid(password)) {
-      setError('A senha precisa ter ao menos 8 caracteres, uma letra e um caractere especial.')
-      setLoading(false)
-      return
-    }
-
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(
-        error.message.includes('already registered')
-          ? 'Este e-mail já possui uma conta. Faça login.'
+        error.message === 'Invalid login credentials'
+          ? 'E-mail ou senha incorretos.'
           : error.message
       )
       setLoading(false)
       return
     }
-
-    // Supabase "Confirm email" desativado → session criada imediatamente
-    if (data.session && data.user) {
-      await supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', data.user.id)
-      navigate('/app')
-      return
-    }
-
-    // Supabase "Confirm email" ativado → sem session; mostrar estado de confirmação
-    setLoading(false)
-    setMode('confirm')
+    navigate('/app')
   }
 
   async function handleGoogleLogin() {
-    if (!termsAccepted) {
-      setError('Você precisa aceitar os Termos de Uso para continuar.')
-      return
-    }
-    setGoogleLoading(true)
-    localStorage.setItem('terms_pending_accept', '1')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/app`,
-      },
+      options: { redirectTo: `${window.location.origin}/app` },
     })
-    if (error) {
-      setError(error.message)
-      setGoogleLoading(false)
-    }
-  }
-
-  // ── Email confirmation pending ──
-  if (mode === 'confirm') {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <MailCheck className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-          <h2 className="mb-2 text-xl font-bold text-foreground">Confirme seu e-mail</h2>
-          <p className="mb-1 text-sm text-muted-foreground">
-            Enviamos um link de confirmação para
-          </p>
-          <p className="mb-6 text-sm font-semibold text-foreground">{email}</p>
-          <p className="mb-8 text-xs leading-relaxed text-muted-foreground">
-            Clique no link no e-mail para ativar sua conta e começar o período gratuito de 7 dias.
-            Verifique também a pasta de spam.
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setMode('login'); setError('') }}
-          >
-            Voltar ao login
-          </Button>
-        </div>
-      </div>
-    )
+    if (error) setError(error.message)
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
+
         {/* Logo */}
-        <div className="mb-10 flex flex-col items-center gap-3">
+        <div className="mb-8 flex flex-col items-center gap-3 text-center">
           <svg width="180" height="44" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g>
               <path d="M5 30 C11 26, 17 34, 23 30 C29 26, 35 34, 41 30 L41 37 C35 41, 29 33, 23 37 C17 41, 11 33, 5 37 Z" fill="#3d6b52"/>
@@ -158,38 +64,18 @@ export default function Login() {
               <tspan fill="#1a2e23">Content</tspan><tspan fill="#6b9e7e">Flow</tspan>
             </text>
           </svg>
-          <p className="text-sm text-muted-foreground">
-            Crie seu conteúdo em menos de 30 segundos
-          </p>
+          <p className="text-sm text-muted-foreground">Crie seu conteúdo em menos de 30 segundos</p>
         </div>
 
-        {/* Terms acceptance — always visible */}
-        <label className="mb-5 flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={e => setTermsAccepted(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-          />
-          <span className="text-xs text-muted-foreground">
-            Li e aceito os{' '}
-            <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
-            {' '}e a{' '}
-            <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>
-          </span>
-        </label>
-
-        {/* Google login */}
+        {/* Google */}
         <button
           onClick={handleGoogleLogin}
-          disabled={googleLoading}
-          className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+          className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
         >
-          {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+          <GoogleIcon />
           Continuar com Google
         </button>
 
-        {/* Divider */}
         <div className="mb-4 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">ou</span>
@@ -198,7 +84,7 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">E-mail</label>
             <input
               type="email"
               value={email}
@@ -219,26 +105,6 @@ export default function Login() {
               placeholder="••••••••"
               className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {/* Password requirements — only in signup, shown after first keystroke */}
-            {mode === 'signup' && password.length > 0 && (() => {
-              const r = passwordRules(password)
-              return (
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                  {([
-                    { ok: r.length,  label: 'Mín. 8 caracteres' },
-                    { ok: r.letter,  label: 'Uma letra' },
-                    { ok: r.special, label: 'Um caractere especial' },
-                  ] as { ok: boolean; label: string }[]).map(({ ok, label }) => (
-                    <span key={label} className={`flex items-center gap-1 text-xs ${ok ? 'text-primary' : 'text-muted-foreground'}`}>
-                      {ok
-                        ? <Check className="h-3 w-3" />
-                        : <X className="h-3 w-3 opacity-40" />}
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              )
-            })()}
           </div>
 
           {error && (
@@ -246,21 +112,17 @@ export default function Login() {
           )}
 
           <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading}>
-            {loading ? (
-              <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
-            ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis · 7 dias free'}
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</> : 'Entrar'}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}{' '}
-          <button
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError('') }}
-            className="font-medium text-primary hover:underline"
-          >
-            {mode === 'login' ? 'Criar conta grátis' : 'Entrar'}
-          </button>
+          Não tem uma conta?{' '}
+          <Link to="/signup" className="font-medium text-primary hover:underline">
+            Criar conta grátis
+          </Link>
         </p>
+
       </div>
     </div>
   )
