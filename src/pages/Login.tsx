@@ -1,8 +1,21 @@
 import { useState } from 'react'
-import { Loader2, MailCheck } from 'lucide-react'
+import { Loader2, MailCheck, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, Link } from 'react-router-dom'
+
+function passwordRules(pw: string) {
+  return {
+    length:  pw.length >= 8,
+    letter:  /[a-zA-Z]/.test(pw),
+    special: /[^a-zA-Z0-9]/.test(pw),
+  }
+}
+
+function isPasswordValid(pw: string) {
+  const r = passwordRules(pw)
+  return r.length && r.letter && r.special
+}
 
 function GoogleIcon() {
   return (
@@ -51,6 +64,12 @@ export default function Login() {
     }
 
     // ── Signup ──
+    if (!isPasswordValid(password)) {
+      setError('A senha precisa ter ao menos 8 caracteres, uma letra e um caractere especial.')
+      setLoading(false)
+      return
+    }
+
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) {
       setError(
@@ -199,6 +218,26 @@ export default function Login() {
               placeholder="••••••••"
               className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
             />
+            {/* Password requirements — only in signup, shown after first keystroke */}
+            {mode === 'signup' && password.length > 0 && (() => {
+              const r = passwordRules(password)
+              return (
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  {([
+                    { ok: r.length,  label: 'Mín. 8 caracteres' },
+                    { ok: r.letter,  label: 'Uma letra' },
+                    { ok: r.special, label: 'Um caractere especial' },
+                  ] as { ok: boolean; label: string }[]).map(({ ok, label }) => (
+                    <span key={label} className={`flex items-center gap-1 text-xs ${ok ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {ok
+                        ? <Check className="h-3 w-3" />
+                        : <X className="h-3 w-3 opacity-40" />}
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )
+            })()}
           </div>
 
           {error && (
