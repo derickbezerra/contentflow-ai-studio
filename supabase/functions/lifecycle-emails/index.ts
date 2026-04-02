@@ -15,21 +15,11 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   )
 
-  const results = { welcome: 0, trial_d2: 0, trial_expired: 0, d3_no_gen: 0, d7_no_conv: 0, errors: 0 }
+  const results = { trial_d2: 0, trial_expired: 0, d3_no_gen: 0, d7_no_conv: 0, errors: 0 }
 
-  // ── 1. Welcome ────────────────────────────────────────────────────────────
-  const { data: newUsers } = await supabase
-    .from('users').select('id, email')
-    .is('welcome_sent_at', null).not('email', 'is', null)
-    .lte('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString())
+  // Welcome email is now handled by DB trigger → send-welcome function
 
-  for (const user of newUsers ?? []) {
-    const ok = await sendEmail(user.email, 'Bem-vindo ao ContentFlow!', welcomeHtml(SITE_URL))
-    if (ok) { await supabase.from('users').update({ welcome_sent_at: new Date().toISOString() }).eq('id', user.id); results.welcome++ }
-    else results.errors++
-  }
-
-  // ── 2. Trial D-2 ─────────────────────────────────────────────────────────
+  // ── 1. Trial D-2 ─────────────────────────────────────────────────────────
   const d2Start = new Date(Date.now() + (2 * 24 - 1) * 60 * 60 * 1000).toISOString()
   const d2End   = new Date(Date.now() + (2 * 24 + 1) * 60 * 60 * 1000).toISOString()
 
