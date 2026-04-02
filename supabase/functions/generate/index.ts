@@ -597,7 +597,7 @@ Deno.serve(async (req) => {
               model: streamModel,
               input_tokens: estimatedInputTokens,
               output_tokens: estimatedOutputTokens,
-            }).catch(e => console.error('token_usage log error (stream):', e))
+            }).then(null, e => console.error('token_usage log error (stream):', e))
           } catch (e) {
             console.error('Stream error:', e)
             const errMsg = e instanceof Error ? e.message : 'Erro desconhecido'
@@ -636,7 +636,7 @@ Deno.serve(async (req) => {
         model: carousel.model,
         input_tokens: totalInput,
         output_tokens: totalOutput,
-      }).catch(e => console.error('token_usage log error:', e))
+      }).then(null, e => console.error('token_usage log error:', e))
 
       const batchModels = new Set([carousel.model, post.model, story.model])
       const modelUsed = batchModels.has(FALLBACK_MODEL) ? 'haiku' : 'sonnet'
@@ -691,12 +691,12 @@ Deno.serve(async (req) => {
                 subject: `[ALERTA] Custo Anthropic: $${costUSD.toFixed(2)} hoje`,
                 html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a2e23"><div style="background:#b45309;padding:24px 32px;border-radius:12px 12px 0 0"><p style="color:#fff;font-size:18px;font-weight:600;margin:0">Alerta de custo Anthropic</p></div><div style="border:1px solid #e2e8f0;border-top:none;padding:28px 32px;border-radius:0 0 12px 12px"><p style="font-size:15px;margin:0 0 12px">O custo acumulado de hoje atingiu <strong>$${costUSD.toFixed(2)}</strong>, ultrapassando o limite de <strong>$${threshold.toFixed(2)}</strong>.</p><p style="font-size:14px;color:#64748b;margin:0">Verifique o painel admin para identificar possível abuso ou bug de loop.</p></div></div>`,
               }),
-            }).catch(e => console.error('cost alert email error:', e))
+            }).then(null, e => console.error('cost alert email error:', e))
             await supabaseAdmin.from('cost_alerts_log').insert({ threshold_usd: threshold, daily_cost_usd: costUSD })
           }
         }
       }
-      }).catch(e => console.error('token_usage log error:', e))
+      }).then(null, e => console.error('token_usage log error:', e))
 
       responsePayload = {
         output,
