@@ -1138,11 +1138,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
 
                             {/* Content — centralizado no espaço restante */}
                             <div className="flex flex-1 flex-col justify-center gap-2.5">
-                              <h3 className="line-clamp-3 text-[1.15rem] font-extrabold leading-[1.2] tracking-tight" style={{ color: textColor }}>
+                              <h3 className="line-clamp-3 text-[1.45rem] font-extrabold leading-[1.2] tracking-tight" style={{ color: textColor }}>
                                 {slide.title}
                               </h3>
                               <div className="h-[2.5px] w-7 rounded-full bg-amber-400" />
-                              <p className="line-clamp-4 text-[12.5px] font-medium leading-[1.65]" style={{ color: `${textColor}99` }}>
+                              <p className="line-clamp-4 text-[14px] font-medium leading-[1.6]" style={{ color: `${textColor}99` }}>
                                 {slide.body}
                               </p>
                             </div>

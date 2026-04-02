@@ -1,4 +1,4 @@
-import { LogOut, Zap, History, BarChart2, UserCircle, CalendarDays, ShieldCheck } from "lucide-react";
+import { LogOut, Zap, History, BarChart2, UserCircle, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
@@ -87,7 +87,6 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
             {isAdmin && navItem('/admin', <BarChart2 className="h-4 w-4" />, 'Admin')}
             {navItem('/perfil', <UserCircle className="h-4 w-4" />, 'Perfil')}
             {navItem('/calendario', <CalendarDays className="h-4 w-4" />, 'Calendario')}
-            {navItem('/compliance', <ShieldCheck className="h-4 w-4" />, 'Compliance')}
             {navItem('/history', <History className="h-4 w-4" />, 'Historico')}
 
             <div className="mx-1 h-5 w-px bg-border/60" />

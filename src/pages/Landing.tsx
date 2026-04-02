@@ -371,9 +371,6 @@ export default function Landing() {
 
           {/* Anchor links — desktop only */}
           <div className="hidden items-center gap-6 sm:flex">
-            <a href="#precos" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Preços
-            </a>
           </div>
 
           <div className="flex items-center gap-2">
@@ -664,12 +661,6 @@ export default function Landing() {
           >
             Comece a atrair pacientes hoje
           </h2>
-          <div className="mb-8 flex justify-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-semibold text-amber-700">
-              <Zap className="h-3.5 w-3.5" aria-hidden="true" />
-              Oferta de lançamento
-            </span>
-          </div>
 
           <div className="grid gap-5 sm:grid-cols-3">
             {PLANS.map((plan) => (

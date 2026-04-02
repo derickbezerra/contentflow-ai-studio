@@ -600,67 +600,83 @@ const Index = () => {
         "Authorization": `Bearer ${session.access_token}`,
       };
 
-      // ── Streaming path ────────────────────────────────────────────────────
-      {
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`,
-          { method: "POST", headers: fetchHeaders, body: JSON.stringify({ ...body, stream: true }) }
-        );
-        if (!res.ok) {
-          const errJson = await res.json().catch(() => null);
-          if (res.status === 401) {
-            toast.error("Sessão expirada. Faça login novamente.");
-            await signOut();
-            return;
-          }
-          if (res.status === 429 || res.status === 403) {
-            toast.error(errJson?.error ?? "Não foi possível gerar o conteúdo.");
-            if (res.status === 403) setShowPricing(true);
-            return;
-          }
-          throw new Error(errJson?.error ?? `HTTP ${res.status}`);
+      // ── Streaming path (com retry automático) ────────────────────────────
+      const MAX_ATTEMPTS = 3;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        if (attempt > 1) {
+          toast.loading("Processando...", { id: "gen-retry" });
+          await new Promise(r => setTimeout(r, 1500 * (attempt - 1)));
         }
+        try {
+          const res = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`,
+            { method: "POST", headers: fetchHeaders, body: JSON.stringify({ ...body, stream: true }) }
+          );
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => null);
+            if (res.status === 401) {
+              toast.dismiss("gen-retry");
+              toast.error("Sessão expirada. Faça login novamente.");
+              await signOut();
+              return;
+            }
+            if (res.status === 429 || res.status === 403) {
+              toast.dismiss("gen-retry");
+              toast.error(errJson?.error ?? "Não foi possível gerar o conteúdo.");
+              if (res.status === 403) setShowPricing(true);
+              return;
+            }
+            // 500 / 502 / 503 → retentável
+            if (attempt < MAX_ATTEMPTS) continue;
+            throw new Error(errJson?.error ?? `HTTP ${res.status}`);
+          }
 
-        setIsStreaming(true);
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-        let buf = '';
+          toast.dismiss("gen-retry");
+          setIsStreaming(true);
+          const reader = res.body!.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          const parts = buf.split('\n\n');
-          buf = parts.pop() ?? '';
-          for (const part of parts) {
-            const line = part.trim();
-            if (!line.startsWith('data: ')) continue;
-            const ev = JSON.parse(line.slice(6));
-            if (ev.error) throw new Error(ev.error);
-            if (ev.done) {
-              setIsStreaming(false);
-              if (typeof ev.new_count === 'number') {
-                setPlanInfo(prev => prev ? { ...prev, generationCount: ev.new_count, canGenerate: ev.new_count < prev.planLimit } : prev);
-              }
-              setResult({ type: contentType, ...ev.output });
-              setCompliance(ev.output?.compliance ?? null);
-              setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-              // First-generation celebration
-              if (!hasGenerated) {
-                setHasGenerated(true);
-                setTotalGenerations(prev => (prev ?? 0) + 1);
-                setTimeout(() => toast.success('Seu primeiro conteúdo foi criado!'), 500);
-              } else {
-                setTotalGenerations(prev => (prev ?? 0) + 1);
-              }
-              if (user) {
-                supabase.from("content").insert([{ user_id: user.id, type: contentType, input: idea, output_json: ev.output }])
-                  .then(({ error }) => { if (error) console.error("Failed to save content:", error); });
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, { stream: true });
+            const parts = buf.split('\n\n');
+            buf = parts.pop() ?? '';
+            for (const part of parts) {
+              const line = part.trim();
+              if (!line.startsWith('data: ')) continue;
+              const ev = JSON.parse(line.slice(6));
+              if (ev.error) throw new Error(ev.error);
+              if (ev.done) {
+                setIsStreaming(false);
+                if (typeof ev.new_count === 'number') {
+                  setPlanInfo(prev => prev ? { ...prev, generationCount: ev.new_count, canGenerate: ev.new_count < prev.planLimit } : prev);
+                }
+                setResult({ type: contentType, ...ev.output });
+                setCompliance(ev.output?.compliance ?? null);
+                setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+                // First-generation celebration
+                if (!hasGenerated) {
+                  setHasGenerated(true);
+                  setTotalGenerations(prev => (prev ?? 0) + 1);
+                  setTimeout(() => toast.success('Seu primeiro conteúdo foi criado!'), 500);
+                } else {
+                  setTotalGenerations(prev => (prev ?? 0) + 1);
+                }
+                if (user) {
+                  supabase.from("content").insert([{ user_id: user.id, type: contentType, input: idea, output_json: ev.output }])
+                    .then(({ error }) => { if (error) console.error("Failed to save content:", error); });
+                }
               }
             }
           }
+          return;
+        } catch (err) {
+          toast.dismiss("gen-retry");
+          if (attempt >= MAX_ATTEMPTS) throw err;
+          // próxima tentativa
         }
-        return;
       }
 
     } catch (err: unknown) {

@@ -13,7 +13,7 @@ export default function Terms() {
         </Button>
 
         <h1 className="mb-2 text-2xl font-bold text-foreground">Termos de Uso</h1>
-        <p className="mb-10 text-sm text-muted-foreground">Última atualização: março de 2026</p>
+        <p className="mb-10 text-sm text-muted-foreground">Última atualização: abril de 2026</p>
 
         <div className="space-y-8 text-sm leading-relaxed text-foreground">
 
@@ -59,7 +59,7 @@ export default function Terms() {
           <section>
             <h2 className="mb-3 text-base font-semibold">6. Planos e Pagamentos</h2>
             <p className="text-muted-foreground">
-              O ContentFlow oferece um período de teste gratuito de 7 dias com até 5 gerações de conteúdo. Após esse período, é necessário assinar um dos planos pagos para continuar utilizando o serviço. Os pagamentos são processados pela Asaas e estão sujeitos às condições da plataforma de pagamento. O cancelamento pode ser realizado a qualquer momento diretamente no app, com acesso encerrado imediatamente após a solicitação.
+              O ContentFlow oferece um período de teste gratuito de 7 dias com até 5 gerações de conteúdo. Após esse período, é necessário assinar um dos planos pagos para continuar utilizando o serviço. Os pagamentos são processados pela Asaas e estão sujeitos às condições da plataforma de pagamento. O cancelamento pode ser realizado a qualquer momento diretamente no app; nesse caso, o acesso permanece ativo até o fim do período já pago, sem cobranças futuras.
             </p>
           </section>
 

@@ -27,6 +27,10 @@ export default function Login() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (mode === 'signup' && !termsAccepted) {
+      setError('Você precisa aceitar os Termos de Uso para criar uma conta.')
+      return
+    }
     setLoading(true)
     setError('')
 

@@ -13,7 +13,7 @@ export default function Privacy() {
         </Button>
 
         <h1 className="mb-2 text-2xl font-bold text-foreground">Política de Privacidade</h1>
-        <p className="mb-10 text-sm text-muted-foreground">Última atualização: março de 2026</p>
+        <p className="mb-10 text-sm text-muted-foreground">Última atualização: abril de 2026</p>
 
         <div className="space-y-8 text-sm leading-relaxed text-foreground">
 
@@ -54,7 +54,7 @@ export default function Privacy() {
             <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
               <li><strong className="text-foreground">Supabase:</strong> infraestrutura de banco de dados e autenticação</li>
               <li><strong className="text-foreground">Asaas:</strong> processamento de pagamentos (PIX e Boleto)</li>
-              <li><strong className="text-foreground">Anthropic:</strong> os tópicos que você digita são enviados à API de IA para geração de conteúdo. Não enviamos dados pessoais identificáveis além do texto inserido</li>
+              <li><strong className="text-foreground">Anthropic:</strong> os tópicos que você digita e os textos submetidos para análise de compliance são enviados à API de IA para processamento. Não enviamos dados pessoais identificáveis além do conteúdo textual inserido pelo usuário</li>
               <li><strong className="text-foreground">Autoridades competentes:</strong> quando exigido por lei</li>
             </ul>
           </section>
@@ -90,9 +90,12 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-base font-semibold">8. Cookies</h2>
+            <h2 className="mb-3 text-base font-semibold">8. Cookies e Rastreamento</h2>
+            <p className="mb-2 text-muted-foreground">
+              Utilizamos cookies estritamente necessários para manter sua sessão autenticada.
+            </p>
             <p className="text-muted-foreground">
-              Utilizamos cookies estritamente necessários para manter sua sessão autenticada. Não utilizamos cookies de rastreamento ou publicidade de terceiros.
+              Adicionalmente, utilizamos o <strong className="text-foreground">TikTok Pixel</strong> em nossas páginas públicas para medir o desempenho de campanhas publicitárias veiculadas no TikTok Ads. Esse pixel coleta dados de navegação (como páginas visitadas e ações realizadas) para fins de atribuição e otimização de anúncios. Você pode desativar esse rastreamento nas configurações de privacidade do seu navegador ou por meio de extensões de bloqueio de rastreadores. Para mais informações, consulte a <a href="https://www.tiktok.com/legal/page/row/privacy-policy/pt-BR" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Política de Privacidade do TikTok</a>.
             </p>
           </section>
 
