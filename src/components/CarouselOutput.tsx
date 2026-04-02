@@ -1047,7 +1047,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
 
                     return (
                       <div
-                        className="relative flex flex-1 flex-col justify-between p-4"
+                        className="relative flex flex-1 flex-col p-4"
                         style={{ background: bg }}
                       >
                         {/* Photo edit / bg picker buttons */}
@@ -1131,25 +1131,25 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                           </div>
                         ) : (
                           <>
-                            {/* Badge */}
-                            <span className="inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest" style={{ background: `${textColor}08`, color: `${textColor}55` }}>
+                            {/* Badge — topo fixo */}
+                            <span className="mb-3 inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest" style={{ background: `${textColor}08`, color: `${textColor}55` }}>
                               {i + 1} / {slides.length}
                             </span>
 
-                            {/* Content */}
-                            <div className="flex flex-col gap-2.5">
+                            {/* Content — centralizado no espaço restante */}
+                            <div className="flex flex-1 flex-col justify-center gap-2.5">
                               <h3 className="line-clamp-3 text-[1.15rem] font-extrabold leading-[1.2] tracking-tight" style={{ color: textColor }}>
                                 {slide.title}
                               </h3>
                               <div className="h-[2.5px] w-7 rounded-full bg-amber-400" />
-                              <p className="line-clamp-5 text-[12.5px] font-medium leading-[1.65]" style={{ color: `${textColor}99` }}>
+                              <p className="line-clamp-4 text-[12.5px] font-medium leading-[1.65]" style={{ color: `${textColor}99` }}>
                                 {slide.body}
                               </p>
                             </div>
 
-                            {/* Handle */}
+                            {/* Handle — base fixa */}
                             {handle && (
-                              <p className="text-[10px] font-medium" style={{ color: `${textColor}40` }}>
+                              <p className="mt-3 text-[10px] font-medium" style={{ color: `${textColor}40` }}>
                                 {handle}
                               </p>
                             )}
