@@ -156,7 +156,7 @@ function renderPostToCanvas(
     ctx.fillStyle = "rgba(255,255,255,0.32)";
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
-    ctx.fillText(handle.startsWith("@") ? handle : `@${handle}`, W - PAD, H - PAD + 14);
+    ctx.fillText(handle, W - PAD, H - PAD + 14);
   }
 
   return canvas;
@@ -302,7 +302,7 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           {/* Handle watermark */}
           {handle && (
             <p className="absolute bottom-4 right-5 text-[11px] font-medium text-white/35">
-              {handle.startsWith("@") ? handle : `@${handle}`}
+              {handle}
             </p>
           )}
         </div>
