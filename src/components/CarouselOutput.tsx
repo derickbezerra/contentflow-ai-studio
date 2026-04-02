@@ -692,7 +692,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
             {activeIndex > 0 && (
               <button
                 onClick={() => scrollTo(activeIndex - 1)}
-                className="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-card-hover transition-all duration-200 hover:scale-105 active:scale-95"
+                className="absolute -left-6 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
               >
                 <ChevronLeft className="h-4 w-4 text-foreground" />
               </button>
@@ -700,7 +700,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
             {activeIndex < slides.length - 1 && (
               <button
                 onClick={() => scrollTo(activeIndex + 1)}
-                className="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-card-hover transition-all duration-200 hover:scale-105 active:scale-95"
+                className="absolute -right-6 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
               >
                 <ChevronRight className="h-4 w-4 text-foreground" />
               </button>
@@ -861,25 +861,27 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-1 flex-col justify-center px-5 py-5">
-                        <span className="mb-3 inline-flex w-fit rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/50">
+                      <div className="flex flex-1 flex-col px-5 pt-4 pb-4">
+                        <span className="inline-flex w-fit rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/50">
                           {i + 1} / {slides.length}
                         </span>
-                        <h3
-                          className="mb-3 line-clamp-3 text-[1.35rem] font-extrabold leading-[1.15] tracking-tight text-white drop-shadow-sm"
-                          style={{ textShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
-                        >
-                          {slide.title}
-                        </h3>
-                        <div className="mb-3 h-[2px] w-8 rounded-full bg-white/25" />
-                        <p
-                          className="line-clamp-4 text-[13px] font-medium leading-[1.55] text-white/85"
-                          style={{ textShadow: "0 1px 8px rgba(0,0,0,0.1)" }}
-                        >
-                          {slide.body}
-                        </p>
+                        <div className="flex flex-1 flex-col justify-center -mt-3">
+                          <h3
+                            className="mb-3 line-clamp-3 text-[1.35rem] font-extrabold leading-[1.15] tracking-tight text-white drop-shadow-sm"
+                            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
+                          >
+                            {slide.title}
+                          </h3>
+                          <div className="mb-3 h-[2px] w-8 rounded-full bg-white/25" />
+                          <p
+                            className="line-clamp-4 text-[13px] font-medium leading-[1.55] text-white/85"
+                            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.1)" }}
+                          >
+                            {slide.body}
+                          </p>
+                        </div>
                         {handle && (
-                          <p className="mt-auto pt-3 text-[10px] font-medium text-white/40">
+                          <p className="text-[10px] font-medium text-white/40">
                             {handle}
                           </p>
                         )}
@@ -929,7 +931,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
             {activeIndexPhoto > 0 && (
               <button
                 onClick={() => scrollToPhoto(activeIndexPhoto - 1)}
-                className="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-card-hover transition-all duration-200 hover:scale-105 active:scale-95"
+                className="absolute -left-6 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
               >
                 <ChevronLeft className="h-4 w-4 text-foreground" />
               </button>
@@ -937,7 +939,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
             {activeIndexPhoto < slides.length - 1 && (
               <button
                 onClick={() => scrollToPhoto(activeIndexPhoto + 1)}
-                className="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-card-hover transition-all duration-200 hover:scale-105 active:scale-95"
+                className="absolute -right-6 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-card shadow-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none"
               >
                 <ChevronRight className="h-4 w-4 text-foreground" />
               </button>
