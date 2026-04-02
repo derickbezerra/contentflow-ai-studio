@@ -270,7 +270,7 @@ function ComplianceFullPage({
         {/* Textarea */}
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 focus-within:border-primary/40 focus-within:shadow-md">
           <div className="border-b border-border/40 px-5 pt-3 pb-2">
-            <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">
+            <label className="text-[11px] font-bold uppercase tracking-widest text-foreground/60">
               Texto do post
             </label>
           </div>
@@ -838,7 +838,7 @@ const Index = () => {
                   {/* Textarea */}
                   <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 focus-within:border-primary/40 focus-within:shadow-md">
                     <div className="border-b border-border/40 px-5 pt-3 pb-2">
-                      <label htmlFor="idea-input" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                      <label htmlFor="idea-input" className="text-[11px] font-bold uppercase tracking-widest text-foreground/60">
                         Sobre o que você quer criar conteúdo?
                       </label>
                     </div>
@@ -883,7 +883,7 @@ const Index = () => {
                   <div className="overflow-hidden rounded-2xl border border-border bg-card">
                     {/* Group 1: Especialidade */}
                     <div className="space-y-3 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">
                         Sobre você
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -911,7 +911,7 @@ const Index = () => {
 
                     {/* Group 2: Tipo de paciente + Idade + Gênero */}
                     <div className="space-y-3 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">
                         Para quem
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -993,7 +993,7 @@ const Index = () => {
 
                     {/* Group 3: Formato */}
                     <div className="space-y-2.5 p-4">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">
                         Formato
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
