@@ -385,7 +385,7 @@ export default function Landing() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-5 pb-28 pt-16 sm:pb-36 sm:pt-36">
+      <section className="relative overflow-hidden px-5 pb-20 pt-10 sm:pb-28 sm:pt-20">
         {/* background orbs */}
         <div className="animate-pulse-slow pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-primary/[0.06] blur-3xl" />
         <div className="animate-pulse-slow pointer-events-none absolute -bottom-20 left-1/4 h-[300px] w-[400px] rounded-full bg-emerald-400/[0.04] blur-3xl" style={{ animationDelay: '2s' }} />
