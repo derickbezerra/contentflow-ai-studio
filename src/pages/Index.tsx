@@ -14,7 +14,6 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import TrendingTopics from "@/components/TrendingTopics";
-import BenchmarkWidget from "@/components/BenchmarkWidget";
 import MedicalSpecialtyCombobox from "@/components/MedicalSpecialtyCombobox";
 import FeedbackBar from "@/components/FeedbackBar";
 import ContentValidator, { type Compliance } from "@/components/ContentValidator";
@@ -1036,11 +1035,6 @@ const Index = () => {
                         />
                       </div>
                     </div>
-                  )}
-
-                  {/* Benchmark */}
-                  {planInfo && (
-                    <BenchmarkWidget vertical={vertical} userCount={planInfo.generationCount} />
                   )}
 
                   {/* CTA */}
