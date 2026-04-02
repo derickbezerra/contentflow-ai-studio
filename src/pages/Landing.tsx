@@ -3,24 +3,14 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 const HeroDemoPlayer = lazy(() => import('@/components/HeroDemoPlayer').then(m => ({ default: m.HeroDemoPlayer })))
 import {
-  Stethoscope,
-  Salad,
   Check,
   Zap,
   ArrowRight,
   Sparkles,
   FileText,
-  Image,
-  Smartphone,
-  Smile,
   Clock,
   TrendingUp,
-  Shield,
   ShieldCheck,
-  Pencil,
-  LayoutTemplate,
-  Download,
-  Brain,
   AlertTriangle,
   ChevronDown,
 } from 'lucide-react'
@@ -86,44 +76,6 @@ const COUNCILS = [
   },
 ]
 
-const VERTICALS = [
-  {
-    icon: Stethoscope,
-    label: 'Medicina',
-    desc: 'Paciente que te conhece no Instagram chega ao consultório já confiando em você. O ContentFlow faz esse trabalho acontecer toda semana.',
-    example: '"Colesterol alto: 5 sinais que você ignora"',
-    color: 'from-emerald-500/10 to-teal-500/10',
-    border: 'hover:border-emerald-400/40',
-    href: '/para-medicos',
-  },
-  {
-    icon: Salad,
-    label: 'Nutrição',
-    desc: 'Você cuida da alimentação das pessoas o dia todo e não sobra tempo para alimentar o feed. Delegue isso para a IA.',
-    example: '"3 alimentos que sabotam sua dieta sem você saber"',
-    color: 'from-green-500/10 to-lime-500/10',
-    border: 'hover:border-green-400/40',
-    href: '/para-nutricionistas',
-  },
-  {
-    icon: Smile,
-    label: 'Odontologia',
-    desc: 'O paciente decide onde vai cuidar do sorriso antes de sentir dor. Presença constante garante que você seja a primeira lembrança.',
-    example: '"Clareamento dental: o que ninguém te conta"',
-    color: 'from-cyan-500/10 to-sky-500/10',
-    border: 'hover:border-cyan-400/40',
-    href: '/para-dentistas',
-  },
-  {
-    icon: Brain,
-    label: 'Psicologia',
-    desc: 'Conteúdo sobre saúde mental ainda tem muito preconceito a desfazer. Você pode ser essa voz sem escrever do zero toda semana.',
-    example: '"Ansiedade não é frescura: entenda o que acontece no seu corpo"',
-    color: 'from-violet-500/10 to-purple-500/10',
-    border: 'hover:border-violet-400/40',
-    href: '/para-psicologos',
-  },
-]
 
 const PLANS = [
   {
@@ -419,12 +371,6 @@ export default function Landing() {
 
           {/* Anchor links — desktop only */}
           <div className="hidden items-center gap-6 sm:flex">
-            <a href="#como-funciona" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Como funciona
-            </a>
-            <a href="#especialidades" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Especialidades
-            </a>
             <a href="#precos" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
               Preços
             </a>
@@ -598,6 +544,18 @@ export default function Landing() {
             ))}
           </div>
 
+          {/* Compliance video */}
+          <div className="mt-8 overflow-hidden rounded-2xl border border-border shadow-lg">
+            <video
+              src="/compliance-video.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full"
+            />
+          </div>
+
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-card/60 p-4">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
             <p className="text-[12px] leading-relaxed text-muted-foreground">
@@ -624,187 +582,6 @@ export default function Landing() {
         </div>
       </RevealSection>
 
-      {/* ── HOW IT WORKS ── */}
-      <RevealSection className="px-5 py-10 sm:py-16" id="como-funciona">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
-            Como funciona
-          </p>
-          <h2
-            className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl"
-            style={{ textWrap: 'balance' } as React.CSSProperties}
-          >
-            Simples do começo ao fim
-          </h2>
-
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              {
-                icon: Pencil,
-                step: '01',
-                title: 'Escolha sua especialidade',
-                desc: 'Medicina, Nutrição, Odonto ou Psico. A linguagem e os temas já são adaptados para a sua área de forma automática.',
-                gradient: 'from-emerald-500/15 to-teal-500/10',
-                iconBg: 'bg-emerald-500/10 text-emerald-600',
-              },
-              {
-                icon: LayoutTemplate,
-                step: '02',
-                title: 'Defina o tipo de paciente',
-                desc: 'Estético, preventivo, dor, crônico ou premium. Quanto mais específico, mais certeiro o conteúdo para atrair quem você quer na agenda.',
-                gradient: 'from-teal-500/15 to-cyan-500/10',
-                iconBg: 'bg-teal-500/10 text-teal-600',
-              },
-              {
-                icon: Download,
-                step: '03',
-                title: 'Receba posts prontos para publicar',
-                desc: 'Carrossel, post ou story prontos em segundos. Já validados pelo seu conselho. Revise, ajuste o que quiser e publique.',
-                gradient: 'from-cyan-500/15 to-sky-500/10',
-                iconBg: 'bg-cyan-500/10 text-cyan-600',
-              },
-            ].map((item, i) => (
-              <div
-                key={item.step}
-                className={`group relative rounded-2xl border border-border bg-gradient-to-br ${item.gradient} p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl`}
-                style={{ animationDelay: `${i * 0.1}s` }}
-              >
-                <span className="absolute right-5 top-4 text-4xl font-extrabold text-foreground/[0.04] select-none">
-                  {item.step}
-                </span>
-                <div
-                  className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110 ${item.iconBg}`}
-                >
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-2 text-base font-semibold text-foreground">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5 text-center sm:flex-row sm:text-left">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary" aria-hidden="true">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Sem configuração técnica. Você escreve como quiser.
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Você escolhe a especialidade e o tipo de paciente. O resto acontece
-                automaticamente.
-              </p>
-            </div>
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── VERTICALS ── */}
-      <RevealSection className="bg-card/40 px-5 py-10 sm:py-16" id="especialidades">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
-            Especialidades
-          </p>
-          <h2
-            className="mb-4 text-center text-2xl font-bold text-foreground sm:text-3xl"
-            style={{ textWrap: 'balance' } as React.CSSProperties}
-          >
-            Feito para a sua realidade clínica
-          </h2>
-          <p className="mx-auto mb-10 max-w-lg text-center text-sm text-muted-foreground">
-            Cada área tem suas dores, sua linguagem e seu paciente ideal. Clique na sua
-            especialidade.
-          </p>
-
-          <div className="mx-auto grid max-w-2xl grid-cols-2 gap-5">
-            {VERTICALS.map((v) => (
-              <div
-                key={v.label}
-                className={`group relative rounded-2xl border border-border bg-gradient-to-br ${v.color} p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
-              >
-                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-white">
-                  <v.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">{v.label}</h3>
-                <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{v.desc}</p>
-                <p className="rounded-xl bg-background/60 px-3 py-2.5 text-xs italic text-muted-foreground backdrop-blur-sm">
-                  {v.example}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── WHY IT WORKS ── */}
-      <RevealSection className="px-5 py-10 sm:py-16">
-        <div className="mx-auto max-w-4xl">
-          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
-            Por que funciona
-          </p>
-          <h2
-            className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl"
-            style={{ textWrap: 'balance' } as React.CSSProperties}
-          >
-            Conteúdo direcionado para o paciente certo
-          </h2>
-
-          <div className="grid gap-5 sm:grid-cols-3">
-            {[
-              {
-                icon: Image,
-                label: 'Por tipo de paciente',
-                desc: 'Cada conteúdo é calibrado para atrair exatamente quem você quer na agenda.',
-                preview: [
-                  'Paciente estético: foco em transformação',
-                  'Paciente preventivo: foco em risco futuro',
-                  'Paciente crônico: foco em qualidade de vida',
-                ],
-              },
-              {
-                icon: FileText,
-                label: 'Linguagem da sua especialidade',
-                desc: 'Medicina, Nutrição, Odonto, Psico: temas, exemplos e linguagem específicos para a sua área. Nada de conteúdo genérico de saúde.',
-                preview: [
-                  'Terminologia correta para cada área',
-                  'Exemplos clínicos reais',
-                  'Tom certo para cada especialidade',
-                ],
-              },
-              {
-                icon: Smartphone,
-                label: 'Foco em agenda, não em curtidas',
-                desc: 'Posts pensados para gerar consultas, não para viralizar. O engajamento é consequência. O agendamento é o objetivo.',
-                preview: [
-                  'CTA que convida ao agendamento',
-                  'Conteúdo que gera confiança',
-                  'Posts que atraem, não só informam',
-                ],
-              },
-            ].map((f) => (
-              <div
-                key={f.label}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white">
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-1.5 text-base font-semibold text-foreground">{f.label}</h3>
-                <p className="mb-5 text-sm text-muted-foreground">{f.desc}</p>
-                <div className="space-y-1.5">
-                  {f.preview.map((p, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                      {p}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
 
       {/* ── TESTIMONIALS ── */}
       <RevealSection className="bg-card/40 px-5 py-10 sm:py-16">
