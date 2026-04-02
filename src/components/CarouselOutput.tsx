@@ -1,4 +1,3 @@
-import html2canvas from "html2canvas";
 import { Copy, Download, ChevronLeft, ChevronRight, Check, X, Palette, Loader2, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -130,6 +129,117 @@ function renderSlideToCanvas(
     ctx.fillStyle = "rgba(255,255,255,0.38)";
     ctx.textBaseline = "bottom";
     ctx.fillText(handle, PAD, H - PAD);
+  }
+
+  return canvas;
+}
+
+function renderPhotoSlideToCanvas(
+  slide: Slide,
+  index: number,
+  total: number,
+  handle?: string
+): HTMLCanvasElement {
+  const W = 1080, H = 1350;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  // ── Left colour strip (22% width) ─────────────────────────
+  const palette = PHOTO_PALETTES[index % PHOTO_PALETTES.length];
+  const stripTopHex   = slide.stripColor ?? palette.top;
+  const stripBotHex   = slide.stripColor ?? palette.bottom;
+  const stripBotAlpha = slide.stripColor ? 0.667 : 1.0;
+
+  const STRIP_W = Math.round(W * 0.22);
+  const stripGrd = ctx.createLinearGradient(Math.round(STRIP_W * 0.3), 0, Math.round(STRIP_W * 0.7), H);
+  stripGrd.addColorStop(0, stripTopHex);
+  stripGrd.addColorStop(1, hexToRgba(stripBotHex, stripBotAlpha));
+  ctx.fillStyle = stripGrd;
+  ctx.fillRect(0, 0, STRIP_W, H);
+
+  // Depth shadow on right edge of strip
+  const shadowGrd = ctx.createLinearGradient(STRIP_W - 40, 0, STRIP_W, 0);
+  shadowGrd.addColorStop(0, "rgba(0,0,0,0)");
+  shadowGrd.addColorStop(1, "rgba(0,0,0,0.08)");
+  ctx.fillStyle = shadowGrd;
+  ctx.fillRect(STRIP_W - 40, 0, 40, H);
+
+  // ── Right content background ───────────────────────────────
+  const bg = slide.photoBg ?? "#F5F3EE";
+  ctx.fillStyle = bg;
+  ctx.fillRect(STRIP_W, 0, W - STRIP_W, H);
+
+  const bgPreset  = PHOTO_BG_PRESETS.find(p => p.value === bg);
+  const textColor = bgPreset?.text ?? "#1B1F3B";
+
+  const PAD       = 84;
+  const CONTENT_X = STRIP_W + PAD;
+  const CONTENT_W = W - CONTENT_X - PAD;
+  const FONT      = "-apple-system, BlinkMacSystemFont, Arial, sans-serif";
+
+  // ── Badge ──────────────────────────────────────────────────
+  const badgeText = `${index + 1} / ${total}`;
+  ctx.font = `600 28px ${FONT}`;
+  const bW = ctx.measureText(badgeText).width + 40;
+  const bH = 44;
+  ctx.fillStyle = hexToRgba(textColor, 0.03);
+  drawRoundedRect(ctx, CONTENT_X, PAD, bW, bH, bH / 2);
+  ctx.fill();
+  ctx.fillStyle = hexToRgba(textColor, 0.33);
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.fillText(badgeText, CONTENT_X + 20, PAD + bH / 2);
+
+  // ── Measure content ────────────────────────────────────────
+  const TITLE_LINE_H   = 88;
+  const BODY_LINE_H    = 64;
+  const AMBER_H        = 10;
+  const TITLE_AMB_GAP  = 36;
+  const AMB_BODY_GAP   = 40;
+
+  ctx.font = `800 72px ${FONT}`;
+  const titleLines = wrapWords(ctx, slide.title, CONTENT_W);
+
+  ctx.font = `500 40px ${FONT}`;
+  const bodyLines = wrapWords(ctx, slide.body, CONTENT_W);
+
+  const totalContentH =
+    titleLines.length * TITLE_LINE_H +
+    TITLE_AMB_GAP + AMBER_H + AMB_BODY_GAP +
+    bodyLines.length * BODY_LINE_H;
+
+  // Vertically centre content between badge and handle region
+  const badgeBottom   = PAD + bH;
+  const handleRegionY = H - PAD - 36;
+  const availH        = handleRegionY - badgeBottom;
+  const contentStartY = badgeBottom + (availH - totalContentH) / 2;
+
+  // ── Title ──────────────────────────────────────────────────
+  ctx.font = `800 72px ${FONT}`;
+  ctx.fillStyle = textColor;
+  ctx.textBaseline = "top";
+  titleLines.forEach((line, li) => ctx.fillText(line, CONTENT_X, contentStartY + li * TITLE_LINE_H));
+
+  // ── Amber separator ────────────────────────────────────────
+  const amberY = contentStartY + titleLines.length * TITLE_LINE_H + TITLE_AMB_GAP;
+  ctx.fillStyle = "#FBBF24";
+  drawRoundedRect(ctx, CONTENT_X, amberY, 100, AMBER_H, 5);
+  ctx.fill();
+
+  // ── Body ───────────────────────────────────────────────────
+  const bodyStartY = amberY + AMBER_H + AMB_BODY_GAP;
+  ctx.font = `500 40px ${FONT}`;
+  ctx.fillStyle = hexToRgba(textColor, 0.6);
+  bodyLines.forEach((line, li) => ctx.fillText(line, CONTENT_X, bodyStartY + li * BODY_LINE_H));
+
+  // ── Handle ─────────────────────────────────────────────────
+  if (handle) {
+    ctx.font = `500 30px ${FONT}`;
+    ctx.fillStyle = hexToRgba(textColor, 0.25);
+    ctx.textBaseline = "bottom";
+    ctx.fillText(handle, CONTENT_X, H - PAD);
   }
 
   return canvas;
@@ -507,21 +617,13 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
     }
   };
 
-  // ── Download: single photo slide (html2canvas) ────────────────────────────
-  const downloadPhotoSlide = async (index: number) => {
-    const ref = photoCardRefs.current[index];
-    if (!ref) return;
+  // ── Download: single photo slide (high-quality canvas) ───────────────────
+  const downloadPhotoSlide = (index: number) => {
     const key = `photo-${index}`;
     if (downloadingCard === key) return;
     setDownloadingCard(key);
     try {
-      const canvas = await html2canvas(ref, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 2,
-        logging: false,
-        ignoreElements: (el) => el.hasAttribute("data-html2canvas-ignore"),
-      });
+      const canvas = renderPhotoSlideToCanvas(slides[index], index, slides.length, handle);
       const link = document.createElement("a");
       link.download = `foto-slide-${index + 1}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -540,20 +642,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
     setDownloadingAll("photo");
     try {
       for (let i = 0; i < slides.length; i++) {
-        const ref = photoCardRefs.current[i];
-        if (!ref) continue;
-        const canvas = await html2canvas(ref, {
-          useCORS: true,
-          allowTaint: true,
-          scale: 2,
-          logging: false,
-          ignoreElements: (el) => el.hasAttribute("data-html2canvas-ignore"),
-        });
+        const canvas = renderPhotoSlideToCanvas(slides[i], i, slides.length, handle);
         const link = document.createElement("a");
         link.download = `slide-foto-${i + 1}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
-        // Small delay so browser handles each download
         await new Promise((r) => setTimeout(r, 300));
       }
       toast.success(`${slides.length} slides baixados!`);
@@ -783,9 +876,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                         >
                           {slide.body}
                         </p>
-                        <p className={`mt-auto pt-4 text-[11px] font-medium ${handle ? 'text-white/40' : 'text-white/20'}`}>
-                          {handle || '@seuperfil'}
-                        </p>
+                        {handle && (
+                          <p className="mt-auto pt-4 text-[11px] font-medium text-white/40">
+                            {handle}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1053,9 +1148,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                             </div>
 
                             {/* Handle */}
-                            <p className="text-[10px] font-medium" style={{ color: `${textColor}40` }}>
-                              {handle || '@seuperfil'}
-                            </p>
+                            {handle && (
+                              <p className="text-[10px] font-medium" style={{ color: `${textColor}40` }}>
+                                {handle}
+                              </p>
+                            )}
                           </>
                         )}
                       </div>

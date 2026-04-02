@@ -243,9 +243,11 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           <p className="relative text-center text-xl font-bold leading-tight text-white drop-shadow-sm">
             {hook}
           </p>
-          <p className={`absolute bottom-3 right-4 text-[11px] font-medium ${handle ? 'text-white/40' : 'text-white/20'}`}>
-            {handle || '@seuperfil'}
-          </p>
+          {handle && (
+            <p className="absolute bottom-3 right-4 text-[11px] font-medium text-white/40">
+              {handle}
+            </p>
+          )}
         </div>
 
         {/* Caption area */}

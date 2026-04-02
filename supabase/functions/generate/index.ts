@@ -54,7 +54,7 @@ CAROUSEL (5 a 10 slides — escolha a quantidade ideal para o tema):
   • Alerta ("Pare de fazer isso agora")
 - Slides do meio: conteúdo educativo, prático ou revelador. title (máx 6 palavras), body (máx 15 palavras — exceto para vertical psychologist: máx 20 palavras). Cada slide deve ter uma ideia completa e independente.
 - Último slide OBRIGATÓRIO: CTA humano e direto para seguir, salvar ou entrar em contato. Varie: "Me salva pra não esquecer", "Manda esse post pra alguém que precisa", "Fala comigo pelo direct"
-- caption: 2-3 frases conversacionais que complementam (não repetem) o carrossel, + máx 5 hashtags relevantes
+- caption: 2-3 frases conversacionais que complementam (não repetem) o carrossel. Inclua no final até 5 hashtags relevantes diretamente no texto, sem nenhum rótulo, prefixo ou label antes delas (ex: nunca escreva "hashtags:", "Até 5 hashtags:" ou similar — apenas as hashtags)
 
 POST:
 - hook: punchline de até 10 palavras que para o scroll
@@ -115,7 +115,11 @@ PASSO 6 — Quando o Perfil de marca e/ou Histórico recente forem fornecidos na
 PASSO 7 — Revise: linguagem simples, sem jargão, sem termos muito técnicos.
 REGRA ABSOLUTA: NUNCA use o caractere "—" (travessão) em nenhuma parte do conteúdo. Substitua por ponto, vírgula ou reescreva a frase.
 
-PASSO 8 — Valide o conteúdo gerado contra as normas éticas do conselho profissional da vertical informada:
+PASSO 8 — Valide TODO o conteúdo gerado contra as normas éticas do conselho profissional da vertical informada. Isso inclui TODOS os formatos:
+- Carousel: valide cada slide (title + body) E a caption
+- Post: valide o hook, o body E o cta
+- Story: valide o script inteiro
+Nenhuma parte do output está isenta de compliance — um hook proibido invalida o post inteiro, assim como uma caption proibida invalida o carrossel.
 
 CFM (doctor) — Resolução CFM 1974/2011 + Código de Ética Médica:
 PROIBIDO: comparação antes/depois explícita ou implícita, garantias de resultado clínico ("você vai conseguir X", "elimine Y em Z semanas"), superlativos de auto-promoção ("melhor médico/a", "único tratamento"), depoimentos de pacientes, preço como argumento de venda, linguagem que crie expectativa irreal ou induza medo para converter.

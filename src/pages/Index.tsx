@@ -223,7 +223,7 @@ function ComplianceFullPage({
               variant="cta"
               className="w-full"
               disabled={upgradeLoading === 'Pro'}
-              onClick={() => handleCheckout(PLANS.find(p => p.name === 'Pro')!.planKey, 'Pro', setUpgradeLoading)}
+              onClick={() => handleCheckout(PLANS.find(p => p.name === 'Pro')!.priceIdEnv, 'Pro', setUpgradeLoading)}
             >
               {upgradeLoading === 'Pro' ? <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</> : <><Zap className="h-4 w-4" /> Fazer upgrade para Pro</>}
             </Button>
@@ -714,7 +714,12 @@ const Index = () => {
         ]).then(({ error }) => { if (error) console.error("Failed to save content:", error); });
       }
     } catch (err: unknown) {
-      toast.error("Erro ao gerar conteúdo. Tente novamente.");
+      const msg = err instanceof Error ? err.message : '';
+      if (msg && !msg.startsWith('HTTP')) {
+        toast.error(msg);
+      } else {
+        toast.error("Erro ao gerar conteúdo. Tente novamente em alguns segundos.");
+      }
       console.error(err);
     } finally {
       setLoading(false);
