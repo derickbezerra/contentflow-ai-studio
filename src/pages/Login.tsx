@@ -94,7 +94,10 @@ export default function Login() {
   }
 
   async function handleGoogleLogin() {
-    if (!termsAccepted) return
+    if (!termsAccepted) {
+      setError('Você precisa aceitar os Termos de Uso para continuar.')
+      return
+    }
     setGoogleLoading(true)
     localStorage.setItem('terms_pending_accept', '1')
     const { error } = await supabase.auth.signInWithOAuth({
@@ -179,7 +182,7 @@ export default function Login() {
         {/* Google login */}
         <button
           onClick={handleGoogleLogin}
-          disabled={googleLoading || !termsAccepted}
+          disabled={googleLoading}
           className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
         >
           {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
@@ -242,7 +245,7 @@ export default function Login() {
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           )}
 
-          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || !termsAccepted}>
+          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading}>
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
             ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis · 7 dias free'}
