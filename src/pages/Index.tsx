@@ -615,9 +615,8 @@ const Index = () => {
         if (!res.ok) {
           const errJson = await res.json().catch(() => null);
           if (res.status === 401) {
-            console.error('[CF-401]', errJson);
-            toast.error(`Auth falhou: ${errJson?.detail ?? errJson?.error ?? '401'}`, { duration: 10000 });
-            setLoading(false);
+            toast.error("Sessão expirada. Faça login novamente.");
+            await signOut();
             return;
           }
           if (res.status === 429 || res.status === 403) {
