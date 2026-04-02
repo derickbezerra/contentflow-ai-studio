@@ -422,7 +422,7 @@ function ComplianceFullPage({
 }
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, session: authSession } = useAuth();
   const location = useLocation();
   const [idea, setIdea] = useState("");
   const [contentType, setContentType] = useState<ContentType>("carousel");
@@ -588,10 +588,9 @@ const Index = () => {
     setBatchResults(null);
 
     try {
-      // refreshSession() força um novo access_token garantido, sem depender do cache do getSession
-      const { data: refreshData, error: refreshErr } = await supabase.auth.refreshSession();
-      const session = refreshData?.session ?? null;
-      if (refreshErr || !session) {
+      // Usa a session do AuthContext, mantida fresca pelo auto-refresh do Supabase via onAuthStateChange
+      const session = authSession;
+      if (!session) {
         toast.error("Sessão expirada. Faça login novamente.");
         setLoading(false);
         return;
