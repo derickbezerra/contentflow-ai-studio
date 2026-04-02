@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { Sparkles, Loader2, Zap, LayoutGrid, ShieldCheck, Lock, Check, AlertTriangle, Upload, X, CheckCircle2, Circle } from "lucide-react";
+import { Sparkles, Loader2, Zap, LayoutGrid, ShieldCheck, Lock, Check, AlertTriangle, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/TopBar";
 import CarouselOutput from "@/components/CarouselOutput";
@@ -470,12 +470,18 @@ const Index = () => {
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        if (!data?.vertical || !data?.onboarding_goal) {
+        const localDone = localStorage.getItem('cf_onboarding_done') === 'true';
+        const localVertical = localStorage.getItem('cf_vertical') as Vertical | null;
+
+        if (!data?.vertical && !data?.onboarding_goal && !localDone) {
           setShowOnboarding(true);
         } else {
-          setVertical(data.vertical as Vertical);
+          // Use DB value first, fall back to localStorage if DB save had failed
+          const resolvedVertical = (data?.vertical ?? localVertical) as Vertical | null;
+          if (resolvedVertical) setVertical(resolvedVertical);
           setOnboardingComplete(true);
           localStorage.setItem('cf_onboarding_done', 'true');
+          if (resolvedVertical) localStorage.setItem('cf_vertical', resolvedVertical);
         }
         if (data?.instagram_handle) {
           setInstagramHandle(data.instagram_handle);
@@ -805,32 +811,6 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* Progress checklist for new users */}
-                {totalGenerations !== null && totalGenerations <= 3 && (
-                  <div className="mb-4 w-full rounded-xl border border-border bg-card px-4 py-3">
-                    <p className="mb-2.5 text-xs font-bold uppercase tracking-widest text-muted-foreground/50">
-                      Primeiros passos
-                    </p>
-                    <div className="space-y-2">
-                      {[
-                        { label: 'Perfil criado', done: onboardingComplete },
-                        { label: 'Primeiro conteúdo', done: hasGenerated },
-                        { label: 'Perfil de marca', done: hasBrandProfile },
-                      ].map((item) => (
-                        <div key={item.label} className="flex items-center gap-2">
-                          {item.done ? (
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-muted-foreground/30" />
-                          )}
-                          <span className={`text-sm ${item.done ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                            {item.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {/* Input area */}
                 <div className="w-full animate-fade-up space-y-4">

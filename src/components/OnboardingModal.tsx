@@ -50,6 +50,11 @@ export default function OnboardingModal({ onComplete, onShowPricing: _onShowPric
     if (!user || !vertical || !goal || !postsPerWeek) return
     setSaving(true)
 
+    // Persist to localStorage immediately so the user is never blocked again
+    // even if the DB call fails (stale constraint or transient error).
+    localStorage.setItem('cf_onboarding_done', 'true')
+    localStorage.setItem('cf_vertical', vertical)
+
     const { error } = await supabase.from('users').update({
       vertical,
       onboarding_goal: goal,
@@ -59,8 +64,9 @@ export default function OnboardingModal({ onComplete, onShowPricing: _onShowPric
     setSaving(false)
 
     if (error) {
-      toast.error('Erro ao salvar preferências. Tente novamente.')
-      return
+      // Log for debugging but do NOT block the user — localStorage already guards
+      // against showing onboarding again on next visit.
+      console.error('[Onboarding] Failed to save preferences to DB:', error)
     }
 
     const topics = SPECIALTY_TOPICS[vertical]

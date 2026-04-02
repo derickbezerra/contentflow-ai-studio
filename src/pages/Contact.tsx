@@ -13,6 +13,14 @@ export default function Contact() {
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
 
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 11)
+    if (digits.length <= 2) return digits
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -85,8 +93,9 @@ export default function Contact() {
               <label className="mb-1.5 block text-sm font-medium text-foreground">Telefone</label>
               <input
                 type="tel"
+                inputMode="numeric"
                 value={form.phone}
-                onChange={set('phone')}
+                onChange={e => setForm(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
                 required
                 placeholder="(00) 00000-0000"
                 className="w-full rounded-xl border border-input bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
