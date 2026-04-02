@@ -588,6 +588,13 @@ const Index = () => {
     setBatchResults(null);
 
     try {
+      // getUser() força validação e refresh automático do token (getSession usa cache)
+      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
+      if (authErr || !authUser) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        setLoading(false);
+        return;
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Sessão expirada. Faça login novamente.");
@@ -614,6 +621,11 @@ const Index = () => {
         );
         if (!res.ok) {
           const errJson = await res.json().catch(() => null);
+          if (res.status === 401) {
+            await supabase.auth.signOut();
+            toast.error("Sessão expirada. Faça login novamente.");
+            return;
+          }
           if (res.status === 429 || res.status === 403) {
             toast.error(errJson?.error ?? "Não foi possível gerar o conteúdo.");
             if (res.status === 403) setShowPricing(true);
@@ -672,6 +684,11 @@ const Index = () => {
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => null);
+        if (res.status === 401) {
+          await supabase.auth.signOut();
+          toast.error("Sessão expirada. Faça login novamente.");
+          return;
+        }
         if (res.status === 429 || res.status === 403) {
           toast.error(errJson?.error ?? "Não foi possível gerar o conteúdo.");
           if (res.status === 403) setShowPricing(true);
