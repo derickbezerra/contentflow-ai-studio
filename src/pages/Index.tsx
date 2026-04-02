@@ -588,15 +588,10 @@ const Index = () => {
     setBatchResults(null);
 
     try {
-      // getUser() força validação e refresh automático do token (getSession usa cache)
-      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
-      if (authErr || !authUser) {
-        toast.error("Sessão expirada. Faça login novamente.");
-        setLoading(false);
-        return;
-      }
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // refreshSession() força um novo access_token garantido, sem depender do cache do getSession
+      const { data: refreshData, error: refreshErr } = await supabase.auth.refreshSession();
+      const session = refreshData?.session ?? null;
+      if (refreshErr || !session) {
         toast.error("Sessão expirada. Faça login novamente.");
         setLoading(false);
         return;
@@ -622,7 +617,6 @@ const Index = () => {
         if (!res.ok) {
           const errJson = await res.json().catch(() => null);
           if (res.status === 401) {
-            await supabase.auth.signOut();
             toast.error("Sessão expirada. Faça login novamente.");
             return;
           }
@@ -685,7 +679,6 @@ const Index = () => {
       if (!res.ok) {
         const errJson = await res.json().catch(() => null);
         if (res.status === 401) {
-          await supabase.auth.signOut();
           toast.error("Sessão expirada. Faça login novamente.");
           return;
         }
