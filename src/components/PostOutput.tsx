@@ -90,6 +90,23 @@ function renderPostToCanvas(
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
+  // Dot texture — apenas nas bordas (máscara radial via compositing)
+  ctx.save();
+  for (let tx = 26; tx < W; tx += 52) {
+    for (let ty = 26; ty < H; ty += 52) {
+      const dx = tx - W / 2, dy = ty - H / 2;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxDist = Math.sqrt((W / 2) * (W / 2) + (H / 2) * (H / 2));
+      const edgeFactor = Math.max(0, (dist / maxDist - 0.42) / (0.72 - 0.42));
+      if (edgeFactor <= 0) continue;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${0.13 * edgeFactor})`;
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+
   // Vignette
   const vgrd = ctx.createRadialGradient(W / 2, H / 2, W * 0.27, W / 2, H / 2, W * 0.72);
   vgrd.addColorStop(0, "rgba(0,0,0,0)");
@@ -139,7 +156,7 @@ function renderPostToCanvas(
     ctx.fillStyle = "rgba(255,255,255,0.32)";
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
-    ctx.fillText(`@${handle}`, W - PAD, H - PAD + 14);
+    ctx.fillText(handle.startsWith("@") ? handle : `@${handle}`, W - PAD, H - PAD + 14);
   }
 
   return canvas;
@@ -194,6 +211,17 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           className="relative flex aspect-square flex-col items-center justify-center px-10 py-10"
           style={{ background: bg }}
         >
+          {/* Dot texture — apenas nas bordas, fora da área de texto */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.13]"
+            style={{
+              backgroundImage: "radial-gradient(circle, white 2px, transparent 2px)",
+              backgroundSize: "52px 52px",
+              maskImage: "radial-gradient(ellipse at center, transparent 42%, black 72%)",
+              WebkitMaskImage: "radial-gradient(ellipse at center, transparent 42%, black 72%)",
+            }}
+          />
+
           {/* Vinheta suave nas bordas para profundidade */}
           <div
             className="pointer-events-none absolute inset-0"
@@ -274,7 +302,7 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           {/* Handle watermark */}
           {handle && (
             <p className="absolute bottom-4 right-5 text-[11px] font-medium text-white/35">
-              {handle}
+              {handle.startsWith("@") ? handle : `@${handle}`}
             </p>
           )}
         </div>
