@@ -429,7 +429,7 @@ Deno.serve(async (req) => {
     async function callClaude(ct: string): Promise<{ output: Record<string, unknown>; model: string; usage: { input_tokens: number; output_tokens: number } }> {
       const userMessage = `Tipo: ${ct}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
       const MAX_RETRIES = 3
-      const TIMEOUT_MS = 30_000
+      const TIMEOUT_MS = 55_000
       let attempt = 0
       let model = forceHaiku ? FALLBACK_MODEL : PRIMARY_MODEL
       while (true) {
@@ -445,7 +445,17 @@ Deno.serve(async (req) => {
           })
           clearTimeout(timeoutId)
           const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
-          return { output: JSON.parse(extractJSON(rawText)), model, usage: message.usage }
+          try {
+            return { output: JSON.parse(extractJSON(rawText)), model, usage: message.usage }
+          } catch {
+            // Model returned non-JSON — fall back to Haiku on first occurrence
+            if (model === PRIMARY_MODEL) {
+              console.warn('JSON parse failed in callClaude, falling back to Haiku')
+              model = FALLBACK_MODEL
+              continue
+            }
+            throw new Error('Resposta inválida do modelo. Tente novamente.')
+          }
         } catch (err: unknown) {
           clearTimeout(timeoutId)
           const status = (err as { status?: number })?.status
@@ -480,7 +490,7 @@ Deno.serve(async (req) => {
             let fullText = ''
             const streamMsg = `Tipo: ${content_type}\nVertical: ${vertical}\nPúblico-alvo: ${genderLabel}\nTópico: ${topic}${context ? `\nContexto: ${context}` : ''}${brandContext}${memoryContext}`
 
-            const STREAM_TIMEOUT_MS = 30_000
+            const STREAM_TIMEOUT_MS = 55_000
 
             async function streamFromModel(model: string): Promise<{ fullText: string; model: string }> {
               const abortController = new AbortController()
@@ -565,7 +575,17 @@ Deno.serve(async (req) => {
               }
             }
 
-            const output = JSON.parse(extractJSON(fullText))
+            // Parse JSON — retry once with Haiku if extraction fails (model returned non-JSON)
+            let output: Record<string, unknown>
+            try {
+              output = JSON.parse(extractJSON(fullText))
+            } catch (parseErr) {
+              console.warn('JSON parse failed on stream output, retrying with Haiku:', parseErr)
+              const retry = await streamFromModel(FALLBACK_MODEL)
+              output = JSON.parse(extractJSON(retry.fullText))
+              streamModel = retry.model
+            }
+
             const modelUsed = streamModel.includes('haiku') ? 'haiku' : 'sonnet'
             send(controller, { done: true, output, model_used: modelUsed, new_count: quota.new_count })
 
@@ -580,7 +600,8 @@ Deno.serve(async (req) => {
             }).catch(e => console.error('token_usage log error (stream):', e))
           } catch (e) {
             console.error('Stream error:', e)
-            send(controller, { error: 'Erro ao gerar conteúdo. Tente novamente.' })
+            const errMsg = e instanceof Error ? e.message : 'Erro desconhecido'
+            send(controller, { error: `Erro ao gerar conteúdo: ${errMsg}. Tente novamente.` })
           } finally {
             controller.close()
           }
