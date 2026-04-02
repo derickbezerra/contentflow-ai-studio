@@ -615,7 +615,9 @@ const Index = () => {
         if (!res.ok) {
           const errJson = await res.json().catch(() => null);
           if (res.status === 401) {
-            await signOut();
+            console.error('[CF-401]', errJson);
+            toast.error(`Auth falhou: ${errJson?.detail ?? errJson?.error ?? '401'}`, { duration: 10000 });
+            setLoading(false);
             return;
           }
           if (res.status === 429 || res.status === 403) {
