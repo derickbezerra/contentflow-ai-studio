@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { Sparkles, Loader2, Zap, LayoutGrid, Layers, ShieldCheck, Lock, Check, AlertTriangle, Upload, X, CheckCircle2, Circle } from "lucide-react";
+import { Sparkles, Loader2, Zap, LayoutGrid, ShieldCheck, Lock, Check, AlertTriangle, Upload, X, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/TopBar";
 import CarouselOutput from "@/components/CarouselOutput";
@@ -59,7 +59,6 @@ const AGE_RANGES = ["18-25", "25-35", "35-50", "50+", "Todos"];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GeneratedResult = { type: ContentType } & Record<string, any>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BatchResults = { carousel: Record<string, any>; post: Record<string, any>; story: Record<string, any> };
 
 const VERTICAL_TAGLINES: Record<Vertical, string> = {
   doctor: "Posts de medicina que atraem o paciente certo para sua agenda",
@@ -441,8 +440,6 @@ const Index = () => {
   const [showPricing, setShowPricing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
-  const [batchResults, setBatchResults] = useState<BatchResults | null>(null);
   const [compliance, setCompliance] = useState<Compliance | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'compliance'>('create');
@@ -585,7 +582,6 @@ const Index = () => {
 
     setLoading(true);
     setResult(null);
-    setBatchResults(null);
 
     try {
       // Usa a session do AuthContext; se inválida, redireciona para login
@@ -596,9 +592,7 @@ const Index = () => {
       }
 
       const medSpec = vertical === 'doctor' && medicalSpecialty.trim() ? medicalSpecialty.trim() : undefined
-      const body = batchMode
-        ? { topic: idea, vertical, gender, medical_specialty: medSpec, patient_intents: patientIntents.length ? patientIntents : undefined, age_ranges: ageRanges.length ? ageRanges : undefined, batch: true }
-        : { topic: idea, content_type: contentType, vertical, gender, medical_specialty: medSpec, patient_intents: patientIntents.length ? patientIntents : undefined, age_ranges: ageRanges.length ? ageRanges : undefined };
+      const body = { topic: idea, content_type: contentType, vertical, gender, medical_specialty: medSpec, patient_intents: patientIntents.length ? patientIntents : undefined, age_ranges: ageRanges.length ? ageRanges : undefined };
 
       const fetchHeaders = {
         "Content-Type": "application/json",
@@ -606,8 +600,8 @@ const Index = () => {
         "Authorization": `Bearer ${session.access_token}`,
       };
 
-      // ── Streaming path (single generation only) ──────────────────────────
-      if (!batchMode) {
+      // ── Streaming path ────────────────────────────────────────────────────
+      {
         const res = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`,
           { method: "POST", headers: fetchHeaders, body: JSON.stringify({ ...body, stream: true }) }
@@ -669,59 +663,6 @@ const Index = () => {
         return;
       }
 
-      // ── Batch path (non-streaming) ────────────────────────────────────────
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`,
-        { method: "POST", headers: fetchHeaders, body: JSON.stringify(body) }
-      );
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => null);
-        if (res.status === 401) {
-          await signOut();
-          return;
-        }
-        if (res.status === 429 || res.status === 403) {
-          toast.error(errJson?.error ?? "Não foi possível gerar o conteúdo.");
-          if (res.status === 403) setShowPricing(true);
-          return;
-        }
-        throw new Error(errJson?.error ?? `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
-
-      if (typeof data.new_count === 'number') {
-        setPlanInfo(prev => prev ? {
-          ...prev,
-          generationCount: data.new_count,
-          canGenerate: data.new_count < prev.planLimit,
-        } : prev);
-      }
-
-      setBatchResults(data.outputs);
-      setCompliance(data.outputs.carousel?.compliance ?? null);
-
-      setTimeout(() => {
-        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 100)
-
-      // First-generation celebration
-      if (!hasGenerated) {
-        setHasGenerated(true);
-        setTotalGenerations(prev => (prev ?? 0) + 3);
-        setTimeout(() => toast.success('Seu primeiro conteúdo foi criado!'), 500);
-      } else {
-        setTotalGenerations(prev => (prev ?? 0) + 3);
-      }
-
-      if (user) {
-        supabase.from("content").insert([
-          { user_id: user.id, type: "carousel", input: idea, output_json: data.outputs.carousel },
-          { user_id: user.id, type: "post",     input: idea, output_json: data.outputs.post },
-          { user_id: user.id, type: "story",    input: idea, output_json: data.outputs.story },
-        ]).then(({ error }) => { if (error) console.error("Failed to save content:", error); });
-      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       if (msg && !msg.startsWith('HTTP')) {
@@ -1060,7 +1001,7 @@ const Index = () => {
                         Formato
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
-                        {!batchMode && CONTENT_TYPES.map((ct) => (
+                        {CONTENT_TYPES.map((ct) => (
                           <Button
                             key={ct.value}
                             variant={contentType === ct.value ? "pill-active" : "pill"}
@@ -1070,17 +1011,6 @@ const Index = () => {
                             {ct.label}
                           </Button>
                         ))}
-                        <button
-                          onClick={() => { setBatchMode(b => !b); setResult(null); setBatchResults(null); }}
-                          className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                            batchMode
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          <Layers className="h-3.5 w-3.5" />
-                          {batchMode ? 'Todos os 3 formatos' : 'Gerar tudo'}
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -1132,16 +1062,16 @@ const Index = () => {
                         disabled={!idea.trim() || loading}
                       >
                         {loading ? (
-                          <><Loader2 className="h-5 w-5 animate-spin" /> {batchMode ? "Gerando 3 formatos..." : "Gerando..."}</>
+                          <><Loader2 className="h-5 w-5 animate-spin" /> Gerando...</>
                         ) : (
-                          <><Sparkles className="h-5 w-5" /> {(result || batchResults) ? "Gerar novamente" : batchMode ? "Gerar carrossel + post + story" : "Gerar conteúdo"}</>
+                          <><Sparkles className="h-5 w-5" /> {result ? "Gerar novamente" : "Gerar conteúdo"}</>
                         )}
                       </Button>
-                      {(result || batchResults) && !loading && (
+                      {result && !loading && (
                         <Button
                           variant="outline"
                           size="xl"
-                          onClick={() => { setResult(null); setBatchResults(null); setCompliance(null); setIdea(""); }}
+                          onClick={() => { setResult(null); setCompliance(null); setIdea(""); }}
                           title="Novo conteúdo"
                         >
                           <Sparkles className="h-5 w-5" /> Novo
@@ -1152,7 +1082,7 @@ const Index = () => {
                 </div>
 
                 {/* Empty state guidance */}
-                {!result && !batchResults && !isStreaming && !loading && totalGenerations === 0 && (
+                {!result && !isStreaming && !loading && totalGenerations === 0 && (
                   <div className="mt-10 flex w-full flex-col items-center rounded-2xl border border-dashed border-border bg-card/50 px-6 py-10 text-center md:mt-14">
                     <Sparkles className="mb-3 h-8 w-8 text-primary/30" />
                     <p className="text-sm font-semibold text-foreground">
@@ -1201,29 +1131,6 @@ const Index = () => {
                   </div>
                 )}
 
-                {/* Batch output */}
-                {batchResults && (
-                  <div ref={resultRef} className="mt-10 w-full space-y-8 md:mt-14">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Layers className="h-4 w-4 text-primary" />
-                      3 formatos gerados para o mesmo tema
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Carrossel</p>
-                      <CarouselOutput slides={batchResults.carousel.slides} caption={batchResults.carousel.caption} handle={instagramHandle} />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Post</p>
-                      <PostOutput hook={batchResults.post.hook} body={batchResults.post.body} cta={batchResults.post.cta} handle={instagramHandle} />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Story</p>
-                      <StoryOutput script={batchResults.story.script} />
-                    </div>
-                    {compliance && <ContentValidator compliance={compliance} />}
-                    <FeedbackBar contentKey={`${idea}-batch`} />
-                  </div>
-                )}
 
               </div>
             </main>
