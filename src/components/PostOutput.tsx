@@ -90,16 +90,6 @@ function renderPostToCanvas(
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
-  // Dot texture — bigger dots matching the preview
-  for (let tx = 26; tx < W; tx += 52) {
-    for (let ty = 26; ty < H; ty += 52) {
-      ctx.beginPath();
-      ctx.arc(tx, ty, 2, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.13)";
-      ctx.fill();
-    }
-  }
-
   // Vignette
   const vgrd = ctx.createRadialGradient(W / 2, H / 2, W * 0.27, W / 2, H / 2, W * 0.72);
   vgrd.addColorStop(0, "rgba(0,0,0,0)");
@@ -204,16 +194,6 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           className="relative flex aspect-square flex-col items-center justify-center px-10 py-10"
           style={{ background: bg }}
         >
-          {/* Dot texture — pontos maiores e mais visíveis */}
-          <div
-            className="absolute inset-0 opacity-[0.13]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, white 2px, transparent 2px)",
-              backgroundSize: "52px 52px",
-            }}
-          />
-
           {/* Vinheta suave nas bordas para profundidade */}
           <div
             className="pointer-events-none absolute inset-0"
