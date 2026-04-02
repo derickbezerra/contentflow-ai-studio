@@ -159,7 +159,7 @@ export default function Login() {
             </text>
           </svg>
           <p className="text-sm text-muted-foreground">
-            {mode === 'signup' ? 'Crie seu primeiro conteúdo em menos de 30 segundos' : 'IA especializada para profissionais de saúde'}
+            Crie seu conteúdo em menos de 30 segundos
           </p>
         </div>
 
