@@ -160,28 +160,26 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Terms acceptance — only required for signup */}
-        {mode === 'signup' && (
-          <label className="mb-5 flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={e => setTermsAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-            />
-            <span className="text-xs text-muted-foreground">
-              Li e aceito os{' '}
-              <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
-              {' '}e a{' '}
-              <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>
-            </span>
-          </label>
-        )}
+        {/* Terms acceptance — always visible */}
+        <label className="mb-5 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={e => setTermsAccepted(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="text-xs text-muted-foreground">
+            Li e aceito os{' '}
+            <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
+            {' '}e a{' '}
+            <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>
+          </span>
+        </label>
 
         {/* Google login */}
         <button
           onClick={handleGoogleLogin}
-          disabled={googleLoading || (mode === 'signup' && !termsAccepted)}
+          disabled={googleLoading || !termsAccepted}
           className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
         >
           {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
@@ -244,7 +242,7 @@ export default function Login() {
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           )}
 
-          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || (mode === 'signup' && !termsAccepted)}>
+          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || !termsAccepted}>
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
             ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis · 7 dias free'}
