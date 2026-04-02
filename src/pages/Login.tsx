@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, MailCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useNavigate, Link } from 'react-router-dom'
@@ -18,7 +18,7 @@ function GoogleIcon() {
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [mode, setMode] = useState<'login' | 'signup' | 'confirm'>('login')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
@@ -34,23 +34,44 @@ export default function Login() {
     setLoading(true)
     setError('')
 
-    const { error } =
-      mode === 'login'
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
+    // ── Login ──
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(
+          error.message === 'Invalid login credentials'
+            ? 'E-mail ou senha incorretos.'
+            : error.message
+        )
+        setLoading(false)
+        return
+      }
+      navigate('/app')
+      return
+    }
 
+    // ── Signup ──
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) {
-      setError(error.message)
+      setError(
+        error.message.includes('already registered')
+          ? 'Este e-mail já possui uma conta. Faça login.'
+          : error.message
+      )
       setLoading(false)
       return
     }
 
-    const { data: { user: authUser } } = await supabase.auth.getUser()
-    if (authUser) {
-      await supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', authUser.id)
+    // Supabase "Confirm email" desativado → session criada imediatamente
+    if (data.session && data.user) {
+      await supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', data.user.id)
+      navigate('/app')
+      return
     }
 
-    navigate('/app')
+    // Supabase "Confirm email" ativado → sem session; mostrar estado de confirmação
+    setLoading(false)
+    setMode('confirm')
   }
 
   async function handleGoogleLogin() {
@@ -67,6 +88,37 @@ export default function Login() {
       setError(error.message)
       setGoogleLoading(false)
     }
+  }
+
+  // ── Email confirmation pending ──
+  if (mode === 'confirm') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <MailCheck className="h-8 w-8 text-primary" />
+            </div>
+          </div>
+          <h2 className="mb-2 text-xl font-bold text-foreground">Confirme seu e-mail</h2>
+          <p className="mb-1 text-sm text-muted-foreground">
+            Enviamos um link de confirmação para
+          </p>
+          <p className="mb-6 text-sm font-semibold text-foreground">{email}</p>
+          <p className="mb-8 text-xs leading-relaxed text-muted-foreground">
+            Clique no link no e-mail para ativar sua conta e começar o período gratuito de 7 dias.
+            Verifique também a pasta de spam.
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setMode('login'); setError('') }}
+          >
+            Voltar ao login
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -89,26 +141,28 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Terms acceptance */}
-        <label className="mb-5 flex cursor-pointer items-start gap-3">
-          <input
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={e => setTermsAccepted(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-          />
-          <span className="text-xs text-muted-foreground">
-            Li e aceito os{' '}
-            <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
-            {' '}e a{' '}
-            <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>
-          </span>
-        </label>
+        {/* Terms acceptance — only required for signup */}
+        {mode === 'signup' && (
+          <label className="mb-5 flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={e => setTermsAccepted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+            />
+            <span className="text-xs text-muted-foreground">
+              Li e aceito os{' '}
+              <Link to="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
+              {' '}e a{' '}
+              <Link to="/privacidade" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>
+            </span>
+          </label>
+        )}
 
         {/* Google login */}
         <button
           onClick={handleGoogleLogin}
-          disabled={googleLoading || !termsAccepted}
+          disabled={googleLoading || (mode === 'signup' && !termsAccepted)}
           className="mb-4 flex w-full items-center justify-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
         >
           {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
@@ -151,7 +205,7 @@ export default function Login() {
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
           )}
 
-          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || !termsAccepted}>
+          <Button type="submit" variant="cta" size="xl" className="w-full" disabled={loading || (mode === 'signup' && !termsAccepted)}>
             {loading ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Aguarde...</>
             ) : mode === 'login' ? 'Entrar' : 'Criar conta grátis · 7 dias free'}
