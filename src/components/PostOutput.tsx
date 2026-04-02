@@ -90,41 +90,66 @@ function renderPostToCanvas(
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle dot texture
-  for (let tx = 40; tx < W; tx += 60) {
-    for (let ty = 40; ty < H; ty += 60) {
+  // Dot texture — bigger dots matching the preview
+  for (let tx = 26; tx < W; tx += 52) {
+    for (let ty = 26; ty < H; ty += 52) {
       ctx.beginPath();
-      ctx.arc(tx, ty, 1.2, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.13)";
       ctx.fill();
     }
   }
 
+  // Vignette
+  const vgrd = ctx.createRadialGradient(W / 2, H / 2, W * 0.27, W / 2, H / 2, W * 0.72);
+  vgrd.addColorStop(0, "rgba(0,0,0,0)");
+  vgrd.addColorStop(1, "rgba(0,0,0,0.22)");
+  ctx.fillStyle = vgrd;
+  ctx.fillRect(0, 0, W, H);
+
   const PAD = 90;
   const FONT = "-apple-system, BlinkMacSystemFont, Arial, sans-serif";
-
   ctx.textAlign = "center";
 
-  // Only the hook — mirrors exactly what's visible in the card image area
-  ctx.font = `800 74px ${FONT}`;
+  // Hook text — balanced wrapping
+  ctx.font = `800 72px ${FONT}`;
   const hookLines = wrapTextCenter(ctx, hook, W - PAD * 2);
-  const hookLineH = 92;
-  const totalH = hookLines.length * hookLineH;
-  const startY = (H - totalH) / 2;
+  const hookLineH = 90;
+  const textH = hookLines.length * hookLineH;
+  // Total block: amber line (6px) + gap (60) + text + gap (60) + amber line (4px)
+  const blockH = 6 + 60 + textH + 60 + 4;
+  let y = (H - blockH) / 2;
 
+  // Top amber accent line
+  const LINE_W1 = 96;
+  ctx.fillStyle = "rgba(251,191,36,0.80)";
+  ctx.beginPath();
+  ctx.roundRect(W / 2 - LINE_W1 / 2, y, LINE_W1, 6, 3);
+  ctx.fill();
+  y += 6 + 60;
+
+  // Hook text
   ctx.fillStyle = "#ffffff";
   ctx.textBaseline = "top";
   hookLines.forEach((line, i) =>
-    ctx.fillText(line, W / 2, startY + i * hookLineH)
+    ctx.fillText(line, W / 2, y + i * hookLineH)
   );
+  y += textH + 60;
+
+  // Bottom amber accent line (shorter)
+  const LINE_W2 = 64;
+  ctx.fillStyle = "rgba(251,191,36,0.50)";
+  ctx.beginPath();
+  ctx.roundRect(W / 2 - LINE_W2 / 2, y, LINE_W2, 4, 2);
+  ctx.fill();
 
   // Handle watermark
   if (handle) {
-    ctx.font = `500 30px ${FONT}`;
+    ctx.font = `500 28px ${FONT}`;
     ctx.fillStyle = "rgba(255,255,255,0.32)";
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
-    ctx.fillText(`@${handle}`, W - PAD, H - PAD + 10);
+    ctx.fillText(`@${handle}`, W - PAD, H - PAD + 14);
   }
 
   return canvas;
@@ -176,16 +201,25 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
 
         {/* Image area */}
         <div
-          className="relative flex min-h-[280px] items-center justify-center px-8 py-10"
+          className="relative flex aspect-square flex-col items-center justify-center px-10 py-10"
           style={{ background: bg }}
         >
-          {/* Dot texture */}
+          {/* Dot texture — pontos maiores e mais visíveis */}
           <div
-            className="absolute inset-0 opacity-[0.07]"
+            className="absolute inset-0 opacity-[0.13]"
             style={{
               backgroundImage:
-                "radial-gradient(circle, white 1px, transparent 1px)",
-              backgroundSize: "40px 40px",
+                "radial-gradient(circle, white 2px, transparent 2px)",
+              backgroundSize: "52px 52px",
+            }}
+          />
+
+          {/* Vinheta suave nas bordas para profundidade */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%)",
             }}
           />
 
@@ -193,7 +227,7 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
           {!readOnly && (
             <button
               onClick={() => setShowPalette(v => !v)}
-              className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm transition-colors hover:bg-white/25"
+              className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm transition-colors hover:bg-white/25"
               title="Mudar cor"
             >
               <Palette className="h-3.5 w-3.5 text-white/80" />
@@ -240,11 +274,26 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
             </div>
           )}
 
-          <p className="relative text-center text-xl font-bold leading-tight text-white drop-shadow-sm">
-            {hook}
-          </p>
+          {/* Conteúdo central */}
+          <div className="relative flex flex-col items-center gap-5 text-center">
+            {/* Linha de acento âmbar acima */}
+            <div className="h-[3px] w-12 rounded-full bg-amber-400/80" />
+
+            {/* Hook — text-balance elimina palavras órfãs */}
+            <p
+              className="text-2xl font-extrabold leading-[1.2] tracking-tight text-white drop-shadow-sm"
+              style={{ textWrap: "balance" } as React.CSSProperties}
+            >
+              {hook}
+            </p>
+
+            {/* Linha de acento âmbar abaixo */}
+            <div className="h-[3px] w-8 rounded-full bg-amber-400/50" />
+          </div>
+
+          {/* Handle watermark */}
           {handle && (
-            <p className="absolute bottom-3 right-4 text-[11px] font-medium text-white/40">
+            <p className="absolute bottom-4 right-5 text-[11px] font-medium text-white/35">
               {handle}
             </p>
           )}
