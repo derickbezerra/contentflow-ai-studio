@@ -189,17 +189,6 @@ Deno.serve(async (req) => {
   )
 
   try {
-    // Rate limiting
-    const { data: rateLimitOk } = await supabaseAdmin.rpc('check_and_set_rate_limit', {
-      user_id: user.id,
-      min_interval_seconds: 10,
-    })
-    if (!rateLimitOk) {
-      return new Response(JSON.stringify({ error: 'Muitas requisições. Aguarde alguns segundos e tente novamente.' }), {
-        status: 429,
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      })
-    }
 
     // Plan/trial enforcement
     const { data: quota, error: quotaError } = await supabaseAdmin.rpc('try_increment_generation', { p_user_id: user.id })
