@@ -422,7 +422,7 @@ function ComplianceFullPage({
 }
 
 const Index = () => {
-  const { user, session: authSession } = useAuth();
+  const { user, session: authSession, signOut } = useAuth();
   const location = useLocation();
   const [idea, setIdea] = useState("");
   const [contentType, setContentType] = useState<ContentType>("carousel");
@@ -588,42 +588,12 @@ const Index = () => {
     setBatchResults(null);
 
     try {
-      // DEBUG TEMPORÁRIO — remover após diagnóstico
-      console.log('[CF-DEBUG] authSession:', authSession ? {
-        has_token: !!authSession.access_token,
-        token_preview: authSession.access_token?.slice(-20),
-        expires_at: authSession.expires_at,
-        expires_in: authSession.expires_in,
-        now: Math.floor(Date.now() / 1000),
-        expired: authSession.expires_at ? authSession.expires_at < Math.floor(Date.now() / 1000) : 'unknown',
-      } : 'NULL');
-
-      // Tenta refresh explícito se o token estiver expirado ou perto de expirar
-      let session = authSession;
-      if (!session || (session.expires_at && session.expires_at < Math.floor(Date.now() / 1000) + 30)) {
-        console.log('[CF-DEBUG] token expirado ou ausente, tentando getUser()...');
-        const { data: { user: u }, error: uErr } = await supabase.auth.getUser();
-        console.log('[CF-DEBUG] getUser result:', u?.id, 'error:', uErr?.message);
-        if (uErr || !u) {
-          toast.error("Sessão expirada. Faça login novamente.");
-          setLoading(false);
-          return;
-        }
-        const { data: { session: freshSession } } = await supabase.auth.getSession();
-        console.log('[CF-DEBUG] freshSession:', freshSession ? {
-          has_token: !!freshSession.access_token,
-          expires_at: freshSession.expires_at,
-          expired: freshSession.expires_at ? freshSession.expires_at < Math.floor(Date.now() / 1000) : 'unknown',
-        } : 'NULL');
-        session = freshSession;
-      }
-
-      if (!session) {
-        toast.error("Sessão expirada. Faça login novamente.");
-        setLoading(false);
+      // Usa a session do AuthContext; se inválida, redireciona para login
+      const session = authSession;
+      if (!session?.access_token) {
+        await signOut();
         return;
       }
-      console.log('[CF-DEBUG] token sendo enviado - expires_at:', session.expires_at, 'now:', Math.floor(Date.now() / 1000));
 
       const medSpec = vertical === 'doctor' && medicalSpecialty.trim() ? medicalSpecialty.trim() : undefined
       const body = batchMode
@@ -645,7 +615,7 @@ const Index = () => {
         if (!res.ok) {
           const errJson = await res.json().catch(() => null);
           if (res.status === 401) {
-            toast.error("Sessão expirada. Faça login novamente.");
+            await signOut();
             return;
           }
           if (res.status === 429 || res.status === 403) {
@@ -707,7 +677,7 @@ const Index = () => {
       if (!res.ok) {
         const errJson = await res.json().catch(() => null);
         if (res.status === 401) {
-          toast.error("Sessão expirada. Faça login novamente.");
+          await signOut();
           return;
         }
         if (res.status === 429 || res.status === 403) {
