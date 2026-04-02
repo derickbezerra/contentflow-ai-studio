@@ -385,7 +385,7 @@ export default function Landing() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden px-5 pb-24 pt-16 sm:pt-32">
+      <section className="relative overflow-hidden px-5 pb-28 pt-16 sm:pb-36 sm:pt-36">
         {/* background orbs */}
         <div className="animate-pulse-slow pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-primary/[0.06] blur-3xl" />
         <div className="animate-pulse-slow pointer-events-none absolute -bottom-20 left-1/4 h-[300px] w-[400px] rounded-full bg-emerald-400/[0.04] blur-3xl" style={{ animationDelay: '2s' }} />
@@ -487,7 +487,7 @@ export default function Landing() {
 
       {/* ── STATS BAR ── */}
       <div className="border-y border-border/60 bg-gradient-to-r from-primary/[0.03] via-card/80 to-primary/[0.03] backdrop-blur-sm">
-        <div className="mx-auto max-w-4xl px-5 py-10">
+        <div className="mx-auto max-w-4xl px-5 py-12">
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {STATS.map((s) => (
               <div key={s.label} className="flex flex-col items-center gap-1.5 text-center">
@@ -501,7 +501,7 @@ export default function Landing() {
       </div>
 
       {/* ── COMPLIANCE — killer differentiator, moved up ── */}
-      <RevealSection className="px-5 py-10 sm:py-16" id="validacao">
+      <RevealSection className="px-5 py-16 sm:py-24" id="validacao">
         <div className="mx-auto max-w-4xl">
           <div className="mb-4 flex justify-center">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/8 px-3 py-1 text-xs font-semibold text-emerald-600">
@@ -581,7 +581,7 @@ export default function Landing() {
 
 
       {/* ── TESTIMONIALS ── */}
-      <RevealSection className="bg-card/40 px-5 py-10 sm:py-16">
+      <RevealSection className="bg-card/40 px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
             Depoimentos
@@ -650,7 +650,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── PRICING ── */}
-      <RevealSection className="px-5 py-10 sm:py-16" id="precos">
+      <RevealSection className="px-5 pt-20 pb-16 sm:pt-32 sm:pb-24" id="precos">
         <div className="mx-auto max-w-4xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
             Planos
@@ -728,7 +728,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── FAQ ── */}
-      <RevealSection className="bg-card/40 px-5 py-10 sm:py-16">
+      <RevealSection className="bg-card/40 px-5 py-16 sm:py-24">
         <div className="mx-auto max-w-2xl">
           <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-primary">
             Dúvidas frequentes
@@ -749,7 +749,7 @@ export default function Landing() {
       </RevealSection>
 
       {/* ── FINAL CTA ── */}
-      <RevealSection className="px-5 py-10 sm:py-16">
+      <RevealSection className="px-5 py-16 sm:py-24">
         <div
           className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-8 py-16 text-center sm:px-16"
           style={{ background: 'linear-gradient(135deg, hsl(160,84%,20%), hsl(170,60%,28%))' }}
