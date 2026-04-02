@@ -59,10 +59,6 @@
       fbq('init', '893892686961498');
       fbq('track', 'PageView');
     </script>
-    <noscript>
-      <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=893892686961498&ev=PageView&noscript=1"/>
-    </noscript>
 
     <!-- TikTok Pixel -->
     <script>
@@ -83,6 +79,11 @@
   </head>
 
   <body>
+    <!-- Meta Pixel noscript (deve ficar no body, não no head) -->
+    <noscript>
+      <img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=893892686961498&ev=PageView&noscript=1"/>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
