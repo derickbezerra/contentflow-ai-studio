@@ -66,7 +66,8 @@ function renderSlideToCanvas(
   total: number,
   handle?: string
 ): HTMLCanvasElement {
-  const W = 1080, H = 1350;
+  // Instagram carousel standard: 1080×1080 (1:1 square)
+  const W = 1080, H = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -84,29 +85,29 @@ function renderSlideToCanvas(
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
-  const PAD = 84;
+  const PAD = 80;
   const FONT = "-apple-system, BlinkMacSystemFont, Arial, sans-serif";
 
   const badgeText = `${index + 1} / ${total}`;
-  ctx.font = `600 28px ${FONT}`;
-  const bW = ctx.measureText(badgeText).width + 44;
-  const bH = 52;
+  ctx.font = `600 26px ${FONT}`;
+  const bW = ctx.measureText(badgeText).width + 40;
+  const bH = 46;
   ctx.fillStyle = "rgba(255,255,255,0.12)";
   drawRoundedRect(ctx, PAD, PAD, bW, bH, bH / 2);
   ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.58)";
   ctx.textBaseline = "middle";
-  ctx.fillText(badgeText, PAD + 22, PAD + bH / 2);
+  ctx.fillText(badgeText, PAD + 20, PAD + bH / 2);
 
-  ctx.font = `800 78px ${FONT}`;
+  ctx.font = `800 72px ${FONT}`;
   const titleLines = wrapWords(ctx, slide.title, W - PAD * 2);
-  const titleLineH = 96;
+  const titleLineH = 88;
 
-  ctx.font = `500 44px ${FONT}`;
+  ctx.font = `500 40px ${FONT}`;
   const bodyLines = wrapWords(ctx, slide.body, W - PAD * 2);
-  const bodyLineH = 62;
+  const bodyLineH = 56;
 
-  const SEP_GAP = 52;
+  const SEP_GAP = 44;
   const totalH = titleLines.length * titleLineH + SEP_GAP + 3 + SEP_GAP + bodyLines.length * bodyLineH;
   const startY = (H - totalH) / 2;
 
@@ -140,7 +141,8 @@ function renderPhotoSlideToCanvas(
   total: number,
   handle?: string
 ): HTMLCanvasElement {
-  const W = 1080, H = 1350;
+  // Instagram carousel standard: 1080×1080 (1:1 square)
+  const W = 1080, H = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -193,16 +195,16 @@ function renderPhotoSlideToCanvas(
   ctx.fillText(badgeText, CONTENT_X + 20, PAD + bH / 2);
 
   // ── Measure content ────────────────────────────────────────
-  const TITLE_LINE_H   = 88;
-  const BODY_LINE_H    = 64;
-  const AMBER_H        = 10;
-  const TITLE_AMB_GAP  = 36;
-  const AMB_BODY_GAP   = 40;
+  const TITLE_LINE_H   = 80;
+  const BODY_LINE_H    = 56;
+  const AMBER_H        = 8;
+  const TITLE_AMB_GAP  = 28;
+  const AMB_BODY_GAP   = 32;
 
-  ctx.font = `800 72px ${FONT}`;
+  ctx.font = `800 64px ${FONT}`;
   const titleLines = wrapWords(ctx, slide.title, CONTENT_W);
 
-  ctx.font = `500 40px ${FONT}`;
+  ctx.font = `500 36px ${FONT}`;
   const bodyLines = wrapWords(ctx, slide.body, CONTENT_W);
 
   const totalContentH =
@@ -217,7 +219,7 @@ function renderPhotoSlideToCanvas(
   const contentStartY = badgeBottom + (availH - totalContentH) / 2;
 
   // ── Title ──────────────────────────────────────────────────
-  ctx.font = `800 72px ${FONT}`;
+  ctx.font = `800 64px ${FONT}`;
   ctx.fillStyle = textColor;
   ctx.textBaseline = "top";
   titleLines.forEach((line, li) => ctx.fillText(line, CONTENT_X, contentStartY + li * TITLE_LINE_H));
@@ -230,7 +232,7 @@ function renderPhotoSlideToCanvas(
 
   // ── Body ───────────────────────────────────────────────────
   const bodyStartY = amberY + AMBER_H + AMB_BODY_GAP;
-  ctx.font = `500 40px ${FONT}`;
+  ctx.font = `500 36px ${FONT}`;
   ctx.fillStyle = hexToRgba(textColor, 0.6);
   bodyLines.forEach((line, li) => ctx.fillText(line, CONTENT_X, bodyStartY + li * BODY_LINE_H));
 
@@ -722,8 +724,8 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                   <div
                     key={i}
                     ref={(el) => { slideRefs.current[i] = el; }}
-                    className="group relative mr-3 h-80 w-64 flex-shrink-0 snap-start flex flex-col overflow-hidden rounded-2xl shadow-card-hover transition-all duration-300 hover:shadow-lg"
-                    style={{ background: bg, animationDelay: `${i * 80}ms` }}
+                    className="group relative mr-3 w-64 flex-shrink-0 snap-start flex flex-col overflow-hidden rounded-2xl shadow-card-hover transition-all duration-300 hover:shadow-lg"
+                    style={{ background: bg, animationDelay: `${i * 80}ms`, aspectRatio: '1 / 1' }}
                   >
                     {/* Toolbar */}
                     {!isEditing && !locked && (
@@ -859,25 +861,25 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-1 flex-col justify-center px-6 py-8">
-                        <span className="mb-4 inline-flex w-fit rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/50">
+                      <div className="flex flex-1 flex-col justify-center px-5 py-5">
+                        <span className="mb-3 inline-flex w-fit rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white/50">
                           {i + 1} / {slides.length}
                         </span>
                         <h3
-                          className="mb-4 line-clamp-3 text-[1.65rem] font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-sm"
+                          className="mb-3 line-clamp-3 text-[1.35rem] font-extrabold leading-[1.15] tracking-tight text-white drop-shadow-sm"
                           style={{ textShadow: "0 2px 12px rgba(0,0,0,0.15)" }}
                         >
                           {slide.title}
                         </h3>
-                        <div className="mb-4 h-[2px] w-10 rounded-full bg-white/25" />
+                        <div className="mb-3 h-[2px] w-8 rounded-full bg-white/25" />
                         <p
-                          className="line-clamp-5 text-[15px] font-medium leading-[1.6] text-white/85"
+                          className="line-clamp-4 text-[13px] font-medium leading-[1.55] text-white/85"
                           style={{ textShadow: "0 1px 8px rgba(0,0,0,0.1)" }}
                         >
                           {slide.body}
                         </p>
                         {handle && (
-                          <p className="mt-auto pt-4 text-[11px] font-medium text-white/40">
+                          <p className="mt-auto pt-3 text-[10px] font-medium text-white/40">
                             {handle}
                           </p>
                         )}
@@ -951,8 +953,8 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                 <div
                   key={i}
                   ref={(el) => { photoCardRefs.current[i] = el; }}
-                  className="group relative mr-3 flex h-80 w-64 flex-shrink-0 snap-start overflow-hidden rounded-2xl shadow-card-hover transition-all duration-300 hover:shadow-lg"
-                  style={{ background: "#F5F3EE" }}
+                  className="group relative mr-3 flex w-64 flex-shrink-0 snap-start overflow-hidden rounded-2xl shadow-card-hover transition-all duration-300 hover:shadow-lg"
+                  style={{ background: "#F5F3EE", aspectRatio: '1 / 1' }}
                 >
                   {/* Per-card download */}
                   <button
@@ -1137,12 +1139,12 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
                             </span>
 
                             {/* Content — centralizado no espaço restante */}
-                            <div className="flex flex-1 flex-col justify-center gap-2.5">
-                              <h3 className="line-clamp-3 text-[1.45rem] font-extrabold leading-[1.2] tracking-tight" style={{ color: textColor }}>
+                            <div className="flex flex-1 flex-col justify-center gap-2">
+                              <h3 className="line-clamp-3 text-[1.2rem] font-extrabold leading-[1.2] tracking-tight" style={{ color: textColor }}>
                                 {slide.title}
                               </h3>
-                              <div className="h-[2.5px] w-7 rounded-full bg-amber-400" />
-                              <p className="line-clamp-4 text-[14px] font-medium leading-[1.6]" style={{ color: `${textColor}99` }}>
+                              <div className="h-[2px] w-6 rounded-full bg-amber-400" />
+                              <p className="line-clamp-4 text-[12px] font-medium leading-[1.6]" style={{ color: `${textColor}99` }}>
                                 {slide.body}
                               </p>
                             </div>
