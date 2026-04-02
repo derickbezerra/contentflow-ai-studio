@@ -182,7 +182,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Como funciona o limite de conteúdos?',
-    a: 'Cada geração (carrossel, post ou story) conta como 1 conteúdo. No modo "Gerar tudo", os 3 formatos ao mesmo tempo contam como 3 gerações. O contador reinicia todo mês.',
+    a: 'Cada geração (carrossel, post ou story) conta como 1 conteúdo. Você escolhe o formato na hora de gerar e o contador reinicia todo mês.',
   },
   {
     q: 'Posso cancelar a qualquer momento?',
@@ -842,7 +842,7 @@ export default function Landing() {
                 </text>
               </svg>
               <p className="max-w-[200px] text-xs leading-relaxed text-muted-foreground">
-                Conteúdo para Instagram de profissionais de saúde, validando as regras pelo seu conselho profissional.
+                Conteúdo para Instagram de profissionais de saúde, respeitando as normas do seu conselho.
               </p>
             </div>
 
@@ -852,10 +852,10 @@ export default function Landing() {
                 Especialidades
               </p>
               <div className="space-y-2.5">
-                <a href="/para-medicos" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Medicina</a>
-                <a href="/para-nutricionistas" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Nutrição</a>
-                <a href="/para-dentistas" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Odontologia</a>
-                <a href="/para-psicologos" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Psicologia</a>
+                <a href="#validacao" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Medicina</a>
+                <a href="#validacao" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Nutrição</a>
+                <a href="#validacao" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Odontologia</a>
+                <a href="#validacao" className="block text-xs text-muted-foreground transition-colors hover:text-foreground">Psicologia</a>
               </div>
             </div>
 
