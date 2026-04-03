@@ -48,11 +48,7 @@ export const PLANS = [
 export async function handleCheckout(priceId: string, planName: string, setLoadingPlan?: (p: string | null) => void) {
   setLoadingPlan?.(planName)
   try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    )
+    const { supabase } = await import('@/lib/supabase')
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
       window.location.href = '/login'
@@ -82,11 +78,7 @@ export async function handleCheckout(priceId: string, planName: string, setLoadi
 
 export async function handlePortal() {
   try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    )
+    const { supabase } = await import('@/lib/supabase')
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/customer-portal`, {
