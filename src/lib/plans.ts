@@ -54,20 +54,18 @@ export async function handleCheckout(priceId: string, planName: string, setLoadi
       window.location.href = '/login'
       return
     }
-    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ priceId }),
+    const { data, error } = await supabase.functions.invoke('create-checkout', {
+      body: { priceId },
     })
-    const data = await res.json()
-    if (data.url) {
+    if (error) {
+      console.error('Checkout error:', error)
+      setLoadingPlan?.(null)
+      return
+    }
+    if (data?.url) {
       window.location.href = data.url
     } else {
-      console.error('Checkout error:', data)
+      console.error('Checkout error: no URL', data)
       setLoadingPlan?.(null)
     }
   } catch (err) {
@@ -81,16 +79,11 @@ export async function handlePortal() {
     const { supabase } = await import('@/lib/supabase')
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/customer-portal`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
+    const { data, error } = await supabase.functions.invoke('customer-portal', {
+      body: {},
     })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
+    if (error) { console.error('Portal error:', error); return }
+    if (data?.url) window.location.href = data.url
   } catch (err) {
     console.error('Portal error:', err)
   }
