@@ -9,7 +9,7 @@ export const PLANS = [
     features: [
       '10 conteúdos por mês',
       'Carrossel, Post e Story',
-      'Medicina, Nutrição, Odonto e Psico',
+      'Medicina, Nutrição, Odontologia e Psicologia',
       'Validação ética (CFM/CFO/CFP/CFN)',
     ],
   },
@@ -23,7 +23,7 @@ export const PLANS = [
     features: [
       '30 conteúdos por mês',
       'Carrossel, Post e Story',
-      'Medicina, Nutrição, Odonto e Psico',
+      'Medicina, Nutrição, Odontologia e Psicologia',
       'Perfil de marca personalizado',
       'Histórico de conteúdo',
       'Validação ética (CFM/CFO/CFP/CFN)',
@@ -39,7 +39,7 @@ export const PLANS = [
     features: [
       '50 conteúdos por mês',
       'Carrossel, Post e Story',
-      'Medicina, Nutrição, Odonto e Psico',
+      'Medicina, Nutrição, Odontologia e Psicologia',
       'Perfil de marca personalizado',
       'Histórico de conteúdo',
       'Análise de Compliance (50 créditos/mês)',
@@ -74,6 +74,9 @@ export async function handleCheckout(priceIdEnv: string, planName: string, setLo
     const data = await res.json()
     if (data.url) {
       window.location.href = data.url
+    } else {
+      console.error('Checkout error:', data)
+      setLoadingPlan?.(null)
     }
   } catch (err) {
     console.error('Checkout error:', err)

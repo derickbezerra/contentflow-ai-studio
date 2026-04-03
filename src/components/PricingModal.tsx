@@ -36,8 +36,8 @@ export default function PricingModal({ onClose }: PricingModalProps) {
           <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Zap className="h-3.5 w-3.5" /> Escolha seu plano
           </div>
-          <h2 id="pricing-modal-title" className="text-2xl font-semibold text-foreground">Quanto vale 1 paciente novo por mês?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">7 dias grátis incluídos · Cancele quando quiser · PIX ou Boleto</p>
+          <h2 id="pricing-modal-title" className="text-2xl font-semibold text-foreground">Quanto vale ter pacientes novos todo mês?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">7 dias grátis incluídos · Cancele quando quiser</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
