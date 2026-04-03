@@ -33,9 +33,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null)
       setLoading(false)
 
-      if (event === 'SIGNED_IN' && session?.user && localStorage.getItem('terms_pending_accept')) {
-        localStorage.removeItem('terms_pending_accept')
-        supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', session.user.id)
+      if (event === 'SIGNED_IN' && session?.user) {
+        const user = session.user
+
+        // Fallback: garante que o row em public.users existe (caso o trigger falhe)
+        // O trigger on_user_created_send_welcome dispara o welcome email automaticamente no INSERT
+        supabase.from('users').select('id').eq('id', user.id).maybeSingle().then(({ data }) => {
+          if (!data) {
+            supabase.from('users').insert({
+              id: user.id,
+              email: user.email,
+              trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            })
+          }
+        })
+
+        if (localStorage.getItem('terms_pending_accept')) {
+          localStorage.removeItem('terms_pending_accept')
+          supabase.from('users').update({ terms_accepted_at: new Date().toISOString() }).eq('id', user.id)
+        }
       }
     })
 
