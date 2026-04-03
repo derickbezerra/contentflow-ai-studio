@@ -68,7 +68,7 @@ export default function PricingModal({ onClose }: PricingModalProps) {
               <ul className="mb-4 flex-1 space-y-1.5">
                 {plan.features.map(f => (
                   <li key={f} className="flex items-start gap-1.5 text-xs text-foreground">
-                    <Check className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${plan.highlight ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                     {f}
                   </li>
                 ))}
@@ -77,7 +77,7 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                 variant={plan.highlight ? 'cta' : 'outline'}
                 size="sm"
                 className="w-full"
-                onClick={() => handleCheckout(plan.priceIdEnv, plan.name, setLoadingPlan)}
+                onClick={() => handleCheckout(plan.priceId, plan.name, setLoadingPlan)}
                 disabled={loadingPlan === plan.name}
               >
                 {loadingPlan === plan.name ? (

@@ -4,7 +4,7 @@ export const PLANS = [
     planKey: 'starter',
     price: 'R$47',
     limit: '10 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
+    priceId: import.meta.env.VITE_STRIPE_STARTER_PRICE_ID as string,
     highlight: false,
     features: [
       'Carrossel, Post e Story',
@@ -17,7 +17,7 @@ export const PLANS = [
     planKey: 'growth',
     price: 'R$97',
     limit: '30 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
+    priceId: import.meta.env.VITE_STRIPE_GROWTH_PRICE_ID as string,
     highlight: true,
     features: [
       'Carrossel, Post e Story',
@@ -32,7 +32,7 @@ export const PLANS = [
     planKey: 'pro',
     price: 'R$127',
     limit: '50 conteúdos/mês',
-    priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
+    priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID as string,
     highlight: false,
     features: [
       'Carrossel, Post e Story',
@@ -45,7 +45,7 @@ export const PLANS = [
   },
 ]
 
-export async function handleCheckout(priceIdEnv: string, planName: string, setLoadingPlan?: (p: string | null) => void) {
+export async function handleCheckout(priceId: string, planName: string, setLoadingPlan?: (p: string | null) => void) {
   setLoadingPlan?.(planName)
   try {
     const { createClient } = await import('@supabase/supabase-js')
@@ -58,7 +58,6 @@ export async function handleCheckout(priceIdEnv: string, planName: string, setLo
       window.location.href = '/login'
       return
     }
-    const priceId = import.meta.env[priceIdEnv]
     const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: {
