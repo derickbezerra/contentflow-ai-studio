@@ -7,7 +7,6 @@ export const PLANS = [
     priceIdEnv: 'VITE_STRIPE_STARTER_PRICE_ID',
     highlight: false,
     features: [
-      '10 conteúdos por mês',
       'Carrossel, Post e Story',
       'Medicina, Nutrição, Odontologia e Psicologia',
       'Validação ética (CFM/CFO/CFP/CFN)',
@@ -21,7 +20,6 @@ export const PLANS = [
     priceIdEnv: 'VITE_STRIPE_GROWTH_PRICE_ID',
     highlight: true,
     features: [
-      '30 conteúdos por mês',
       'Carrossel, Post e Story',
       'Medicina, Nutrição, Odontologia e Psicologia',
       'Perfil de marca personalizado',
@@ -37,7 +35,6 @@ export const PLANS = [
     priceIdEnv: 'VITE_STRIPE_PRO_PRICE_ID',
     highlight: false,
     features: [
-      '50 conteúdos por mês',
       'Carrossel, Post e Story',
       'Medicina, Nutrição, Odontologia e Psicologia',
       'Perfil de marca personalizado',
