@@ -69,7 +69,9 @@ export default function PricingModal({ onClose }: PricingModalProps) {
                 {plan.features.map(f => (
                   <li key={f} className="flex items-start gap-1.5 text-xs text-foreground">
                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                    {f}
+                    {f.includes('Compliance') ? (
+                      <span className="font-semibold text-primary">{f}</span>
+                    ) : f}
                   </li>
                 ))}
               </ul>
