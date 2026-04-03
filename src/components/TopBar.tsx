@@ -35,6 +35,7 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
   const { planInfo } = usePlan();
   const navigate = useNavigate();
   const location = useLocation();
+  const handleUpgrade = onUpgrade ?? (() => navigate('/?upgrade=1#pricing'));
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name.split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()
     : user?.email?.slice(0, 2).toUpperCase() ?? "CF";
@@ -74,13 +75,20 @@ const TopBar = ({ onUpgrade }: TopBarProps) => {
       <div className="flex items-center gap-1">
         {user && (
           <>
-            {/* Plan badge */}
-            {planInfo?.plan && planInfo.plan !== "free" && (
+            {/* Plan badge / Upgrade CTA */}
+            {planInfo?.plan && planInfo.plan !== "free" ? (
               <button
-                onClick={onUpgrade}
+                onClick={handleUpgrade}
                 className="mr-2 hidden sm:flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20 capitalize transition-colors"
               >
                 <Zap className="h-3 w-3 fill-primary" /> {planInfo.plan}
+              </button>
+            ) : (
+              <button
+                onClick={handleUpgrade}
+                className="mr-2 hidden sm:flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <Zap className="h-3 w-3 fill-primary-foreground" /> Fazer upgrade
               </button>
             )}
 
