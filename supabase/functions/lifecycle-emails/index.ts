@@ -128,19 +128,7 @@ function base(preheader: string, title: string, body: string, siteUrl: string): 
           <tr>
             <td align="center" style="padding-bottom:28px;">
               <a href="${siteUrl}" style="text-decoration:none;display:inline-block;">
-                <table role="presentation" cellspacing="0" cellpadding="0">
-                  <tr>
-                    <td style="vertical-align:middle;padding-right:10px;">
-                      <!-- Icon mark -->
-                      <div style="width:36px;height:36px;background:#1e4d35;border-radius:9px;display:inline-block;text-align:center;line-height:36px;">
-                        <span style="color:#ffffff;font-size:18px;font-weight:800;font-family:Georgia,serif;">C</span>
-                      </div>
-                    </td>
-                    <td style="vertical-align:middle;">
-                      <span style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:400;color:#1a2e23;letter-spacing:-0.3px;">Content<span style="color:#1e4d35;font-weight:700;">Flow</span></span>
-                    </td>
-                  </tr>
-                </table>
+                <img src="${siteUrl}/logo-email.svg" alt="ContentFlow" width="186" height="44" style="display:block;border:0;" />
               </a>
             </td>
           </tr>

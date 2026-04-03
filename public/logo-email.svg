@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="372" height="88" viewBox="0 0 186 44">
+  <!-- Icon: rounded square background -->
+  <rect x="0" y="2" width="40" height="40" rx="8" fill="#1a3526"/>
+
+  <!-- Wave bands (matching favicon) -->
+  <!-- Top wave: light -->
+  <path d="M3 14 C9 11 16 17 22 14 C28 11 35 14 37 14 L37 19 C35 19 28 16 22 19 C16 22 9 16 3 19 Z" fill="#e8f0eb"/>
+  <!-- Middle wave: medium green -->
+  <path d="M3 20 C9 17 16 23 22 20 C28 17 35 20 37 20 L37 25 C35 25 28 22 22 25 C16 28 9 22 3 25 Z" fill="#5a8a6a"/>
+  <!-- Bottom wave: dark green -->
+  <path d="M3 26 C9 23 16 29 22 26 C28 23 35 26 37 26 L37 31 C35 31 28 28 22 31 C16 34 9 28 3 31 Z" fill="#3d6b52"/>
+
+  <!-- Wordmark -->
+  <text x="50" y="30"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="20"
+        fill="#1a2e23"
+        font-weight="400"
+        letter-spacing="-0.3">Content</text>
+  <text x="130" y="30"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="20"
+        fill="#1e4d35"
+        font-weight="700"
+        letter-spacing="-0.3">Flow</text>
+</svg>
