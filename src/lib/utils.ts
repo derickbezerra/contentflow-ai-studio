@@ -16,7 +16,12 @@ export async function downloadImage(canvas: HTMLCanvasElement, filename: string)
     );
     const file = new File([blob], filename, { type: "image/png" });
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file] });
+      try {
+        await navigator.share({ files: [file] });
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        throw err;
+      }
       return;
     }
   }
