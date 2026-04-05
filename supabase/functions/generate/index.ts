@@ -439,7 +439,7 @@ Deno.serve(async (req) => {
         try {
           const message = await anthropic.messages.create({
             model,
-            max_tokens: 2048,
+            max_tokens: 1024,
             system: SYSTEM_PROMPT,
             messages: [{ role: 'user', content: userMessage }],
             signal: abortController.signal,
@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
                   },
                   body: JSON.stringify({
                     model,
-                    max_tokens: 2048,
+                    max_tokens: 1024,
                     stream: true,
                     system: SYSTEM_PROMPT,
                     messages: [{ role: 'user', content: streamMsg }],
