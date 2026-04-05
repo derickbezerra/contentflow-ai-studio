@@ -565,9 +565,10 @@ Deno.serve(async (req) => {
             } catch (err: unknown) {
               const status = (err as { status?: number })?.status
               const isAbort = err instanceof DOMException && err.name === 'AbortError'
-              if ((status === 529 || isAbort) && streamModel === PRIMARY_MODEL) {
-                console.warn(`Sonnet ${isAbort ? 'timeout' : '529'} (stream), falling back to Haiku`)
+              if ((status === 529 || status === 429 || isAbort) && streamModel === PRIMARY_MODEL) {
+                console.warn(`Sonnet ${isAbort ? 'timeout' : status} (stream), falling back to Haiku`)
                 streamModel = FALLBACK_MODEL
+                if (status === 429) await new Promise(resolve => setTimeout(resolve, 2000))
                 const result = await streamFromModel(streamModel)
                 fullText = result.fullText
                 streamModel = result.model
@@ -602,7 +603,10 @@ Deno.serve(async (req) => {
           } catch (e) {
             console.error('Stream error:', e)
             const errMsg = e instanceof Error ? e.message : 'Erro desconhecido'
-            send(controller, { error: `Erro ao gerar conteúdo: ${errMsg}. Tente novamente.` })
+            const isRateLimit = errMsg.includes('rate_limit') || (e as { status?: number })?.status === 429
+            send(controller, { error: isRateLimit
+              ? 'Muitas solicitações simultâneas. Tente novamente em alguns segundos.'
+              : `Erro ao gerar conteúdo: ${errMsg}. Tente novamente.` })
           } finally {
             controller.close()
           }
