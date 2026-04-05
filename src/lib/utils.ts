@@ -10,19 +10,20 @@ function isMobile(): boolean {
 }
 
 export async function downloadImage(canvas: HTMLCanvasElement, filename: string): Promise<void> {
-  if (isMobile()) {
-    const blob = await new Promise<Blob>((resolve, reject) =>
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png")
-    );
-    const file = new File([blob], filename, { type: "image/png" });
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
+  if (isMobile() && navigator.share) {
+    try {
+      const dataUrl = canvas.toDataURL("image/png");
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], filename, { type: "image/png" });
+      const canShare = navigator.canShare ? navigator.canShare({ files: [file] }) : true;
+      if (canShare) {
         await navigator.share({ files: [file] });
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        throw err;
+        return;
       }
-      return;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      // share API falhou — cai no download padrão
     }
   }
   const link = document.createElement("a");
