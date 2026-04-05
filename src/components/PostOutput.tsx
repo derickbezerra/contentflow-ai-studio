@@ -2,6 +2,7 @@ import { Copy, Download, Palette, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
+import { downloadImage } from "@/lib/utils";
 
 interface PostOutputProps {
   hook: string;
@@ -186,10 +187,7 @@ const PostOutput = ({ hook, body, cta, handle, readOnly = false }: PostOutputPro
     setDownloading(true);
     try {
       const canvas = renderPostToCanvas(hook, body, cta, handle, presetIndex, customColor);
-      const link = document.createElement("a");
-      link.download = "post-instagram.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      await downloadImage(canvas, "post-instagram.png");
       toast.success("Post baixado! (1080×1080px)");
     } catch (err) {
       console.error(err);

@@ -2,6 +2,7 @@ import { Copy, Download, ChevronLeft, ChevronRight, Check, X, Palette, Loader2, 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState, useRef, useMemo } from "react";
+import { downloadImage } from "@/lib/utils";
 
 // ── Canvas rendering helpers ──────────────────────────────────────────────────
 
@@ -582,16 +583,13 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
   };
 
   // ── Download: single text slide (high-quality canvas) ────────────────────
-  const downloadTextSlide = (index: number) => {
+  const downloadTextSlide = async (index: number) => {
     const key = `text-${index}`;
     if (downloadingCard === key) return;
     setDownloadingCard(key);
     try {
       const canvas = renderSlideToCanvas(slides[index], index, slides.length, handle);
-      const link = document.createElement("a");
-      link.download = `texto-slide-${index + 1}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      await downloadImage(canvas, `texto-slide-${index + 1}.png`);
       toast.success("Slide baixado!");
     } finally {
       setDownloadingCard(null);
@@ -604,10 +602,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
     try {
       for (let i = 0; i < slides.length; i++) {
         const canvas = renderSlideToCanvas(slides[i], i, slides.length, handle);
-        const link = document.createElement("a");
-        link.download = `slide-${i + 1}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
+        await downloadImage(canvas, `slide-${i + 1}.png`);
         await new Promise((r) => setTimeout(r, 300));
       }
       toast.success(`${slides.length} slides baixados!`);
@@ -620,16 +615,13 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
   };
 
   // ── Download: single photo slide (high-quality canvas) ───────────────────
-  const downloadPhotoSlide = (index: number) => {
+  const downloadPhotoSlide = async (index: number) => {
     const key = `photo-${index}`;
     if (downloadingCard === key) return;
     setDownloadingCard(key);
     try {
       const canvas = renderPhotoSlideToCanvas(slides[index], index, slides.length, handle);
-      const link = document.createElement("a");
-      link.download = `foto-slide-${index + 1}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      await downloadImage(canvas, `foto-slide-${index + 1}.png`);
       toast.success("Slide baixado!");
     } catch (err) {
       console.error(err);
@@ -645,10 +637,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
     try {
       for (let i = 0; i < slides.length; i++) {
         const canvas = renderPhotoSlideToCanvas(slides[i], i, slides.length, handle);
-        const link = document.createElement("a");
-        link.download = `slide-foto-${i + 1}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
+        await downloadImage(canvas, `slide-foto-${i + 1}.png`);
         await new Promise((r) => setTimeout(r, 300));
       }
       toast.success(`${slides.length} slides baixados!`);
