@@ -2,7 +2,7 @@ import { Copy, Download, ChevronLeft, ChevronRight, Check, X, Palette, Loader2, 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState, useRef, useMemo } from "react";
-import { downloadImage } from "@/lib/utils";
+import { downloadImage, isMobile } from "@/lib/utils";
 
 // ── Canvas rendering helpers ──────────────────────────────────────────────────
 
@@ -426,6 +426,7 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
   // ── Download state ────────────────────────────────────────────────────────
   const [downloadingAll, setDownloadingAll] = useState<"text" | "photo" | null>(null);
   const [downloadingCard, setDownloadingCard] = useState<string | null>(null);
+  const [mobileImageUrls, setMobileImageUrls] = useState<string[]>([]);
 
   // ── Unsplash keywords per slide ───────────────────────────────────────────
   const photoKeywords = useMemo(
@@ -598,6 +599,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
 
   // ── Download: all text slides one by one ─────────────────────────────────
   const downloadTextAll = async () => {
+    if (isMobile()) {
+      const urls = slides.map((s, i) => renderSlideToCanvas(s, i, slides.length, handle).toDataURL("image/png"));
+      setMobileImageUrls(urls);
+      return;
+    }
     setDownloadingAll("text");
     try {
       for (let i = 0; i < slides.length; i++) {
@@ -633,6 +639,11 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
 
   // ── Download: all photo slides one by one ────────────────────────────────
   const downloadPhotoAll = async () => {
+    if (isMobile()) {
+      const urls = slides.map((s, i) => renderPhotoSlideToCanvas(s, i, slides.length, handle).toDataURL("image/png"));
+      setMobileImageUrls(urls);
+      return;
+    }
     setDownloadingAll("photo");
     try {
       for (let i = 0; i < slides.length; i++) {
@@ -651,6 +662,26 @@ const CarouselOutput = ({ slides: initialSlides, caption: initialCaption, handle
 
   return (
     <div className="animate-fade-up space-y-6">
+
+      {/* ── Mobile: overlay para salvar todas as imagens ───────────────────── */}
+      {mobileImageUrls.length > 0 && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black/95 overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between bg-black/80 px-4 py-3 backdrop-blur">
+            <p className="text-sm text-white/80">Pressione e segure para salvar na galeria</p>
+            <button
+              className="rounded-full bg-white/10 p-2 text-white"
+              onClick={() => setMobileImageUrls([])}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex flex-col gap-3 p-4">
+            {mobileImageUrls.map((src, i) => (
+              <img key={i} src={src} alt={`Slide ${i + 1}`} className="w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Side-by-side carousels ─────────────────────────────────────────── */}
       <div className="flex flex-col gap-8 lg:flex-row">
